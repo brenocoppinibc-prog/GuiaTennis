@@ -3306,9 +3306,12 @@ ok(um("select prosrc like '%devolvido_em%' from pg_proc where proname = 'alcance
 print("\n# Nota fiscal automática")
 r = subprocess.run(["psql", BANCO, "-X", "-q", "-v", "ON_ERROR_STOP=1", "-f", "supabase/migrations/20261125120000_nota_fiscal_automatica.sql"], capture_output=True, text=True)
 ok(r.returncode == 0, "o SQL 20261125120000 roda de novo sem erro " + r.stderr[-300:])
+# Regra 333: a NFS-e Nacional (20261125150000_nota_fiscal_nacional) por cima.
+r = subprocess.run(["psql", BANCO, "-X", "-q", "-v", "ON_ERROR_STOP=1", "-f", "supabase/migrations/20261125150000_nota_fiscal_nacional.sql"], capture_output=True, text=True)
+ok(r.returncode == 0, "o SQL 20261125150000 (NFS-e Nacional) roda de novo sem erro " + r.stderr[-300:])
 sql("update public.nota_configuracao set ligada = false, ambiente = 'teste', proximo_rps = 1 where id = 1")
-ok(um("select ligada || ',' || ambiente || ',' || ccm || ',' || codigo_servico || ',' || aliquota || ',' || serie from public.nota_configuracao") == "false,teste,05930642,02917,0.0201,GT",
-   "começa desligada, em teste, com o CCM 05930642, o código 02917, ISS de 2,01% e a série GT")
+ok(um("select ligada || ',' || ambiente || ',' || ccm || ',' || codigo_servico || ',' || aliquota || ',' || serie from public.nota_configuracao") == "false,teste,05930642,172501,0.0201,1",
+   "começa desligada, em teste, com o CCM 05930642, o código nacional 172501 (17.25), ISS de 2,01% e a série 1")
 nac = academia_nova("Fiscal Tênis", -23.62, -46.68, ["saibro"])
 ndona = parceiro("Nara Fiscal", f"narafiscal{sufixo}@exemplo.com", nac)
 sql(f"update public.academias set plano = 'completo' where id = '{nac}'")
@@ -3320,15 +3323,17 @@ def compra_paga(valor=100, de_teste=False, gid=None):
     return c
 c0 = compra_paga()
 ok(um(f"select count(*) from public.notas_fiscais where compra_id = '{c0}'") == "0"
-   and um(f"select count(*) from public.emails_a_enviar where chave like '%nota-a-emitir:{c0}%' and html like '%Prefeitura de São Paulo%'") == "1",
-   "desligada: a compra paga não entra na fila e o admin recebe o aviso para emitir no portal da Prefeitura")
-ok("Só o GuiaTennis" in erro("select public.salvar_nota_configuracao(true, 'producao', '02917', 0.0201, 'GT', 'Descrição longa o bastante')", papel="authenticated", user=ndona),
+   and um(f"select count(*) from public.emails_a_enviar where chave like '%nota-a-emitir:{c0}%' and html like '%Emissor Nacional da NFS-e%'") == "1",
+   "desligada: a compra paga não entra na fila e o admin recebe o aviso para emitir no Emissor Nacional")
+ok("Só o GuiaTennis" in erro("select public.salvar_nota_configuracao(true, 'producao', '172501', 0.0201, '1', 'Descrição longa o bastante')", papel="authenticated", user=ndona),
    "só o admin liga a nota")
-ok("4 ou 5 números" in erro("select public.salvar_nota_configuracao(true, 'producao', '12', 0.0201, 'GT', 'Descrição longa o bastante')", papel="authenticated", user=str(uuid.uuid4()), email=ADMIN)
-   and "alíquota" in erro("select public.salvar_nota_configuracao(true, 'producao', '02917', 0.2, 'GT', 'Descrição longa o bastante')", papel="authenticated", user=str(uuid.uuid4()), email=ADMIN),
-   "código e alíquota errados são recusados")
-cfg = json.loads(um("select public.salvar_nota_configuracao(true, 'producao', '2917', 0.0201, 'gt', 'Prestação de serviços na plataforma GuiaTennis.')", papel="authenticated", user=str(uuid.uuid4()), email=ADMIN))
-ok(cfg["ligada"] and cfg["ambiente"] == "producao" and cfg["codigo_servico"] == "02917" and cfg["serie"] == "GT", "o admin liga em produção (código com 5 números, série em maiúsculas)")
+ok("6 números" in erro("select public.salvar_nota_configuracao(true, 'producao', '02917', 0.0201, '1', 'Descrição longa o bastante')", papel="authenticated", user=str(uuid.uuid4()), email=ADMIN)
+   and "alíquota" in erro("select public.salvar_nota_configuracao(true, 'producao', '172501', 0.2, '1', 'Descrição longa o bastante')", papel="authenticated", user=str(uuid.uuid4()), email=ADMIN)
+   and "1 a 49999" in erro("select public.salvar_nota_configuracao(true, 'producao', '172501', 0.0201, 'GT', 'Descrição longa o bastante')", papel="authenticated", user=str(uuid.uuid4()), email=ADMIN)
+   and "1 a 49999" in erro("select public.salvar_nota_configuracao(true, 'producao', '172501', 0.0201, '60000', 'Descrição longa o bastante')", papel="authenticated", user=str(uuid.uuid4()), email=ADMIN),
+   "código (o antigo de São Paulo), alíquota e série (letra ou fora de 1 a 49999) errados são recusados")
+cfg = json.loads(um("select public.salvar_nota_configuracao(true, 'producao', '17.25.01', 0.0201, '00001', 'Prestação de serviços na plataforma GuiaTennis.')", papel="authenticated", user=str(uuid.uuid4()), email=ADMIN))
+ok(cfg["ligada"] and cfg["ambiente"] == "producao" and cfg["codigo_servico"] == "172501" and cfg["serie"] == "1", "o admin liga em produção (código nacional sem pontos, série sem zeros à esquerda)")
 c1 = compra_paga(100)
 c2 = compra_paga(50)
 ok(um(f"select situacao from public.notas_fiscais where compra_id = '{c1}'") == "pendente"
@@ -3339,18 +3344,18 @@ ok("permission denied" in erro(f"select public.nota_para_emitir('{c1}')", papel=
    "o que a função da Netlify usa não abre para conta nenhuma (nem para o admin no site)")
 d1 = json.loads(um(f"select public.nota_para_emitir('{c1}')"))
 d2 = json.loads(um(f"select public.nota_para_emitir('{c2}')"))
-ok(d1["numero_rps"] == 1 and d2["numero_rps"] == 2 and d1["ambiente"] == "producao" and d1["codigo_servico"] == "02917" and float(d1["aliquota"]) == 0.0201
+ok(d1["numero_rps"] == 1 and d2["numero_rps"] == 2 and d1["ambiente"] == "producao" and d1["codigo_servico"] == "172501" and float(d1["aliquota"]) == 0.0201
    and d1["tomador"]["documento"] == "12345678000195" and float(d1["valor"]) == 100 and d1["data"] == um("select to_char(now() at time zone 'America/Sao_Paulo', 'YYYY-MM-DD')"),
    "produção: cada compra reserva o seu RPS (1, 2), com o tomador, o valor pago e a data do pagamento")
 d1b = json.loads(um(f"select public.nota_para_emitir('{c1}')"))
 ok(d1b["numero_rps"] == 1 and um("select proximo_rps from public.nota_configuracao") == "3", "mandar de novo usa o mesmo RPS (a Prefeitura nunca faz duas notas)")
-um(f"select public.registrar_nota('{c1}', 'emitida', 17943, 'PH5GL6XU', '')")
-ok(um(f"select situacao || ',' || numero_nfe from public.notas_fiscais where compra_id = '{c1}'") == "emitida,17943"
+um(f"select public.registrar_nota('{c1}', 'emitida', 17, '35503082270120796000100000000000000012260000000012', '')")
+ok(um(f"select situacao || ',' || numero_nfe from public.notas_fiscais where compra_id = '{c1}'") == "emitida,17"
    and um(f"select nota_emitida_em is not null from public.compras_de_creditos where id = '{c1}'") == "t"
-   and um(f"select count(*) from public.emails_a_enviar where chave = 'nota-emitida:{c1}' and para = 'fin@notatenis.com.br' and html like '%notaprint.aspx?ccm=05930642&amp;nf=17943&amp;cod=PH5GL6XU%'") == "1",
-   "emitida: a compra fica com a nota e o link da Prefeitura vai para o e-mail da nota")
+   and um(f"select count(*) from public.emails_a_enviar where chave = 'nota-emitida:{c1}' and para = 'fin@notatenis.com.br' and html like '%nfse.gov.br/ConsultaPublica/?tpc=1&amp;chave=35503082270120796000100000000000000012260000000012%' and texto like '%nota n.º 17. Chave de acesso: 35503082270120796000100000000000000012260000000012.%'") == "1",
+   "emitida: a compra fica com a nota e o link da consulta pública da NFS-e Nacional vai para o e-mail da nota")
 mc = json.loads(um(f"select public.minhas_compras('{nac}')::text", papel="authenticated", user=ndona) or "[]")
-ok(any(x["id"] == c1 and x["nota_link"] == "https://nfe.prefeitura.sp.gov.br/contribuinte/notaprint.aspx?ccm=05930642&nf=17943&cod=PH5GL6XU" for x in mc), "Pagamentos: a compra traz o link da nota")
+ok(any(x["id"] == c1 and x["nota_link"] == "https://www.nfse.gov.br/ConsultaPublica/?tpc=1&chave=35503082270120796000100000000000000012260000000012" for x in mc), "Pagamentos: a compra traz o link da nota")
 um(f"select public.registrar_nota('{c2}', 'erro', null, null, 'Erro 1057: Código de serviço inválido')")
 ok(um(f"select count(*) from public.emails_a_enviar where chave like '%nota-erro:{c2}%' and texto like '%Erro 1057%'") == "1", "erro: o admin recebe o aviso com a mensagem da Prefeitura")
 fila = um("select string_agg(compra_id::text || ':' || acao, ',') from public.notas_para_processar()") or ""
@@ -3360,8 +3365,8 @@ ok(f"{c2}:emitir" in (um("select string_agg(compra_id::text || ':' || acao, ',')
 sql(f"update public.compras_de_creditos set situacao = 'estornada', valor_estornado = valor where id = '{c1}'")
 ok(um(f"select situacao from public.notas_fiscais where compra_id = '{c1}'") == "cancelar"
    and f"{c1}:cancelar" in (um("select string_agg(compra_id::text || ':' || acao, ',') from public.notas_para_processar()") or "")
-   and json.loads(um(f"select public.nota_para_cancelar('{c1}')"))["numero_nfe"] == 17943,
-   "estorno total: a nota emitida vai para o cancelamento na Prefeitura")
+   and json.loads(um(f"select public.nota_para_cancelar('{c1}')"))["chave"] == "35503082270120796000100000000000000012260000000012",
+   "estorno total: a nota emitida vai para o cancelamento pela chave de acesso")
 ct = compra_paga(20, de_teste=True)
 ok(um(f"select public.nota_para_emitir('{ct}') is null") == "t" and um(f"select situacao from public.notas_fiscais where compra_id = '{ct}'") == "cancelada",
    "compra de teste (prévia) nunca vira nota de verdade em produção")

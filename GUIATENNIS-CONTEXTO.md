@@ -10,7 +10,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 25/11/2026 (regra 332)
+**Atualizado em:** 25/11/2026 (regra 333)
 
 | | |
 |---|---|
@@ -335,9 +335,9 @@ sozinho vira "-", "Sob consulta"), numa linha
   conveniência (vistas recentes, última busca, hora das dicas).
 - **Funções da Netlify** (`netlify/functions/`): `onde.mjs` (cidade da
   conexão), `pagamento.mjs` (Mercado Pago e o pagamento de teste da
-  prévia), `nota-fiscal.mjs` e `nota-fiscal-relogio.mjs` (a NFS-e de São Paulo,
-  regra 331; usa o `node-forge` só para abrir o .pfx: a única dependência de
-  função), `cnpj.mjs` (Receita, para o "Conferir" do admin),
+  prévia), `nota-fiscal.mjs` e `nota-fiscal-relogio.mjs` (a NFS-e pela **NFS-e
+  Nacional**, Sefin Nacional, regras 331 e 333; usa o `node-forge` só para abrir o .pfx: a
+  única dependência de função), `cnpj.mjs` (Receita, para o "Conferir" do admin),
   `receber-email.mjs` (encaminha os e-mails do domínio, pelo Resend).
 - **E-mails** saem do banco pela fila `emails_a_enviar` (Resend, pg_net e
   pg_cron).
@@ -350,7 +350,7 @@ sozinho vira "-", "Sob consulta"), numa linha
   `supabase/aplicar.sh`: PR para a `main` → banco de **teste**; merge →
   banco de **verdade**. Depois, `supabase/conferir.sh` testa pela API o que
   o site lê. Resultado: Actions → "Banco de dados".
-- **Último SQL:** `20261125120000_nota_fiscal_automatica` (regra 331: `nota_configuracao`, `notas_fiscais`, o certificado no cofre e a fila; `avisar_compra_paga` e `minhas_compras` refeitos). Antes, `20261116120000_fechamento_do_leilao` (96 arquivos na pasta; regra 284: o dia e a hora do fechamento do leilão em `leilao_config`, `proximo_fechamento()` pela config e `mudar_fechamento_do_leilao`, só o admin). Antes, `20261113130000_nome_do_logo_nos_emails` ( regra 260: o nome no alto dos e-mails em Arial negrito, "Guia" verde e "Tennis" dourado). Antes, `20261113120000_portugues_dos_emails` (regra 258: as 18 funções de e-mail com o texto revisado). Antes dele, `20261112120000_chat_com_o_guia_e_relatos`; antes, `20261111120000_feedback_so_o_admin_ve` ( `nota_do_guia` só para o admin, sai a `pagina_das_avaliacoes_do_guia` e o `sitemap()` volta sem `/avaliacoes`). Antes dele, `20261110160000_reserva_online` (coluna `reserva_link`, clique `reserva` e as funções dos números refeitas com ele). O `20261110150000_pagina_das_avaliacoes_do_guia` (regra 235) rodou só no banco de teste e saiu da pasta. O `20261105120000` (a mesma coisa com o Completo vendo quantos guardaram) rodou só no banco de teste e saiu da pasta. Os `20261029120000_textos_das_promocoes` (regra 176) e `20261029150000_textos_curtos_das_promocoes` (título 40, regra 177) rodaram só no banco de teste e saíram da pasta.
+- **Último SQL:** `20261125150000_nota_fiscal_nacional` (regra 333: código nacional 172501, série numérica, a chave de acesso em `codigo_verificacao`, o link da consulta pública e o cancelamento pela chave). Antes, `20261125120000_nota_fiscal_automatica` (regra 331: `nota_configuracao`, `notas_fiscais`, o certificado no cofre e a fila; `avisar_compra_paga` e `minhas_compras` refeitos). Antes, `20261116120000_fechamento_do_leilao` (96 arquivos na pasta; regra 284: o dia e a hora do fechamento do leilão em `leilao_config`, `proximo_fechamento()` pela config e `mudar_fechamento_do_leilao`, só o admin). Antes, `20261113130000_nome_do_logo_nos_emails` ( regra 260: o nome no alto dos e-mails em Arial negrito, "Guia" verde e "Tennis" dourado). Antes, `20261113120000_portugues_dos_emails` (regra 258: as 18 funções de e-mail com o texto revisado). Antes dele, `20261112120000_chat_com_o_guia_e_relatos`; antes, `20261111120000_feedback_so_o_admin_ve` ( `nota_do_guia` só para o admin, sai a `pagina_das_avaliacoes_do_guia` e o `sitemap()` volta sem `/avaliacoes`). Antes dele, `20261110160000_reserva_online` (coluna `reserva_link`, clique `reserva` e as funções dos números refeitas com ele). O `20261110150000_pagina_das_avaliacoes_do_guia` (regra 235) rodou só no banco de teste e saiu da pasta. O `20261105120000` (a mesma coisa com o Completo vendo quantos guardaram) rodou só no banco de teste e saiu da pasta. Os `20261029120000_textos_das_promocoes` (regra 176) e `20261029150000_textos_curtos_das_promocoes` (título 40, regra 177) rodaram só no banco de teste e saíram da pasta.
 - **Coluna nova que o site lê:** `grant select (coluna) … to anon,
   authenticated` (a leitura é liberada coluna por coluna) e a coluna na
   lista de colunas novas do `lerPublico`. Função chamada pelo visitante
@@ -395,7 +395,7 @@ sozinho vira "-", "Sob consulta"), numa linha
   mais `onde.mjs`, `pagamento.mjs`, `cnpj.mjs`, `catalogo-meta.mjs` e `regiao.mjs`. O `falhas.txt`
   sempre aparece na lista (força erros de propósito).
 - **Gramática:** `testes/gramatica/` (LanguageTool pt-BR pelo Maven; o passo a passo no `LEIA.md`).
-- **Banco local** para o `testes/banco-emails.py` (**1.108 conferências**, 25/11/2026, regra 331,
+- **Banco local** para o `testes/banco-emails.py` (**1.109 conferências**, 25/11/2026, regra 333,
   nenhuma falha; o teste roda de novo SQLs antigos, e o
   `20261105130000` recoloca a trava dos cliques de antes: SQL que mexe em
   `cliques_tipo_valido` ou em `numeros_da_academia` é rodado de novo no começo
@@ -468,8 +468,8 @@ sozinho vira "-", "Sob consulta"), numa linha
 
 ## 9. Estado atual e pendências (25/11/2026, troca de chat)
 
-**PR #5** (`ccr-0a610d86-k6plx0` → `main`) com tudo até a **regra 332**: verde, prévia no ar, descrição
-em dia (passos até o 169) e o SQL `20261125120000_nota_fiscal_automatica` já rodou no banco de teste
+**PR #5** (`ccr-0a610d86-k6plx0` → `main`) com tudo até a **regra 333**: verde, prévia no ar, descrição
+em dia (passos até o 171) e o SQL `20261125120000_nota_fiscal_automatica` já rodou no banco de teste
 (25/11). O chat de 25/11 (tarde) acompanha o PR; chat novo se inscreve de novo com `subscribe_pr_activity`.
 O "Banco de dados" desta branch é disparado à mão (`banco.yml`, `destino: teste`,
 `actions_run_trigger`); ele também leva o e-mail do código ao Supabase. **Conferir na prévia:** o
@@ -478,21 +478,24 @@ assunto do e-mail do código deve chegar como "123456 é o seu código do GuiaTe
 corrigidos no próprio arquivo de SQL antigo (regras 323, 324, 326, 328 e 329: `20261013140000`,
 `20261121130000`, `20261123120000`, `20261007130000`, `20261015130000`) valem no banco de verdade com o
 merge. **Ambiente do Claude:** este chat criou o ambiente "GuiaTennis" (rede liberada para
-prefeitura.sp.gov.br, notadomilhao.sf.prefeitura.sp.gov.br, nfe.prefeitura.sp.gov.br e
-nfews.prefeitura.sp.gov.br; o web service da Prefeitura responde 403 sem o certificado). O manual do web
+prefeitura.sp.gov.br, notadomilhao.sf.prefeitura.sp.gov.br, nfe.prefeitura.sp.gov.br,
+nfews.prefeitura.sp.gov.br e, na regra 333, www.gov.br, sefin.producaorestrita.nfse.gov.br e
+adn.producaorestrita.nfse.gov.br; a Sefin responde 403 sem o certificado). O manual do web
 service (3.4.1) e os schemas estão em notadomilhao.sf.prefeitura.sp.gov.br/manuais (os do leiaute 1
 copiados em `testes/nfse-sp-v01/`).
 
-**Nota fiscal automática (regra 331), 25/11 12h01:** o Breno enviou o A1 na prévia (BRENO COPPINI MARINHO
-LTDA, válido até 17/11/2027) e o "Testar com a Prefeitura" **conectou** (TLS e assinatura ok), mas a Prefeitura
-respondeu **Erro 1207** (prestador não autorizado) e **Erro 1647: o CNPJ está no CNC (Cadastro Nacional de
-Contribuintes) e deve emitir no ambiente nacional para fatos geradores a partir de 17/11/2026** (+ alerta 1651
-do IBS/CBS, Ato Conjunto RFB/CGIBS nº 4/2026). Ou seja: **a nota tem de sair pela NFS-e Nacional (Sefin
-Nacional, API REST com a DPS assinada, mTLS com o mesmo A1), não pelo web service de São Paulo.** Até adaptar,
-nota à mão no Emissor Nacional (nfse.gov.br) ou pela Contabilizei. Antes: O primeiro
-contato real é o **"Testar com a Prefeitura"** depois de o Breno enviar o A1 na prévia (Admin › Compras e
-notas). Se der erro de TLS (cadeia ICP-Brasil do servidor da Prefeitura) ou da Prefeitura, corrigir no
-`nota-fiscal.mjs` com a mensagem que aparecer.
+**Nota fiscal automática (regras 331 e 333):** o A1 já está no banco de teste (BRENO COPPINI MARINHO LTDA,
+válido até 17/11/2027). O primeiro "Testar com a Prefeitura" conectou, mas a Prefeitura respondeu **Erro 1647**
+(o CNPJ está no CNC e deve emitir no ambiente nacional desde 17/11/2026). **Regra 333:** a nota passou para a
+**NFS-e Nacional** (Sefin Nacional): a DPS do leiaute 1.01 assinada na infDPS (RSA-SHA1, e de novo com SHA-256
+se vier E0714), GZip + base64 num JSON, POST `/nfse` com TLS mútuo; produção restrita no "Teste"
+(`sefin.producaorestrita.nfse.gov.br/API/SefinNacional`), produção em `sefin.nfse.gov.br/SefinNacional`;
+cancelamento pelo evento 101101. Simples ME/EPP pelo SN sem retenção: sem `pAliq` (E0625), `pTotTribSN` 6, sem
+IBS/CBS (só em 2027). A IM (CCM) vai; se vier E0120, manda sem (E0116, o contrário). Manual, anexos e esquemas em
+www.gov.br/nfse (documentação atual; os esquemas copiados em `testes/nfse-nacional-v1.01`, com o padrão da série
+corrigido para o xmllint). **Primeiro contato real: o "Testar a emissão" na prévia.** Se o servidor recusar o TLS
+(cadeia ICP-Brasil) ou a produção restrita não tiver o CNPJ, corrigir com a mensagem que aparecer. Até ligar:
+nota à mão no Emissor Nacional (nfse.gov.br) ou pela Contabilizei.
 
 **Meta (25/11):** domínio verificado pelo registro TXT no registro.br (e a metatag no site); portfólio
 "GuiaTennis" com o Breno entrando pelo Instagram @guiatennis (o perfil "Coppini Marinho" do Facebook não
@@ -507,7 +510,7 @@ código de teste (uma disputa na prévia; Admin › "Avisos por e-mail" mostra "
 
 **Testes:** bateria completa de 23/11 (regra 327): **2.794 verificações** (as 3 falhas de testes com a
 ordem antiga, ajustadas); depois, só os afetados de 328 a 332, sem falha (332: `quadras-publicas.js`, `menu-e-home.js`, `jogador.js`, `buscas-e-avisos.js`, `chat-de-ajuda.js`); `banco-emails.py`: **1.108**,
-sem falha (25/11); `nota-fiscal.mjs`: 34; `nota-automatica.js`: 15. **Rodar a bateria completa no começo
+sem falha (25/11); `nota-fiscal.mjs`: 43 (regra 333); `nota-automatica.js`: 16; `dados-para-nota.js`: 30. **Rodar a bateria completa no começo
 do próximo chat** (contêiner novo: montar o banco local, seção 6).
 
 **Mercado Pago:** conta do CNPJ com chave Pix; aplicação "Checkout Pro" (API de Preferences; trocar
@@ -527,7 +530,7 @@ transação"): Pix comum pelo app do banco, conta do CNPJ confirmada, valor meno
 suporte do Mercado Pago.
 
 **Pendências e ofertas sem resposta:**
-1. **"Pode subir" do PR #5** (o Breno confere os passos 135 a 169 na prévia; antes, o A1 e o "Testar com a Prefeitura").
+1. **"Pode subir" do PR #5** (o Breno confere os passos 135 a 171 na prévia; antes, o "Testar a emissão" da NFS-e Nacional).
 2. **Pix Automático:** o Breno confere se a página da assinatura do Mercado Pago oferece o Pix
    Automático; se sim, `PIX_AUTOMATICO.real = true`; se não, suporte do Mercado Pago ou Asaas.
 3. **WhatsApp automático do código:** modelo de Autenticação criado no Gerenciador do WhatsApp. Em
@@ -544,13 +547,11 @@ suporte do Mercado Pago.
    os códigos do banco de teste), nunca pelo chat; depois, rodar o "Banco de dados".
 4. **Catálogo do WhatsApp Business** (preços definidos; fotos quadradas com o logo oferecidas).
 5. Carrosséis do Instagram e a plaquinha "Avalie no GuiaTennis" com QR (oferecidos).
-6. **Nota fiscal automática: feita na regra 331 (25/11), no PR #5.** NFS-e Paulistana pelo web service
-   da Prefeitura (leiaute 1: o Simples Nacional ainda usa o 1), CCM 05930642, código 02917, ISS 2,01%.
-   Falta o Breno: **enviar o A1** em Admin › Compras e notas › Nota fiscal automática (na prévia vai
-   para o banco de teste; depois do merge, de novo no site de verdade), **"Testar com a Prefeitura"**
-   e, depois do merge, **Configurar › Ligada › Produção**. Todo dia 1, o lembrete do CSV para a
-   Contabilizei (até o dia 5) e da alíquota. Se a Prefeitura recusar o TLS do servidor dela (cadeia
-   ICP-Brasil), incluir a AC raiz no `nota-fiscal.mjs`. "Baixar planilha do mês" (oferecido).
+6. **Nota fiscal automática: regras 331 e 333 (25/11), no PR #5, pela NFS-e Nacional** (código 172501, série 1,
+   CCM 05930642 como IM, ISS 2,01%). O A1 já foi enviado na prévia. Falta o Breno: **"Testar a emissão"** na prévia
+   (Admin › Compras e notas; uma nota de R$ 1 na produção restrita, sem valor fiscal); depois do merge, enviar o A1
+   de novo no site de verdade, testar e **Configurar › Ligada › Produção**. Todo dia 1, o lembrete de baixar as
+   notas no Emissor Nacional para a Contabilizei (até o dia 5) e da alíquota. "Baixar planilha do mês" (oferecido).
 7. **Domínio na Meta (24/11):** a metatag `facebook-domain-verification` está no `<head>` do `index.html`
    (vale no guiatennis.com.br depois do merge; ou, sem esperar, o registro TXT no DNS); depois, "Verificar
    domínio" em Gerenciador de Negócios › Domínios.
@@ -616,6 +617,7 @@ mesmo histórico de 23/11 e nas descrições antigas do PR (`historico/PR5-descr
 - 330 (24/11) — o resumo do Completo curto e com o que dizem as avaliações.
 - 331 (25/11) — a nota fiscal automática pela Prefeitura de São Paulo (certificado A1 no admin, teste e produção).
 - 332 (25/11) — "Sugerir uma quadra ou academia" com a cara do GuiaTennis ("não está em uma posição tão legal… muito básica e informal"): sai do topo do menu para o Suporte (antes do GuiaTennis Parceiros) e entra no rodapé, em Suporte, depois do Feedback (como o "Adicionar uma empresa" do Yelp); no fim da lista da busca, "Conhece uma quadra ou academia que não está nesta lista?" (`fimDaBusca`, como o "Adicionar um lugar" do Google Maps), que abre com o bairro e a cidade procurados; a tela com o tipo em cartões (Academia/Quadra pública), "Endereço" com "Usar minha localização" (`sugerirComMinhaLocalizacao`, pelo `enderecoDoPonto`; o ponto não é guardado), Enter avança, erro leva ao campo e texto formal. Sem SQL.
+- 333 (25/11) — a nota fiscal automática pela NFS-e Nacional (a Prefeitura respondeu "Erro 1647": CNPJ no CNC emite no ambiente nacional desde 17/11/2026): DPS 1.01 assinada, Sefin Nacional com TLS mútuo, produção restrita no Teste, cancelamento pelo evento 101101, código 172501 e série numérica; textos do admin, da ajuda, da Privacidade e dos e-mails do admin. SQL `20261125150000_nota_fiscal_nacional`.
 
 ## 11. WhatsApp e mensagem para as academias
 

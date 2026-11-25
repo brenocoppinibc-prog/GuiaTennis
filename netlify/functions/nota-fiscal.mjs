@@ -1,19 +1,32 @@
-// Nota fiscal automática (regra 331, 25/11/2026: "não, já quero fazer agora").
-// A cada compra paga, a NFS-e de São Paulo (NFS-e Paulistana) sai sozinha
-// pelo web service da Prefeitura, assinada com o e-CNPJ A1 do GuiaTennis,
-// como na Shopify e na Hotmart. Segue o "Manual de Utilização do Web Service"
-// da Prefeitura (versão 3.4.1, novembro de 2026) e os schemas do leiaute 1:
-// empresa do Simples Nacional ainda usa o leiaute 1 (erro 641 do manual: "Deverá
-// ser utilizado o leiaute 1"); o leiaute 2 (IBS e CBS) fica para quando a
-// Prefeitura mudar a data (erro 632).
+// Nota fiscal automática (regra 331, 25/11/2026: "não, já quero fazer agora";
+// regra 333: pela NFS-e Nacional). A cada compra paga, a NFS-e sai sozinha,
+// assinada com o e-CNPJ A1 do GuiaTennis, como na Shopify e na Hotmart.
+//
+// Regra 333 (25/11/2026): o primeiro "Testar com a Prefeitura" conectou, mas a
+// Prefeitura de São Paulo respondeu "Erro 1647: Consta na base de dados que o
+// contribuinte está cadastrado no CNC - Cadastro Nacional de Contribuintes.
+// Assim, deve emitir nota no ambiente nacional para fatos geradores a partir de
+// 17/11/2026". Empresa aberta em novembro de 2026: a nota sai pelo Sistema
+// Nacional NFS-e (Sefin Nacional, da Receita), não mais pelo web service da
+// Prefeitura. Segue o manual da API do contribuinte (v1.2) e os esquemas e as
+// regras do leiaute 1.01 (Anexo I, 09/02/2026; Anexo II, eventos):
+//   - a DPS (Declaração de Prestação de Serviço) em XML assinado (XMLDSig na
+//     infDPS, sem prefixo de namespace), compactada (GZip) em base64 dentro de
+//     um JSON, por POST /nfse com o certificado na conexão (TLS mútuo);
+//   - a resposta devolve a chave de acesso (50 números) e a NFS-e em XML;
+//   - o cancelamento (estorno) é o evento 101101, por POST /nfse/{chave}/eventos.
+// Simples Nacional ME/EPP apurando pelo SN, sem retenção: sem alíquota na DPS
+// (o sistema usa a do município, regra E0625) e o total aproximado dos
+// tributos em pTotTribSN; IBS e CBS só a partir de 2027 para o Simples.
 //
 //   POST { acao: "certificado", pfx, senha }  o admin envia o A1 (.pfx em
 //                                             base64 e a senha): confere o
 //                                             CNPJ e a validade e guarda a
 //                                             chave e o certificado no cofre.
-//   POST { acao: "testar", compra? }           o "Testar com a Prefeitura":
-//                                             TesteEnvioLoteRPS confere tudo e
-//                                             não emite nada.
+//   POST { acao: "testar" }                    o "Testar a emissão": uma nota de
+//                                             R$ 1 na produção restrita (o
+//                                             ambiente de testes oficial, sem
+//                                             valor fiscal).
 //   POST { acao: "emitir", compra }            "Emitir a nota" / "Emitir de
 //                                             novo" de uma compra paga.
 //   POST { acao: "processar" }                 a fila inteira (emitir e
@@ -22,9 +35,10 @@
 // pagamento (pagamento.mjs) e o relógio (nota-fiscal-relogio.mjs) chamam
 // processarFila() direto.
 //
-// Ambiente "teste" (o começo, nos dois bancos): a Prefeitura só confere
-// (TesteEnvioLoteRPS) e a nota fica "testada". "producao": EnvioRPS emite de
-// verdade, com o RPS reservado no banco (mandar de novo nunca vira outra nota).
+// Ambiente "teste" (o começo, nos dois bancos): a nota vai para a produção
+// restrita e fica "testada" (sem valor fiscal). "producao": emite de verdade,
+// com o número da DPS reservado no banco (mandar de novo nunca vira outra nota:
+// a Sefin recusa a DPS repetida).
 //
 // Variáveis: SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY (as mesmas do pagamento).
 // O certificado não fica em variável da Netlify (o limite das funções é 4 KB):
@@ -33,18 +47,20 @@
 import forge from "node-forge";
 import { createHash, sign as assinarRSA } from "node:crypto";
 import { request as pedidoHttps } from "node:https";
+import { gzipSync, gunzipSync } from "node:zlib";
 
 export const CNPJ_DO_GUIA = "70120796000100";
 export const ADMIN = "guiatennis1@gmail.com";
-export const WEB_SERVICE = "https://nfews.prefeitura.sp.gov.br/lotenfe.asmx";
-const NS = "http://www.prefeitura.sp.gov.br/nfe";
+export const SEFIN = {
+  producao: "https://sefin.nfse.gov.br/SefinNacional",
+  teste: "https://sefin.producaorestrita.nfse.gov.br/API/SefinNacional",
+};
+export const MUNICIPIO_SP = "3550308"; // código IBGE de São Paulo (cLocEmi e local da prestação)
+const VERSAO = "1.01";
+const VER_APLIC = "GuiaTennis-333";
+const NS = "http://www.sped.fazenda.gov.br/nfse";
 const DS = "http://www.w3.org/2000/09/xmldsig#";
 const C14N = "http://www.w3.org/TR/2001/REC-xml-c14n-20010315";
-const SOAP_ACAO = {
-  EnvioRPS: "envioRPS",
-  TesteEnvioLoteRPS: "testeenvio",
-  CancelamentoNFe: "cancelamentoNFe",
-};
 
 const env = (nome) => (globalThis.Netlify?.env?.get(nome) ?? process.env[nome] ?? "").trim();
 const json = (status, obj) => new Response(JSON.stringify(obj), { status, headers: { "Content-Type": "application/json", "Cache-Control": "no-store" } });
@@ -82,33 +98,6 @@ export function valorXml(v) {
   if (!Number.isFinite(n) || n < 0) throw new Error("valor inválido");
   return Number.isInteger(n) ? String(n) : n.toFixed(2);
 }
-const centavos = (v, tam) => String(Math.round(Number(v) * 100)).padStart(tam, "0");
-
-// ---------- As duas "assinaturas adicionais" do manual ----------
-// RPS, leiaute 1 (item 4.3.2, 86 posições): inscrição municipal (8), série (5,
-// espaços à direita), número do RPS (12), data AAAAMMDD, tributação (1),
-// situação (1), ISS retido S/N, valor dos serviços em centavos (15), deduções
-// (15), código do serviço (5), indicador do tomador (1: CPF, 2: CNPJ, 3: sem) e
-// CPF/CNPJ do tomador (14). Sem intermediário, nada depois.
-export function textoDaAssinaturaDoRPS(r) {
-  const doc = so(r.tomador);
-  const ind = doc.length === 11 ? "1" : doc.length === 14 ? "2" : "3";
-  const s = so(r.ccm).padStart(8, "0").slice(-8)
-    + String(r.serie).padEnd(5, " ").slice(0, 5)
-    + String(r.numero).padStart(12, "0")
-    + String(r.data).replace(/-/g, "")
-    + r.tributacao + r.status + (r.issRetido ? "S" : "N")
-    + centavos(r.valor, 15) + centavos(r.deducoes || 0, 15)
-    + so(r.codigo).padStart(5, "0")
-    + ind + (ind === "3" ? "".padStart(14, "0") : doc.padStart(14, "0"));
-  if (s.length !== 86) throw new Error(`assinatura do RPS com ${s.length} posições`);
-  return s;
-}
-// Cancelamento (item 4.3.10, 20 posições): inscrição municipal (8) e número da NF-e (12).
-export function textoDaAssinaturaDoCancelamento(ccm, numeroNFe) {
-  return so(ccm).padStart(8, "0").slice(-8) + String(numeroNFe).padStart(12, "0");
-}
-export const assinarTexto = (texto, chavePem) => assinarRSA("sha1", Buffer.from(texto, "ascii"), chavePem).toString("base64");
 
 // ---------- O certificado A1 ----------
 // O .pfx do e-CNPJ: a chave e o certificado do titular (o que tem a chave
@@ -147,118 +136,166 @@ export function lerCertificado(pfxBase64, senha) {
   };
 }
 
-// ---------- Assinatura XML (XMLDSig enveloped, RSA-SHA1, C14N) ----------
-// Item 3.2.3 do manual. A raiz declara só o namespace padrão (sem xsi e xsd):
-// assim a forma canônica do SignedInfo é exatamente o texto abaixo.
-export function assinarXml(raiz, corpo, chavePem, certB64) {
-  const semAssinatura = `<${raiz} xmlns="${NS}">${corpo}</${raiz}>`;
-  const digest = createHash("sha1").update(semAssinatura, "utf8").digest("base64");
+// ---------- Assinatura XML (XMLDSig enveloped, C14N, sem prefixo) ----------
+// A referência é o elemento com o Id (infDPS ou infPedReg). Na forma canônica
+// de um pedaço do documento, o namespace herdado da raiz aparece no próprio
+// elemento: o resumo é calculado sobre <infDPS xmlns="…" Id="…">…</infDPS>,
+// exatamente o que a Sefin recalcula. RSA-SHA1 como na NF-e; se a Sefin recusar
+// a assinatura (E0714), a emissão tenta de novo com RSA-SHA256.
+const ALGORITMOS = {
+  sha1: { assinatura: `${DS}rsa-sha1`, resumo: `${DS}sha1` },
+  sha256: { assinatura: "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256", resumo: "http://www.w3.org/2001/04/xmlenc#sha256" },
+};
+export function assinarXml(raiz, atributosDaRaiz, inf, id, corpo, chavePem, certB64, alg = "sha1") {
+  const a = ALGORITMOS[alg] || ALGORITMOS.sha1;
+  const digest = createHash(alg).update(`<${inf} xmlns="${NS}" Id="${id}">${corpo}</${inf}>`, "utf8").digest("base64");
   const signedInfo = `<CanonicalizationMethod Algorithm="${C14N}"></CanonicalizationMethod>`
-    + `<SignatureMethod Algorithm="${DS}rsa-sha1"></SignatureMethod>`
-    + `<Reference URI=""><Transforms><Transform Algorithm="${DS}enveloped-signature"></Transform>`
+    + `<SignatureMethod Algorithm="${a.assinatura}"></SignatureMethod>`
+    + `<Reference URI="#${id}"><Transforms><Transform Algorithm="${DS}enveloped-signature"></Transform>`
     + `<Transform Algorithm="${C14N}"></Transform></Transforms>`
-    + `<DigestMethod Algorithm="${DS}sha1"></DigestMethod><DigestValue>${digest}</DigestValue></Reference>`;
-  const valor = assinarRSA("sha1", Buffer.from(`<SignedInfo xmlns="${DS}">${signedInfo}</SignedInfo>`, "utf8"), chavePem).toString("base64");
-  return `<${raiz} xmlns="${NS}">${corpo}<Signature xmlns="${DS}"><SignedInfo>${signedInfo}</SignedInfo>`
-    + `<SignatureValue>${valor}</SignatureValue><KeyInfo><X509Data><X509Certificate>${certB64}</X509Certificate></X509Data></KeyInfo></Signature></${raiz}>`;
+    + `<DigestMethod Algorithm="${a.resumo}"></DigestMethod><DigestValue>${digest}</DigestValue></Reference>`;
+  const valor = assinarRSA(alg, Buffer.from(`<SignedInfo xmlns="${DS}">${signedInfo}</SignedInfo>`, "utf8"), chavePem).toString("base64");
+  return `<?xml version="1.0" encoding="UTF-8"?><${raiz} xmlns="${NS}" ${atributosDaRaiz}><${inf} Id="${id}">${corpo}</${inf}>`
+    + `<Signature xmlns="${DS}"><SignedInfo>${signedInfo}</SignedInfo><SignatureValue>${valor}</SignatureValue>`
+    + `<KeyInfo><X509Data><X509Certificate>${certB64}</X509Certificate></X509Data></KeyInfo></Signature></${raiz}>`;
 }
 
-// ---------- O RPS (leiaute 1) ----------
+// ---------- A DPS (leiaute 1.01) ----------
 const NOMES_DOS_PLANOS = { basico: "Básico", completo: "Completo", premium: "Premium" };
 export function discriminacao(d) {
   const quem = d.academia ? ` da academia ${d.academia}` : "";
   const detalhe = d.tipo === "plano"
     ? `Plano ${NOMES_DOS_PLANOS[d.plano] || d.plano || ""} ${d.periodo === "anual" ? "anual" : "mensal"}${quem} no GuiaTennis.`
     : `Créditos para anúncios e promoções${quem} no GuiaTennis.`;
-  return `${d.descricao} ${detalhe}`.replace(/\s+/g, " ").trim().slice(0, 2000);
+  return `${d.descricao} ${detalhe}`.replace(/\s+/g, " ").trim().slice(0, 1000);
 }
-export function rpsXml(d, chavePem) {
+// Data e hora de Brasília no formato da DPS (AAAA-MM-DDThh:mm:ss-03:00). Um
+// minuto para trás: a DPS não pode chegar "do futuro" (E0008).
+export function agoraEmBrasilia(ms = Date.now()) {
+  return new Date(ms - 60e3 - 3 * 3600e3).toISOString().slice(0, 19) + "-03:00";
+}
+// Id da DPS (45): "DPS" + município (7) + tipo de inscrição (2 = CNPJ) + CNPJ
+// (14) + série (5) + número (15).
+export function idDaDps(serie, numero) {
+  return "DPS" + MUNICIPIO_SP + "2" + CNPJ_DO_GUIA + String(Number(so(serie)) || 1).padStart(5, "0") + String(numero).padStart(15, "0");
+}
+// O total aproximado dos tributos do Simples (Lei 12.741): a alíquota do ISS é
+// 33,5% da do Simples na primeira faixa do Anexo III (2,01% de 6%).
+export const percentualDoSimples = (aliquotaIss) => valorXml(Math.min(99, Number(aliquotaIss || 0.0201) * 100 / 0.335));
+export function dpsXml(d, cert, { comIM = true, alg = "sha1", numero, dhEmi = agoraEmBrasilia() } = {}) {
+  const nDps = String(numero ?? d.numero_rps);
+  if (!/^[1-9][0-9]{0,14}$/.test(nDps)) throw new Error("número da DPS inválido");
+  const serie = String(Number(so(d.serie)) || 1);
+  if (Number(serie) > 49999) throw new Error("A série da DPS vai de 1 a 49999 (emissão por aplicativo próprio).");
+  const id = idDaDps(serie, nDps);
   const doc = so(d.tomador && d.tomador.documento);
-  const r = {
-    ccm: d.ccm, serie: d.serie, numero: d.numero_rps, data: d.data, tributacao: "T", status: "N", issRetido: false,
-    valor: d.valor, deducoes: 0, codigo: d.codigo_servico, tomador: doc,
-  };
-  const tomador = doc.length === 11 ? `<CPFCNPJTomador><CPF>${doc}</CPF></CPFCNPJTomador>`
-    : doc.length === 14 ? `<CPFCNPJTomador><CNPJ>${doc}</CNPJ></CPFCNPJTomador>` : "";
-  return `<RPS xmlns="">`
-    + el("Assinatura", assinarTexto(textoDaAssinaturaDoRPS(r), chavePem))
-    + `<ChaveRPS>${el("InscricaoPrestador", String(Number(so(d.ccm))))}${el("SerieRPS", textoXml(d.serie, 5))}${el("NumeroRPS", String(d.numero_rps))}</ChaveRPS>`
-    + el("TipoRPS", "RPS") + el("DataEmissao", d.data) + el("StatusRPS", "N") + el("TributacaoRPS", "T")
-    + el("ValorServicos", valorXml(d.valor)) + el("ValorDeducoes", "0")
-    + el("CodigoServico", String(Number(so(d.codigo_servico))))
-    + el("AliquotaServicos", String(Number(d.aliquota)))
-    + el("ISSRetido", "false")
-    + tomador
-    + el("RazaoSocialTomador", tomador ? textoXml(d.tomador.nome, 75) : "")
-    + el("EmailTomador", tomador && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(d.tomador.email || "")) && String(d.tomador.email).length <= 75 ? textoXml(d.tomador.email, 75) : "")
-    + el("Discriminacao", textoXml(discriminacao(d)))
-    + el("RetencaoPisCofins", "0")
-    + `</RPS>`;
-}
-const cabecalho = (extra = "") => `<Cabecalho xmlns="" Versao="1"><CPFCNPJRemetente><CNPJ>${CNPJ_DO_GUIA}</CNPJ></CPFCNPJRemetente>${extra}</Cabecalho>`;
-export function pedidoEnvioRPS(d, cert) {
-  return assinarXml("PedidoEnvioRPS", cabecalho() + rpsXml(d, cert.chavePem), cert.chavePem, cert.certB64);
-}
-export function pedidoTesteLote(d, cert) {
-  const extra = `<transacao>true</transacao><dtInicio>${d.data}</dtInicio><dtFim>${d.data}</dtFim><QtdRPS>1</QtdRPS>`
-    + `<ValorTotalServicos>${valorXml(d.valor)}</ValorTotalServicos><ValorTotalDeducoes>0</ValorTotalDeducoes>`;
-  return assinarXml("PedidoEnvioLoteRPS", cabecalho(extra) + rpsXml(d, cert.chavePem), cert.chavePem, cert.certB64);
-}
-export function pedidoCancelamento(ccm, numeroNFe, cert) {
-  const detalhe = `<Detalhe xmlns=""><ChaveNFe><InscricaoPrestador>${Number(so(ccm))}</InscricaoPrestador><NumeroNFe>${numeroNFe}</NumeroNFe></ChaveNFe>`
-    + `<AssinaturaCancelamento>${assinarTexto(textoDaAssinaturaDoCancelamento(ccm, numeroNFe), cert.chavePem)}</AssinaturaCancelamento></Detalhe>`;
-  return assinarXml("PedidoCancelamentoNFe", cabecalho("<transacao>true</transacao>") + detalhe, cert.chavePem, cert.certB64);
+  const email = String((d.tomador && d.tomador.email) || "").trim();
+  const nomeDoTomador = textoXml((d.tomador && d.tomador.nome) || d.academia || "", 300);
+  const toma = (doc.length === 11 || doc.length === 14) && nomeDoTomador
+    ? `<toma>${doc.length === 14 ? `<CNPJ>${doc}</CNPJ>` : `<CPF>${doc}</CPF>`}<xNome>${nomeDoTomador}</xNome>`
+      + (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email.length <= 80 ? `<email>${textoXml(email, 80)}</email>` : "") + `</toma>`
+    : "";
+  const im = comIM && so(d.ccm) ? `<IM>${so(d.ccm)}</IM>` : "";
+  const corpo = el("tpAmb", d.ambiente === "producao" ? "1" : "2") + el("dhEmi", dhEmi) + el("verAplic", VER_APLIC)
+    + el("serie", serie) + el("nDPS", nDps) + el("dCompet", d.data) + el("tpEmit", "1") + el("cLocEmi", MUNICIPIO_SP)
+    + `<prest><CNPJ>${CNPJ_DO_GUIA}</CNPJ>${im}<regTrib><opSimpNac>3</opSimpNac><regApTribSN>1</regApTribSN><regEspTrib>0</regEspTrib></regTrib></prest>`
+    + toma
+    + `<serv><locPrest><cLocPrestacao>${MUNICIPIO_SP}</cLocPrestacao></locPrest>`
+    + `<cServ><cTribNac>${so(d.codigo_servico).padStart(6, "0").slice(-6)}</cTribNac><xDescServ>${textoXml(discriminacao(d), 1000)}</xDescServ></cServ></serv>`
+    + `<valores><vServPrest><vServ>${valorXml(d.valor)}</vServ></vServPrest>`
+    + `<trib><tribMun><tribISSQN>1</tribISSQN><tpRetISSQN>1</tpRetISSQN></tribMun>`
+    + `<totTrib><pTotTribSN>${percentualDoSimples(d.aliquota)}</pTotTribSN></totTrib></trib></valores>`;
+  return { id, xml: assinarXml("DPS", `versao="${VERSAO}"`, "infDPS", id, corpo, cert.chavePem, cert.certB64, alg) };
 }
 
-// ---------- SOAP (o WSDL da Prefeitura: SOAP 1.1, "<Método>Request") ----------
-export function envelope(metodo, xml) {
-  const mensagem = xml.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  return `<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">`
-    + `<soap:Body><${metodo}Request xmlns="${NS}"><VersaoSchema>1</VersaoSchema><MensagemXML>${mensagem}</MensagemXML></${metodo}Request></soap:Body></soap:Envelope>`;
+// ---------- O cancelamento (evento 101101) ----------
+export function pedidoDeCancelamento(chave, ambiente, cert, { alg = "sha1", dhEvento = agoraEmBrasilia() } = {}) {
+  if (!/^[0-9]{50}$/.test(String(chave))) throw new Error("chave de acesso inválida");
+  const id = `PRE${chave}101101`;
+  const corpo = el("tpAmb", ambiente === "producao" ? "1" : "2") + el("verAplic", VER_APLIC) + el("dhEvento", dhEvento)
+    + `<CNPJAutor>${CNPJ_DO_GUIA}</CNPJAutor><chNFSe>${chave}</chNFSe>`
+    + `<e101101><xDesc>Cancelamento de NFS-e</xDesc><cMotivo>9</cMotivo><xMotivo>Compra estornada: o valor foi devolvido ao cliente.</xMotivo></e101101>`;
+  return assinarXml("pedRegEvento", `versao="${VERSAO}"`, "infPedReg", id, corpo, cert.chavePem, cert.certB64, alg);
 }
-const desescapar = (t) => String(t || "")
-  .replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, "\"").replace(/&apos;/g, "'")
-  .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16)))
-  .replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(Number(d))).replace(/&amp;/g, "&");
+
+// ---------- A mensagem (JSON com o XML compactado) e a resposta ----------
+export const compactar = (xml) => gzipSync(Buffer.from(xml, "utf8")).toString("base64");
+export const descompactar = (b64) => gunzipSync(Buffer.from(String(b64 || ""), "base64")).toString("utf8");
+const campo = (o, nome) => {
+  if (!o || typeof o !== "object") return undefined;
+  const k = Object.keys(o).find(x => x.toLowerCase() === nome.toLowerCase());
+  return k ? o[k] : undefined;
+};
 const tag = (xml, nome) => { const m = String(xml).match(new RegExp(`<${nome}[^>]*>([\\s\\S]*?)</${nome}>`)); return m ? m[1].trim() : ""; };
-// O retorno: Sucesso, os erros e alertas (código e descrição) e a chave da NF-e.
-export function lerRetorno(soap) {
-  const falha = tag(soap, "faultstring");
-  if (falha) return { sucesso: false, erros: [{ codigo: "SOAP", descricao: desescapar(falha) }], alertas: [] };
-  const xml = desescapar(tag(soap, "RetornoXML")) || String(soap);
-  const lista = (nome) => [...xml.matchAll(new RegExp(`<${nome}[^>]*>([\\s\\S]*?)</${nome}>`, "g"))]
-    .map(m => ({ codigo: tag(m[1], "Codigo"), descricao: tag(m[1], "Descricao") }));
-  return {
-    sucesso: /^true$/i.test(tag(xml, "Sucesso")),
-    erros: lista("Erro"),
-    alertas: lista("Alerta"),
-    numero: tag(xml, "NumeroNFe") ? Number(tag(xml, "NumeroNFe")) : null,
-    codigo: tag(xml, "CodigoVerificacao") || null,
-  };
+const mensagens = (v) => (Array.isArray(v) ? v : v ? [v] : []).map(e => ({
+  codigo: String(campo(e, "codigo") ?? campo(e, "cod") ?? "").trim(),
+  descricao: [campo(e, "descricao") ?? campo(e, "mensagem") ?? "", campo(e, "complemento") ?? ""].map(t => String(t || "").trim()).filter(Boolean).join(" "),
+})).filter(e => e.codigo || e.descricao);
+// A resposta da Sefin: 201 com a chave de acesso e a NFS-e (ou o evento); 4xx
+// com a lista de erros (código e descrição).
+export function lerResposta({ status, corpo }) {
+  let j = corpo;
+  if (typeof j === "string") { try { j = JSON.parse(j); } catch { j = { erros: [{ codigo: `HTTP ${status}`, descricao: String(corpo).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 200) }] }; } }
+  const erros = mensagens(campo(j, "erros") ?? campo(j, "erro"));
+  const alertas = mensagens(campo(j, "alertas"));
+  const chave = String(campo(j, "chaveAcesso") || "");
+  let numero = null;
+  const nfse = campo(j, "nfseXmlGZipB64");
+  if (nfse) { try { numero = Number(tag(descompactar(nfse), "nNFSe")) || null; } catch { /* sem o número, fica a chave */ } }
+  const sucesso = status >= 200 && status < 300 && !erros.length;
+  if (!sucesso && !erros.length) erros.push({ codigo: `HTTP ${status}`, descricao: "A Sefin Nacional recusou sem dizer o motivo." });
+  return { sucesso, erros, alertas, chave: /^[0-9]{50}$/.test(chave) ? chave : null, numero, evento: !!campo(j, "eventoXmlGZipB64") };
 }
 export const resumoDoRetorno = (r) => [...r.erros.map(e => `Erro ${e.codigo}: ${e.descricao}`), ...r.alertas.map(a => `Alerta ${a.codigo}: ${a.descricao}`)].join(" · ");
 
 // A chamada com o certificado (TLS com autenticação mútua). Os testes trocam
 // o transporte por um falso.
-let transporte = (metodo, corpo, cert) => new Promise((ok, falhou) => {
-  const u = new URL(WEB_SERVICE);
+let transporte = (url, corpo, cert) => new Promise((ok, falhou) => {
+  const u = new URL(url);
   const req = pedidoHttps({
     hostname: u.hostname, path: u.pathname, method: "POST", key: cert.chavePem, cert: cert.certPem, minVersion: "TLSv1.2", timeout: 25000,
-    headers: { "Content-Type": "text/xml; charset=utf-8", SOAPAction: `"${NS}/ws/${SOAP_ACAO[metodo]}"`, "Content-Length": Buffer.byteLength(corpo) },
+    headers: { "Content-Type": "application/json", Accept: "application/json", "Content-Length": Buffer.byteLength(corpo) },
   }, (res) => {
     let dados = "";
     res.setEncoding("utf8");
     res.on("data", (p) => { dados += p; });
-    res.on("end", () => (res.statusCode >= 500 && !/faultstring/.test(dados) ? falhou(new Error(`Prefeitura: HTTP ${res.statusCode}`)) : ok(dados)));
+    res.on("end", () => (res.statusCode >= 500 && !/erro/i.test(dados) ? falhou(new Error(`Sefin Nacional: HTTP ${res.statusCode}`)) : ok({ status: res.statusCode, corpo: dados })));
   });
-  req.on("timeout", () => req.destroy(new Error("A Prefeitura não respondeu a tempo.")));
+  req.on("timeout", () => req.destroy(new Error("A Sefin Nacional não respondeu a tempo.")));
   req.on("error", falhou);
   req.end(corpo);
 });
 export const usarTransporte = (fn) => { transporte = fn; };
-export async function chamarPrefeitura(metodo, xml, cert) {
-  return lerRetorno(await transporte(metodo, envelope(metodo, xml), cert));
+const temErro = (r, codigo) => r.erros.some(e => e.codigo.toUpperCase() === codigo);
+// Manda a DPS. A inscrição municipal vai quando o CNC tem o cadastro
+// complementar de São Paulo; se a Sefin disser que não tem (E0120), ou o
+// contrário (E0116), manda de novo do outro jeito. Assinatura recusada (E0714):
+// de novo com RSA-SHA256.
+export async function mandarDps(d, cert, opcoes = {}) {
+  const url = `${SEFIN[d.ambiente === "producao" ? "producao" : "teste"]}/nfse`;
+  let comIM = true, alg = "sha1", r;
+  for (let tentativa = 0; tentativa < 3; tentativa += 1) {
+    const { xml } = dpsXml(d, cert, { ...opcoes, comIM, alg });
+    r = lerResposta(await transporte(url, JSON.stringify({ dpsXmlGZipB64: compactar(xml) }), cert));
+    if (r.sucesso) break;
+    if (comIM && temErro(r, "E0120")) { comIM = false; continue; }
+    if (!comIM && temErro(r, "E0116")) { comIM = true; continue; }
+    if (alg === "sha1" && temErro(r, "E0714")) { alg = "sha256"; continue; }
+    break;
+  }
+  return r;
 }
+export async function mandarCancelamento(chave, ambiente, cert) {
+  const url = `${SEFIN[ambiente === "producao" ? "producao" : "teste"]}/nfse/${chave}/eventos`;
+  let r = lerResposta(await transporte(url, JSON.stringify({ pedidoRegistroEventoXmlGZipB64: compactar(pedidoDeCancelamento(chave, ambiente, cert)) }), cert));
+  if (!r.sucesso && temErro(r, "E0714")) {
+    r = lerResposta(await transporte(url, JSON.stringify({ pedidoRegistroEventoXmlGZipB64: compactar(pedidoDeCancelamento(chave, ambiente, cert, { alg: "sha256" })) }), cert));
+  }
+  return r;
+}
+// No teste, um número de DPS que nunca se repete (os segundos desde 1970): a
+// produção restrita recusa a DPS repetida e o teste não gasta a numeração.
+const numeroDeTeste = () => String(Math.floor(Date.now() / 1000));
 
 // ---------- A fila ----------
 async function certificadoGuardado() {
@@ -277,14 +314,15 @@ export async function emitir(compra) {
   }
   try {
     const teste = d.ambiente !== "producao";
-    const r = teste ? await chamarPrefeitura("TesteEnvioLoteRPS", pedidoTesteLote(d, cert), cert)
-      : await chamarPrefeitura("EnvioRPS", pedidoEnvioRPS(d, cert), cert);
-    const situacao = !r.sucesso ? "erro" : teste ? "testada" : (r.numero ? "emitida" : "erro");
-    const mensagem = resumoDoRetorno(r) || (teste ? "Conferida pela Prefeitura (teste): sem erros. Nada foi emitido." : r.numero ? "" : "A Prefeitura não devolveu o número da nota.");
-    await rpc("registrar_nota", { p_compra: compra, p_situacao: situacao, p_numero_nfe: teste ? null : r.numero, p_codigo: teste ? null : r.codigo, p_mensagem: mensagem });
+    const r = await mandarDps(d, cert, teste ? { numero: numeroDeTeste() } : {});
+    const situacao = !r.sucesso ? "erro" : teste ? "testada" : (r.chave ? "emitida" : "erro");
+    const mensagem = !r.sucesso ? resumoDoRetorno(r)
+      : teste ? `Emitida na produção restrita (teste, sem valor fiscal)${r.numero ? `: nota n.º ${r.numero}` : ""}.${r.alertas.length ? " " + resumoDoRetorno(r) : ""}`
+      : r.chave ? resumoDoRetorno(r) : "A Sefin Nacional não devolveu a chave de acesso da nota.";
+    await rpc("registrar_nota", { p_compra: compra, p_situacao: situacao, p_numero_nfe: teste ? null : r.numero, p_codigo: teste ? null : r.chave, p_mensagem: mensagem });
     return { compra, situacao, mensagem, numero: teste ? null : r.numero };
   } catch (e) {
-    const mensagem = `Não consegui falar com a Prefeitura: ${String((e && e.message) || e).slice(0, 200)}`;
+    const mensagem = `Não consegui falar com a Sefin Nacional: ${String((e && e.message) || e).slice(0, 200)}`;
     await rpc("registrar_nota", { p_compra: compra, p_situacao: "erro", p_numero_nfe: null, p_codigo: null, p_mensagem: mensagem });
     return { compra, situacao: "erro", mensagem };
   }
@@ -295,9 +333,9 @@ export async function cancelar(compra) {
   const cert = await certificadoGuardado();
   if (!cert) return { compra, situacao: "erro", mensagem: "Falta o certificado A1." };
   try {
-    const r = await chamarPrefeitura("CancelamentoNFe", pedidoCancelamento(d.ccm, d.numero_nfe, cert), cert);
+    const r = await mandarCancelamento(d.chave, d.ambiente, cert);
     if (r.sucesso) {
-      await rpc("registrar_nota", { p_compra: compra, p_situacao: "cancelada", p_numero_nfe: null, p_codigo: null, p_mensagem: "Cancelada na Prefeitura por causa do estorno." });
+      await rpc("registrar_nota", { p_compra: compra, p_situacao: "cancelada", p_numero_nfe: null, p_codigo: null, p_mensagem: "Cancelada na NFS-e Nacional devido ao estorno." });
       return { compra, situacao: "cancelada" };
     }
     return { compra, situacao: "cancelar", mensagem: resumoDoRetorno(r) };
@@ -313,24 +351,26 @@ export async function processarFila() {
   return feitos;
 }
 
-// O "Testar com a Prefeitura" do admin: uma compra (a escolhida ou um exemplo
-// de R$ 1) pelo TesteEnvioLoteRPS, sem emitir nada.
+// O "Testar a emissão" do admin: uma nota de R$ 1 na produção restrita (o
+// ambiente de testes oficial; não tem valor fiscal nem gasta a numeração).
 async function testar() {
   const cert = await certificadoGuardado();
   if (!cert) return json(409, { erro: "Envie o certificado A1 primeiro." });
   const cfg = (await rpc("nota_configuracao_do_servico")) || {};
   const d = {
-    ccm: cfg.ccm, serie: cfg.serie, numero_rps: cfg.proximo_rps || 1, codigo_servico: cfg.codigo_servico, aliquota: cfg.aliquota,
-    descricao: cfg.descricao, valor: 1, data: new Date(Date.now() - 3 * 3600e3).toISOString().slice(0, 10), tipo: "creditos",
+    ambiente: "teste", ccm: cfg.ccm, serie: cfg.serie, codigo_servico: cfg.codigo_servico, aliquota: cfg.aliquota,
+    descricao: cfg.descricao, valor: 1, data: agoraEmBrasilia().slice(0, 10), tipo: "creditos",
     academia: "", tomador: { documento: "", nome: "", email: "" },
   };
   try {
-    const r = await chamarPrefeitura("TesteEnvioLoteRPS", pedidoTesteLote(d, cert), cert);
-    const resultado = r.sucesso ? `Tudo certo: a Prefeitura aceitou a nota de teste.${r.alertas.length ? " " + resumoDoRetorno(r) : ""}` : resumoDoRetorno(r) || "A Prefeitura recusou, sem dizer o motivo.";
+    const r = await mandarDps(d, cert, { numero: numeroDeTeste() });
+    const resultado = r.sucesso
+      ? `Tudo certo: a NFS-e Nacional aceitou a nota de teste${r.numero ? ` (n.º ${r.numero})` : ""} na produção restrita, sem valor fiscal.${r.alertas.length ? " " + resumoDoRetorno(r) : ""}`
+      : resumoDoRetorno(r) || "A Sefin Nacional recusou, sem dizer o motivo.";
     await rpc("registrar_teste_da_nota", { p_resultado: resultado });
     return json(200, { ok: r.sucesso, resultado, erros: r.erros, alertas: r.alertas });
   } catch (e) {
-    const resultado = `Não consegui falar com a Prefeitura: ${String((e && e.message) || e).slice(0, 200)}`;
+    const resultado = `Não consegui falar com a Sefin Nacional: ${String((e && e.message) || e).slice(0, 200)}`;
     await rpc("registrar_teste_da_nota", { p_resultado: resultado });
     return json(200, { ok: false, resultado });
   }

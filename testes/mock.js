@@ -843,7 +843,8 @@
       if (a.p_oculta !== null && a.p_oculta !== undefined) y.oculta = a.p_oculta;
       return { data: { ...y }, error:null };
     }
-    function linkDaNotaMock(n) { return n && n.situacao === "emitida" && n.numero_nfe ? `https://nfe.prefeitura.sp.gov.br/contribuinte/notaprint.aspx?ccm=05930642&nf=${n.numero_nfe}&cod=${n.codigo_verificacao}` : null; }
+    // Regra 333: a nota da NFS-e Nacional tem a chave de acesso (50 números) e a consulta pública.
+    function linkDaNotaMock(n) { return !n || n.situacao !== "emitida" ? null : /^[0-9]{50}$/.test(n.codigo_verificacao || "") ? `https://www.nfse.gov.br/ConsultaPublica/?tpc=1&chave=${n.codigo_verificacao}` : n.numero_nfe ? `https://nfe.prefeitura.sp.gov.br/contribuinte/notaprint.aspx?ccm=05930642&nf=${n.numero_nfe}&cod=${n.codigo_verificacao}` : null; }
     if (nome === "marcar_nota_emitida") {
       if (!souAdmin()) return erro("Só o admin marca a nota.", "42501");
       const k = (window.__compras || []).find(y => y.id === a.p_compra && y.situacao === "paga");
@@ -967,7 +968,7 @@
       if (window.__semNotaAutomatica) return erro(`Could not find the function public.${nome}`, "PGRST202");
       if (!souAdmin()) return erro("Só o GuiaTennis.", "42501");
       window.__notas = window.__notas || {};
-      const cfg = window.__notaCfg = { ligada: false, ambiente: "teste", ccm: "05930642", codigo_servico: "02917", aliquota: 0.0201, serie: "GT", proximo_rps: 1,
+      const cfg = window.__notaCfg = { ligada: false, ambiente: "teste", ccm: "05930642", codigo_servico: "172501", aliquota: 0.0201, serie: "1", proximo_rps: 1,
         descricao: "Prestação de serviços de disponibilização de espaço publicitário, veiculação de anúncios e assinatura de planos na plataforma GuiaTennis.",
         certificado_cnpj: null, certificado_titular: null, certificado_valido_ate: null, ultimo_teste_em: null, ultimo_teste: null, ...(window.__notaCfg || {}) };
       const comContagem = () => { const n = Object.values(window.__notas); return { ...cfg, pendentes: n.filter(x => ["pendente", "processando", "cancelar"].includes(x.situacao)).length, com_erro: n.filter(x => x.situacao === "erro").length }; };
@@ -975,9 +976,11 @@
       if (nome === "notas_fiscais_do_admin") return { data: Object.values(window.__notas).map(n => ({ ...n, link: linkDaNotaMock(n) })), error:null };
       if (nome === "salvar_nota_configuracao") {
         if (!["teste", "producao"].includes(a.p_ambiente)) return erro("Escolha Teste ou Produção.", "22023");
-        if (!/^[0-9]{4,5}$/.test(String(a.p_codigo || "").replace(/\D/g, ""))) return erro("O código do serviço tem 4 ou 5 números (ex.: 02917).", "22023");
+        if (!/^[0-9]{6}$/.test(String(a.p_codigo || "").replace(/\D/g, ""))) return erro("O código de tributação nacional tem 6 números (ex.: 172501, o item 17.25).", "22023");
+        const serie = Number(String(a.p_serie || "").replace(/\D/g, ""));
+        if (!(serie >= 1 && serie <= 49999)) return erro("A série da DPS é um número de 1 a 49999.", "22023");
         if (!(a.p_aliquota >= 0 && a.p_aliquota <= 0.05)) return erro("A alíquota do ISS vai de 0% a 5%.", "22023");
-        Object.assign(cfg, { ligada: !!a.p_ligada, ambiente: a.p_ambiente, codigo_servico: String(a.p_codigo).replace(/\D/g, "").padStart(5, "0"), aliquota: Math.round(a.p_aliquota * 10000) / 10000, serie: String(a.p_serie || "").toUpperCase(), descricao: a.p_descricao });
+        Object.assign(cfg, { ligada: !!a.p_ligada, ambiente: a.p_ambiente, codigo_servico: String(a.p_codigo).replace(/\D/g, ""), aliquota: Math.round(a.p_aliquota * 10000) / 10000, serie: String(serie), descricao: a.p_descricao });
         return { data: comContagem(), error:null };
       }
       const k = (window.__compras || []).find(y => y.id === a.p_compra);

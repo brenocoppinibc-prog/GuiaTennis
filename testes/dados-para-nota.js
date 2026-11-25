@@ -118,7 +118,7 @@ const desligada = async (page) => page.route('**/.netlify/functions/pagamento', 
   await page.click('.adm-nav [data-adm-aba="compras"]');
   await page.waitForTimeout(500);
   let adm = (await texto(page, '#painel-admin')).replace(/\s+/g, ' ');
-  ok(await page.evaluate(() => location.pathname === '/admin/compras') && adm.includes('Compras e notas') && adm.includes('Notas para emitir') && adm.includes('Prefeitura de São Paulo'), 'o menu tem "Compras e notas" (/admin/compras)');
+  ok(await page.evaluate(() => location.pathname === '/admin/compras') && adm.includes('Compras e notas') && adm.includes('Notas para emitir') && adm.includes('Emissor Nacional da NFS-e'), 'o menu tem "Compras e notas" (/admin/compras)');
   ok(adm.includes('CNPJ 11.222.333/0001-81') && adm.includes('Só Aula Tennis Ltda') && adm.includes('fin@soaula.com.br') && adm.includes('R$ 100,00') && adm.includes('CPF 529.982.247-25'),
     'as notas para emitir, com o CNPJ ou CPF, a razão social, o e-mail e o valor, também a de mais de 30 dias');
   ok(/Notas para emitir.*Teste.*Compras de créditos e planos/i.test(adm) && (await page.$$('[data-nota-emitida]')).length === 3, 'a compra de teste também aparece, com "Teste" (para testar na prévia)');

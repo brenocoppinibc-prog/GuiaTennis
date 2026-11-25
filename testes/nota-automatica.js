@@ -1,6 +1,6 @@
 // Regra 331 (25/11/2026: "não, já quero fazer agora"): a nota fiscal
-// automática pela Prefeitura de São Paulo. No admin (Compras e notas), o
-// cartão "Nota fiscal automática": o certificado A1, Testar com a Prefeitura,
+// automática pela NFS-e Nacional (regra 333). No admin (Compras e notas), o
+// cartão "Nota fiscal automática": o certificado A1, Testar a emissão,
 // Processar a fila, Configurar (ligada, Teste ou Produção, código, alíquota,
 // série, descrição) e a situação da nota em cada compra. Em Pagamentos, a
 // academia tem "Ver a nota fiscal". Banco sem o SQL novo: tudo segue à mão.
@@ -16,7 +16,7 @@ const EMITIDA = '00000000-0000-4000-8000-0000000000a3';
     admin: true, q: 'admin/compras',
     notaFiscal: (corpo, cab) => {
       pedidos.push({ corpo, auth: cab.authorization || '' });
-      if (corpo.acao === 'testar') return { ok: true, resultado: 'Tudo certo: a Prefeitura aceitou a nota de teste.' };
+      if (corpo.acao === 'testar') return { ok: true, resultado: 'Tudo certo: a NFS-e Nacional aceitou a nota de teste na produção restrita, sem valor fiscal.' };
       if (corpo.acao === 'emitir') return { compra: corpo.compra, situacao: 'emitida', numero: 99 };
       if (corpo.acao === 'processar') return { feitos: [{ situacao: 'emitida' }, { situacao: 'erro' }] };
       if (corpo.acao === 'certificado') return corpo.senha === 'certa' ? { ok: true, titular: 'BRENO COPPINI MARINHO LTDA', valido_ate: '2027-11-20T00:00:00Z' } : { __status: 400, erro: 'A senha do certificado não confere.' };
@@ -30,27 +30,27 @@ const EMITIDA = '00000000-0000-4000-8000-0000000000a3';
     window.__notaCfg = { certificado_titular: 'BRENO COPPINI MARINHO LTDA', certificado_valido_ate: '2027-11-20T00:00:00Z', certificado_cnpj: '70120796000100' };
     window.__notas = {
       [b]: { compra_id: b, situacao: 'erro', mensagem: 'Erro 1057: Código de serviço inválido', tentativas: 3, atualizada_em: agora },
-      [c]: { compra_id: c, situacao: 'emitida', numero_nfe: 17943, codigo_verificacao: 'PH5GL6XU', atualizada_em: agora },
+      [c]: { compra_id: c, situacao: 'emitida', numero_nfe: 17943, codigo_verificacao: '35503082707012079600010000000000000000012345678901', atualizada_em: agora },
     };
     state.admCompras = undefined; carregarComprasDoAdmin();
   }, [PAGA, COM_ERRO, EMITIDA]);
   await page.waitForTimeout(500);
   let cartao = await texto(page, '#adm-nota-auto');
   ok(cartao.includes('Nota fiscal automática') && cartao.includes('Certificado A1: BRENO COPPINI MARINHO LTDA · válido até') && cartao.includes('Emissão: desligada. Emita as notas à mão (abaixo).')
-    && cartao.includes('Código 02917 · ISS 2,01% · série GT') && cartao.includes('com erro: 1'),
+    && cartao.includes('NFS-e Nacional · serviço 17.25.01 · ISS 2,01% · série 1 · próxima DPS 1') && cartao.includes('com erro: 1'),
     'o cartão: o certificado, a emissão, o código, o ISS e a fila — ' + cartao.slice(0, 220));
-  ok(['Trocar o certificado A1', 'Testar com a Prefeitura', 'Processar a fila', 'Configurar'].every(t => cartao.includes(t)), 'com os quatro botões');
+  ok(['Trocar o certificado A1', 'Testar a emissão', 'Processar a fila', 'Configurar'].every(t => cartao.includes(t)), 'com os quatro botões');
   const lista = await texto(page, '#adm-nota-auto + .adm-bloco');
-  ok(lista.includes('portal da NFS-e da Prefeitura de São Paulo') && lista.includes('nota com erro: Erro 1057: Código de serviço inválido') && lista.includes('Emitir de novo') && lista.includes('Emitir a nota') && lista.includes('Nota emitida à mão'),
+  ok(lista.includes('Emissor Nacional da NFS-e') && lista.includes('nota com erro: Erro 1057: Código de serviço inválido') && lista.includes('Emitir de novo') && lista.includes('Emitir a nota') && lista.includes('Nota emitida à mão'),
     'Notas para emitir: a situação de cada nota, "Emitir de novo" no erro, "Emitir a nota" na que não tem e o "Nota emitida à mão" — ' + lista.slice(0, 260));
-  const link = await page.evaluate(() => [...document.querySelectorAll('a')].find(a => /notaprint\.aspx/.test(a.href))?.href || '');
-  ok(link === 'https://nfe.prefeitura.sp.gov.br/contribuinte/notaprint.aspx?ccm=05930642&nf=17943&cod=PH5GL6XU', 'a nota emitida: "nota n.º 17943 Ver", com o link da Prefeitura — ' + link);
+  const link = await page.evaluate(() => [...document.querySelectorAll('a')].find(a => /ConsultaPublica/.test(a.href))?.href || '');
+  ok(link === 'https://www.nfse.gov.br/ConsultaPublica/?tpc=1&chave=35503082707012079600010000000000000000012345678901', 'a nota emitida: "nota n.º 17943 Ver", com a consulta pública da NFS-e Nacional — ' + link);
 
-  // Testar com a Prefeitura.
+  // Testar a emissão (produção restrita).
   await page.click('#adm-nota-testar');
   await page.waitForTimeout(500);
-  ok(pedidos.at(-1).corpo.acao === 'testar' && pedidos.at(-1).auth === 'Bearer token-do-admin' && (await page.evaluate(() => document.body.innerText)).includes('Tudo certo: a Prefeitura aceitou a nota de teste.'),
-    '"Testar com a Prefeitura" chama a função com a sessão do admin e mostra o resultado');
+  ok(pedidos.at(-1).corpo.acao === 'testar' && pedidos.at(-1).auth === 'Bearer token-do-admin' && (await page.evaluate(() => document.body.innerText)).includes('Tudo certo: a NFS-e Nacional aceitou a nota de teste na produção restrita, sem valor fiscal.'),
+    '"Testar a emissão" chama a função com a sessão do admin e mostra o resultado');
   // Emitir de novo a nota com erro.
   await page.click(`[data-nota-emitir="${COM_ERRO}"]`);
   await page.waitForTimeout(600);
@@ -75,12 +75,17 @@ const EMITIDA = '00000000-0000-4000-8000-0000000000a3';
   const cfg = await page.evaluate(() => window.__notaCfg);
   ok(/emite uma nota fiscal de verdade/.test(confirmou) && cfg.ligada && cfg.ambiente === 'producao' && cfg.aliquota === 0.035, 'ligar em Produção pede confirmação e salva (ISS de 3,5%) — ' + JSON.stringify({ ligada: cfg.ligada, ambiente: cfg.ambiente, aliquota: cfg.aliquota }));
   cartao = await texto(page, '#adm-nota-auto');
-  ok(cartao.includes('Emissão: ligada. Cada compra paga emite a nota na Prefeitura.'), 'o cartão mostra a emissão ligada');
+  ok(cartao.includes('Emissão: ligada. Cada compra paga emite a nota na NFS-e Nacional.'), 'o cartão mostra a emissão ligada');
   await page.click('#adm-nota-configurar');
   await page.fill('#adm-nota-codigo', '12');
   await page.click('#adm-nota-salvar');
   await page.waitForTimeout(300);
-  ok((await texto(page, '#adm-nota-auto .form-error')).includes('O código do serviço tem 4 ou 5 números'), 'código errado: o erro no campo, sem salvar');
+  ok((await texto(page, '#adm-nota-auto .form-error')).includes('O código de tributação nacional tem 6 números'), 'código errado: o erro no campo, sem salvar');
+  await page.fill('#adm-nota-codigo', '172501');
+  await page.fill('#adm-nota-serie', '60000');
+  await page.click('#adm-nota-salvar');
+  await page.waitForTimeout(300);
+  ok((await texto(page, '#adm-nota-auto .form-error')).includes('A série da DPS é um número de 1 a 49999'), 'série fora da faixa do aplicativo próprio: o erro, sem salvar');
   await page.click('#adm-nota-cancelar');
 
   // O certificado: senha errada e certa.
@@ -114,12 +119,12 @@ const EMITIDA = '00000000-0000-4000-8000-0000000000a3';
   await page.evaluate((c) => {
     const agora = new Date().toISOString();
     window.__compras = [{ id: c, academia_id: 'a1', valor: 49, forma: 'cartao', situacao: 'paga', tipo: 'plano', plano: 'premium', periodo: 'mensal', paga_em: agora, created_at: agora, nota_emitida_em: agora, nota_email: 'fin@soaula.com.br' }];
-    window.__notas = { [c]: { compra_id: c, situacao: 'emitida', numero_nfe: 17943, codigo_verificacao: 'PH5GL6XU' } };
+    window.__notas = { [c]: { compra_id: c, situacao: 'emitida', numero_nfe: 17943, codigo_verificacao: '35503082707012079600010000000000000000012345678901' } };
     carregarComprasDaAcademia();
   }, EMITIDA);
   await page.waitForTimeout(500);
   const compras = await texto(page, '#pc-pag-compras');
   const verNota = await page.evaluate(() => [...document.querySelectorAll('#pc-pag-compras a')].find(a => a.innerText === 'Ver a nota fiscal')?.href || '');
-  ok(verNota.includes('notaprint.aspx?ccm=05930642&nf=17943&cod=PH5GL6XU') && !compras.includes('nota fiscal enviada'), 'Pagamentos: "Ver a nota fiscal" com o link da Prefeitura — ' + compras.slice(0, 160));
+  ok(verNota.includes('ConsultaPublica/?tpc=1&chave=35503082707012079600010000000000000000012345678901') && !compras.includes('nota fiscal enviada'), 'Pagamentos: "Ver a nota fiscal" com a consulta pública da NFS-e Nacional — ' + compras.slice(0, 160));
   await browser.close();
 })();

@@ -448,7 +448,7 @@ begin
     insert into public.notas_fiscais (compra_id) values (c.id) on conflict (compra_id) do nothing;
     return;
   end if;
-  -- Desligada: o admin emite à mão no portal da Prefeitura de São Paulo.
+  -- Desligada: o admin emite à mão no Emissor Nacional da NFS-e (regra 333).
   begin
     v_doc := coalesce(c.nota_documento, 'sem CNPJ ou CPF');
     v_texto := v_academia || ' pagou R$ ' || c.valor || ' (' || v_que || '). Nota para '
@@ -456,8 +456,8 @@ begin
     perform public.aviso_ao_admin('nota-a-emitir:' || c.id, 'nota_a_emitir',
       case when c.de_teste then 'Teste: ' else '' end || 'Emitir a nota: ' || v_academia || ', R$ ' || c.valor, 'Nota fiscal para emitir',
       public.email_p(public.html_texto(v_texto))
-        || public.email_p('Emita no portal da NFS-e da Prefeitura de São Paulo e marque "Nota emitida" em Compras e notas. Ou ligue a nota automática em Compras e notas.'),
-      v_texto || E'\n\nEmita no portal da NFS-e da Prefeitura de São Paulo e marque "Nota emitida" em Compras e notas. Ou ligue a nota automática em Compras e notas.',
+        || public.email_p('Emita no Emissor Nacional da NFS-e (nfse.gov.br) e marque "Nota emitida" em Compras e notas. Ou ligue a nota automática em Compras e notas.'),
+      v_texto || E'\n\nEmita no Emissor Nacional da NFS-e (nfse.gov.br) e marque "Nota emitida" em Compras e notas. Ou ligue a nota automática em Compras e notas.',
       'compras');
   end;
 exception when others then
@@ -526,8 +526,8 @@ begin
   end if;
   v_mes := (array['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro',
                   'outubro', 'novembro', 'dezembro'])[extract(month from (v_hoje - 1))::int];
-  v_texto := 'Baixe no portal da NFS-e da Prefeitura de São Paulo o arquivo das notas de ' || v_mes
-    || ' (CSV, Layout V. 004) e envie à Contabilizei (Minhas Rotinas › Importar notas fiscais) até o dia 5. '
+  v_texto := 'Baixe no Emissor Nacional da NFS-e (nfse.gov.br › Notas emitidas) as notas de ' || v_mes
+    || ' e envie à Contabilizei (Minhas Rotinas › Importar notas fiscais) até o dia 5, se ela ainda não as importou sozinha. '
     || 'Confira também a alíquota do ISS deste mês em Notas Fiscais › Minhas Alíquotas, na Contabilizei, '
     || 'e, se mudou, atualize em Admin › Compras e notas › Nota fiscal automática.';
   perform public.aviso_ao_admin('notas-do-mes:' || to_char(v_hoje, 'YYYY-MM'), 'notas_do_mes',

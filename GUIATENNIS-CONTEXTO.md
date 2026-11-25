@@ -496,8 +496,11 @@ www.gov.br/nfse (documentação atual; os esquemas copiados em `testes/nfse-naci
 corrigido para o xmllint). **1º "Testar a emissão" (25/11 12h57):** TLS e certificado ok; a produção restrita
 recusou o esquema (E1235: pede `finNFSe` depois do `tpEmit`): ela já usa o **leiaute da reforma (RTC, NT 009)**;
 a produção ainda não. Agora o Teste vai com `<finNFSe>0</finNFSe>` (`LEIAUTE_RTC`) e qualquer E1235 que cite o
-finNFSe troca de leiaute sozinho; esquemas da produção restrita em `testes/nfse-nacional-rtc`. **Próximo: o
-Breno toca de novo em "Testar a emissão".** Se o servidor recusar o TLS
+finNFSe troca de leiaute sozinho; esquemas da produção restrita em `testes/nfse-nacional-rtc`. **2º teste
+(13h07):** esquema e assinatura passaram; **E0312** (o 172501 "não está administrado pelo município" na produção
+restrita). O "Testar a emissão" agora, com erro E03xx, consulta só para leitura os parâmetros de São Paulo
+(`parametros_municipais/3550308/convenio` e `/172501`) na produção restrita e na produção e mostra no "Último
+teste": com isso, decidir se é limitação da produção restrita (aí testar direto na produção) ou o código. Se o servidor recusar o TLS
 (cadeia ICP-Brasil) ou a produção restrita não tiver o CNPJ, corrigir com a mensagem que aparecer. Até ligar:
 nota à mão no Emissor Nacional (nfse.gov.br) ou pela Contabilizei.
 
@@ -514,7 +517,7 @@ código de teste (uma disputa na prévia; Admin › "Avisos por e-mail" mostra "
 
 **Testes:** bateria completa de 23/11 (regra 327): **2.794 verificações** (as 3 falhas de testes com a
 ordem antiga, ajustadas); depois, só os afetados de 328 a 332, sem falha (332: `quadras-publicas.js`, `menu-e-home.js`, `jogador.js`, `buscas-e-avisos.js`, `chat-de-ajuda.js`); `banco-emails.py`: **1.108**,
-sem falha (25/11); `nota-fiscal.mjs`: 44 (regra 333); `nota-automatica.js`: 16; `dados-para-nota.js`: 30. **Rodar a bateria completa no começo
+sem falha (25/11); `nota-fiscal.mjs`: 45 (regra 333); `nota-automatica.js`: 16; `dados-para-nota.js`: 30. **Rodar a bateria completa no começo
 do próximo chat** (contêiner novo: montar o banco local, seção 6).
 
 **Mercado Pago:** conta do CNPJ com chave Pix; aplicação "Checkout Pro" (API de Preferences; trocar

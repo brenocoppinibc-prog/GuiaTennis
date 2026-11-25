@@ -257,11 +257,11 @@ export const resumoDoRetorno = (r) => [...r.erros.map(e => `Erro ${e.codigo}: ${
 
 // A chamada com o certificado (TLS com autenticação mútua). Os testes trocam
 // o transporte por um falso.
-let transporte = (url, corpo, cert) => new Promise((ok, falhou) => {
+let transporte = (url, corpo, cert, metodo = "POST") => new Promise((ok, falhou) => {
   const u = new URL(url);
   const req = pedidoHttps({
-    hostname: u.hostname, path: u.pathname, method: "POST", key: cert.chavePem, cert: cert.certPem, minVersion: "TLSv1.2", timeout: 25000,
-    headers: { "Content-Type": "application/json", Accept: "application/json", "Content-Length": Buffer.byteLength(corpo) },
+    hostname: u.hostname, path: u.pathname, method: metodo, key: cert.chavePem, cert: cert.certPem, minVersion: "TLSv1.2", timeout: 25000,
+    headers: metodo === "GET" ? { Accept: "application/json" } : { "Content-Type": "application/json", Accept: "application/json", "Content-Length": Buffer.byteLength(corpo) },
   }, (res) => {
     let dados = "";
     res.setEncoding("utf8");
@@ -270,7 +270,7 @@ let transporte = (url, corpo, cert) => new Promise((ok, falhou) => {
   });
   req.on("timeout", () => req.destroy(new Error("A Sefin Nacional não respondeu a tempo.")));
   req.on("error", falhou);
-  req.end(corpo);
+  req.end(metodo === "GET" ? undefined : corpo);
 });
 export const usarTransporte = (fn) => { transporte = fn; };
 const temErro = (r, codigo) => r.erros.some(e => e.codigo.toUpperCase() === codigo);
@@ -363,6 +363,23 @@ export async function processarFila() {
 
 // O "Testar a emissão" do admin: uma nota de R$ 1 na produção restrita (o
 // ambiente de testes oficial; não tem valor fiscal nem gasta a numeração).
+// Os parâmetros de São Paulo na Sefin (só leitura, nada é emitido): o convênio e
+// o serviço. Regra 333 (25/11/2026, o 2º teste): a produção restrita respondeu
+// "E0312: O código de tributação nacional informado não está administrado pelo
+// município"; a consulta mostra, nos dois ambientes, se São Paulo tem o serviço.
+export async function parametrosDeSaoPaulo(ambiente, codigo, cert) {
+  const base = `${SEFIN[ambiente]}/parametros_municipais/${MUNICIPIO_SP}`;
+  const um = async (caminho) => {
+    try {
+      const r = await transporte(`${base}/${caminho}`, "", cert, "GET");
+      const texto = String(r.corpo || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 140);
+      return `HTTP ${r.status}${texto ? " " + texto : ""}`;
+    } catch (e) { return `sem resposta (${String((e && e.message) || e).slice(0, 80)})`; }
+  };
+  const nome = ambiente === "producao" ? "Produção" : "Produção restrita";
+  const [convenio, servico] = await Promise.all([um("convenio"), um(codigo)]);
+  return `${nome}: convênio ${convenio}; serviço ${codigo}: ${servico}`;
+}
 async function testar() {
   const cert = await certificadoGuardado();
   if (!cert) return json(409, { erro: "Envie o certificado A1 primeiro." });
@@ -377,8 +394,14 @@ async function testar() {
     const resultado = r.sucesso
       ? `Tudo certo: a NFS-e Nacional aceitou a nota de teste${r.numero ? ` (n.º ${r.numero})` : ""} na produção restrita, sem valor fiscal.${r.alertas.length ? " " + resumoDoRetorno(r) : ""}`
       : resumoDoRetorno(r) || "A Sefin Nacional recusou, sem dizer o motivo.";
-    await rpc("registrar_teste_da_nota", { p_resultado: resultado });
-    return json(200, { ok: r.sucesso, resultado, erros: r.erros, alertas: r.alertas });
+    // Serviço que o município não administra (E0312 e afins): o que a Sefin tem de
+    // São Paulo nos dois ambientes, para saber se é só a produção restrita.
+    const codigo = so(cfg.codigo_servico).padStart(6, "0").slice(-6);
+    const diagnostico = !r.sucesso && r.erros.some(e => /^E03(1[0-9]|0[0-9])$/.test(e.codigo))
+      ? " · " + (await Promise.all([parametrosDeSaoPaulo("teste", codigo, cert), parametrosDeSaoPaulo("producao", codigo, cert)])).join(" · ")
+      : "";
+    await rpc("registrar_teste_da_nota", { p_resultado: (resultado + diagnostico).slice(0, 1900) });
+    return json(200, { ok: r.sucesso, resultado: resultado + diagnostico, erros: r.erros, alertas: r.alertas });
   } catch (e) {
     const resultado = `Não consegui falar com a Sefin Nacional: ${String((e && e.message) || e).slice(0, 200)}`;
     await rpc("registrar_teste_da_nota", { p_resultado: resultado });

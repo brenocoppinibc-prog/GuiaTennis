@@ -232,6 +232,17 @@ resp = await pedir({ acao: "testar" });
 const t = await resp.json();
 ok(t.ok && sefin[0].url === `${SEFIN.teste}/nfse` && /<tpAmb>2<\/tpAmb>/.test(xmlMandado(0)) && /<vServ>1<\/vServ>/.test(xmlMandado(0)) && /Tudo certo: a NFS-e Nacional aceitou/.test(t.resultado),
   "\"Testar a emissão\": uma nota de R$ 1 na produção restrita — " + t.resultado);
+sefin = [];
+usarTransporte(async (url, corpo, c, metodo = "POST") => {
+  sefin.push({ url, metodo });
+  if (metodo === "GET") return { status: 200, corpo: url.endsWith("/convenio") ? '{"aderenteAmbienteNacional":1}' : '{"aliquota":2.01}' };
+  return recusa("E0312", "O código de tributação nacional informado não está administrado pelo município de incidência do ISSQN.");
+});
+const t2 = await (await pedir({ acao: "testar" })).json();
+const gets = sefin.filter(x => x.metodo === "GET").map(x => x.url);
+ok(!t2.ok && gets.length === 4 && gets.includes(`${SEFIN.teste}/parametros_municipais/3550308/convenio`) && gets.includes(`${SEFIN.producao}/parametros_municipais/3550308/172501`)
+  && /Erro E0312/.test(t2.resultado) && /Produção restrita: convênio HTTP 200 .*serviço 172501: HTTP 200 .*Produção: convênio HTTP 200/.test(t2.resultado),
+  "serviço que o município não administra (E0312): o teste consulta os parâmetros de São Paulo nos dois ambientes (só leitura) — " + t2.resultado.slice(0, 160));
 
 console.log(falhas ? `\n${falhas} falha(s)` : "\nTudo certo.");
 process.exit(falhas ? 1 : 0);

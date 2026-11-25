@@ -52,16 +52,27 @@ const { abrir, ok } = require('./harness');
   ok(r.partes === 'dados,quadras,fotos,horario,chegada,revisar' && r.linha.tipo === 'publica' && r.linha.como_usar === 'Chegue e jogue.' && r.academia === null,
     'o cadastro da pública: só lugar, quadras, fotos, horário e como chegar — ' + r.partes);
 
-  // Sugerir uma quadra ou academia: no início do menu, com a conta, vai como sugestão.
-  r = await page.evaluate(() => { state.showMenu = true; render(); return [...document.querySelectorAll('#menu-overlay .menu-item')].map(b => b.innerText.trim()).slice(0, 6); });
-  ok(r.includes('Sugerir uma quadra ou academia') && r.indexOf('Sugerir uma quadra ou academia') <= 4, 'no início do menu, "Sugerir uma quadra ou academia" — ' + r.join(' | '));
+  // Sugerir uma quadra ou academia (regra 332): no Suporte do menu, logo antes do
+  // GuiaTennis Parceiros; com a conta, vai como sugestão.
+  r = await page.evaluate(() => { state.showMenu = true; render(); const t = [...document.querySelectorAll('#menu-overlay .menu-item')].map(b => b.innerText.trim().split('\n')[0]); return { i: t.indexOf('Sugerir uma quadra ou academia'), d: t.indexOf('Perguntas frequentes'), p: t.indexOf('GuiaTennis Parceiros') }; });
+  ok(r.i > 4 && r.i === r.d + 1 && r.p === r.i + 1, 'no Suporte do menu, entre as Perguntas e o Parceiros — ' + JSON.stringify(r));
   await page.click('[data-menu="sugerir-lugar"]');
   await page.waitForTimeout(300);
+  r = await page.evaluate(() => ({ tipos: [...document.querySelectorAll('.sug-tipo')].map(b => b.innerText.replace(/\s+/g, ' ').trim()), on: document.querySelector('.sug-tipo.on')?.dataset.sugerirTipo, rotulo: document.querySelector('label[for=sugerir-onde]')?.innerText, local: !!document.getElementById('sugerir-local') }));
+  ok(r.tipos.join('|') === 'Academia Aulas e locação de quadra|Quadra pública Gratuita, em parque ou praça' && r.on === 'academia' && r.rotulo === 'Endereço' && r.local,
+    'o tipo em cartões (começa em Academia), "Endereço" e "Usar minha localização" — ' + JSON.stringify(r));
   await page.click('#sugerir-enviar');
   await page.waitForTimeout(200);
-  r = await page.evaluate(() => document.querySelector('#sugerir-close-overlay .form-error')?.innerText || '');
-  ok(/Falta o nome e onde fica/.test(r), 'sem nome e lugar, avisa — ' + r);
+  r = await page.evaluate(() => ({ erro: document.querySelector('#sugerir-close-overlay .form-error')?.innerText || '', foco: document.activeElement?.id }));
+  ok(/Informe o nome e o endereço/.test(r.erro) && r.foco === 'sugerir-nome', 'sem nome e endereço, avisa e leva ao nome — ' + JSON.stringify(r));
+  await page.click('[data-sugerir-tipo="publica"]');
+  await page.waitForTimeout(150);
+  r = await page.evaluate(() => document.querySelector('label[for=sugerir-nome]')?.innerText);
+  ok(r === 'Nome da quadra ou do parque', 'a quadra pública pede o nome da quadra ou do parque — ' + r);
   await page.fill('#sugerir-nome', 'Parque da Aclimação');
+  await page.press('#sugerir-nome', 'Enter');
+  r = await page.evaluate(() => document.activeElement?.id);
+  ok(r === 'sugerir-onde', 'o Enter no nome vai ao endereço — ' + r);
   await page.fill('#sugerir-onde', 'Aclimação, São Paulo');
   await page.fill('#sugerir-obs', 'Duas quadras de saibro.');
   await page.click('#sugerir-enviar');
@@ -69,6 +80,9 @@ const { abrir, ok } = require('./harness');
   r = await page.evaluate(() => ({ rpc: (window.__rpcs.find(x => x.nome === 'enviar_relato_do_chat') || {}).args, titulo: document.querySelector('#sugerir-close-overlay .sheet-title')?.innerText }));
   ok(r.rpc && r.rpc.p_tipo === 'sugestao' && r.rpc.p_texto === 'Quadra pública sugerida: Parque da Aclimação · Aclimação, São Paulo · Duas quadras de saibro.' && r.titulo === 'Sugestão enviada',
     'manda como sugestão do chat (o admin vê com o nome e o e-mail) — ' + JSON.stringify(r));
+  // No fim da busca, o atalho; o endereço já vem com o bairro e a cidade procurados.
+  r = await page.evaluate(() => { state.sugerirLugar = null; state.origin = { lat: -23.6, lng: -46.66, bairro: 'Moema', cidade: 'São Paulo' }; state.searchStatus = 'done'; state.page = 'search'; state.view = 'list'; render(); const b = document.querySelector('[data-sugerir-da-busca]'); if (b) b.click(); return { fim: document.querySelector('.fim-da-busca')?.innerText.replace(/\s+/g, ' ').trim() || null, onde: document.getElementById('sugerir-onde')?.value }; });
+  ok(r.onde === 'Moema, São Paulo', 'o fim da busca abre a sugestão com o bairro e a cidade — ' + JSON.stringify(r));
   await browser.close();
 
   // Sem conta: pede para entrar, com o motivo.

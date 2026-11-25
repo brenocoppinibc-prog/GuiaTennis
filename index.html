@@ -3711,6 +3711,20 @@
   .pc-promo-garantia { display: flex; align-items: center; gap: 6px; margin: 8px 0 0; font-size: 13px; color: var(--muted); }
   .pc-promo-upsell { margin: 10px 0 0; padding: 10px 12px; border-radius: 10px; background: #FFF6DB; color: #2A2410; font-size: 13.5px; line-height: 1.45; }
   .pc-promo-upsell a { font-weight: 700; color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+  /* Regra 332: "Sugerir uma quadra ou academia" com a cara do GuiaTennis. */
+  .sug-tipos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .sug-tipo { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-height: 48px; padding: 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); color: var(--text); font: inherit; text-align: left; cursor: pointer; }
+  .sug-tipo svg { margin-bottom: 2px; }
+  .sug-tipo strong { font-size: 15px; color: var(--green); }
+  .sug-tipo small { font-size: 12.5px; line-height: 1.35; color: var(--muted); }
+  .sug-tipo.on { border-color: var(--green); box-shadow: inset 0 0 0 1px var(--green); background: var(--card); background: color-mix(in srgb, var(--green) 7%, var(--card)); }
+  .sug-rotulo { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .sug-local { display: inline-flex; align-items: center; gap: 5px; min-height: 36px; padding: 0; border: 0; background: none; font: inherit; font-size: 13.5px; font-weight: 600; color: var(--green); cursor: pointer; }
+  .sug-ok { display: flex; gap: 8px; align-items: flex-start; margin: 6px 0 0; font-size: 15px; line-height: 1.5; color: var(--text); }
+  .sug-ok svg { flex-shrink: 0; margin-top: 2px; }
+  .fim-da-busca { margin: 18px 0 6px; padding: 16px 0 0; border-top: 1px solid var(--border); text-align: center; }
+  .fim-da-busca p { margin: 0 0 4px; font-size: 14px; color: var(--muted); }
+  .fim-da-busca-link { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 4px; border: 0; background: none; font: inherit; font-size: 15px; font-weight: 600; color: var(--green); cursor: pointer; }
 </style>
 </head>
 <body>
@@ -18411,7 +18425,6 @@ function renderMenu() {
         ${isAdmin ? item("painel-admin", "Painel do admin", "key", pendenciasDoAdmin() ? `${pendenciasDoAdmin()} ${pendenciasDoAdmin() === 1 ? "pendência" : "pendências"}` : "só você vê") : ""}
         ${item("home", "Início", "home")}
         ${item("search", "Buscar quadra", "search")}
-        ${item("sugerir-lugar", "Sugerir uma quadra ou academia", "plus")}
         ${item("comparar", "Comparar academias", "comparar", state.compareList.length || "")}
 
         <p class="menu-grupo">Minhas quadras</p>
@@ -18429,6 +18442,7 @@ function renderMenu() {
         ${item("como", "Como funciona", "play")}
         ${item("dicas", "Dicas de uso", "sparkle")}
         ${item("duvidas", "Perguntas frequentes", "ajuda")}
+        ${item("sugerir-lugar", "Sugerir uma quadra ou academia", "plus")}
         <button type="button" class="menu-item" data-menu="${contaAcademia ? "conta" : isAdmin ? "parceiros-admin" : "parceiros"}">${icon('predio', 17, 'var(--green)')}<span class="menu-item-txt"><span>GuiaTennis Parceiros</span><small>${contaAcademia ? "seu painel" : isAdmin ? "ver como academia" : "para academias e quadras"}</small></span></button>
         ${item("contato", "Fale com a gente", "bubble")}
 
@@ -22455,6 +22469,7 @@ function renderSearchPage(results, activeFilters, topBadge) {
             ${activeFilters ? `<button type="button" class="chip small clear-filters">Limpar todos os filtros</button>` : ""}
           </div>` : ""}
         ${cartoesDaBusca(results, topBadge)}
+        ${state.searchStatus === "done" && results.length <= limiteDaLista(results) ? fimDaBusca() : ""}
       </div>
       ${regiao && state.searchStatus === "done" ? infoDaRegiao(regiao) : ""}
       ${renderSiteFooter()}
@@ -29318,50 +29333,107 @@ function ligarChat() {
 // Google Maps: com a conta (o GuiaTennis responde pelo e-mail dela), vai como
 // sugestão do chat de ajuda; o admin vê com o nome e o e-mail em Chat de ajuda,
 // responde ali, e a pessoa acompanha em Feedback.
-function abrirSugerirLugar() {
+function abrirSugerirLugar(opcoes = {}) {
   state.showMenu = false;
   if (!jogador && !contaAcademia && !isAdmin) {
-    jogadorEntaoFaz(() => abrirSugerirLugar(), "Para sugerir uma quadra ou academia, entre com a sua conta (é grátis): o GuiaTennis responde pelo seu e-mail.");
+    jogadorEntaoFaz(() => abrirSugerirLugar(opcoes), "Para sugerir uma quadra ou academia, entre na sua conta (é grátis): o GuiaTennis responde pelo seu e-mail.");
     return;
   }
   const s = state.sugerirLugar || {};
-  state.sugerirLugar = { tipo: s.tipo || "publica", nome: s.nome || "", onde: s.onde || "", obs: s.obs || "", erro: "", enviado: false };
+  // Regra 332: vindo do fim da busca, o endereço já começa com o bairro e a
+  // cidade procurados (como o "Adicionar um lugar" do Google Maps, que abre na
+  // região que a pessoa olha); falta só a rua.
+  const o = opcoes.daBusca && state.origin;
+  const daRegiao = o && o.bairro && o.bairro !== "sua região" ? [o.bairro, o.cidade].filter(Boolean).join(", ") : "";
+  state.sugerirLugar = { tipo: s.tipo || "academia", nome: s.nome || "", onde: s.onde || daRegiao, obs: s.obs || "", erro: "", enviado: false };
   render();
+  setTimeout(() => { const el = document.getElementById("sugerir-nome"); if (el && !el.value && window.matchMedia("(pointer: fine)").matches) el.focus(); }, 60);
+}
+// ---------- "Sugerir uma quadra ou academia" com a cara do GuiaTennis (regra 332) ----------
+// Pedido do Breno em 25/11/2026: "O sugerir uma academia não está em uma posição
+// tão legal [...] Essa parte está muito básica e informal também. Deixe um
+// pouquinho mais com cara do GuiaTennis". Como o "Adicionar um lugar que falta"
+// do Google Maps: no fim da busca (onde a pessoa nota o que falta) e no Suporte
+// do menu; a tela com o tipo em cartões, o endereço com "Usar minha
+// localização" e o texto formal.
+function fimDaBusca() {
+  return `
+    <div class="fim-da-busca">
+      <p>Conhece uma quadra ou academia que não está nesta lista?</p>
+      <button type="button" class="fim-da-busca-link" data-sugerir-da-busca>${icon('plus', 16, 'var(--green)')} Sugerir uma quadra ou academia</button>
+    </div>`;
 }
 function renderSugerirLugar() {
   const s = state.sugerirLugar;
   if (s.enviado) return renderLegalSheet("Sugestão enviada", `
-    <p class="subtitle" style="margin-top:4px">Obrigado! O GuiaTennis confere e fala com você pelo e-mail da sua conta. Você acompanha a resposta em Feedback.</p>
+    <p class="sug-ok">${icon('check', 18, 'var(--green)')} <span>Obrigado pela indicação. A equipe do GuiaTennis confere as informações e responde pelo e-mail da sua conta.</span></p>
+    <p class="footnote" style="margin-top:8px">A resposta também fica em Feedback, no rodapé do site.</p>
     <button type="button" class="cta-btn cta-primary" id="sugerir-ok" style="width:100%;margin-top:14px">Fechar</button>`, "sugerir-close");
+  const publica = s.tipo === "publica";
+  const tipo = (id, titulo, sub, ic) => `
+      <button type="button" class="sug-tipo ${s.tipo === id ? "on" : ""}" data-sugerir-tipo="${id}" aria-pressed="${s.tipo === id}">
+        ${icon(ic, 20, 'var(--green)')}<strong>${titulo}</strong><small>${sub}</small>
+      </button>`;
   return renderLegalSheet("Sugerir uma quadra ou academia", `
-    <p class="subtitle" style="margin-top:4px">Conhece um lugar para jogar que ainda não está no GuiaTennis? Conte para a gente.</p>
-    <p class="field-label">É uma</p>
-    <div class="chip-row" role="group" aria-label="O que é">
-      <button type="button" class="chip ${s.tipo === "publica" ? "active" : ""}" data-sugerir-tipo="publica">Quadra pública</button>
-      <button type="button" class="chip ${s.tipo === "academia" ? "active" : ""}" data-sugerir-tipo="academia">Academia</button>
+    <p class="subtitle" style="margin-top:4px">Indique um lugar para jogar tênis que ainda não está no GuiaTennis.</p>
+    <p class="field-label">Tipo de lugar</p>
+    <div class="sug-tipos" role="group" aria-label="Tipo de lugar">
+      ${tipo("academia", "Academia", "Aulas e locação de quadra", "predio")}
+      ${tipo("publica", "Quadra pública", "Gratuita, em parque ou praça", "ball")}
     </div>
-    <label class="field-label" for="sugerir-nome">Nome do lugar</label>
-    <input class="form-field" id="sugerir-nome" maxlength="120" value="${esc(s.nome)}" placeholder="${s.tipo === "publica" ? "Ex.: Parque do Ibirapuera" : "Ex.: Academia de Tênis Moema"}" style="margin-top:0">
-    <label class="field-label" for="sugerir-onde">Onde fica</label>
-    <input class="form-field" id="sugerir-onde" maxlength="200" value="${esc(s.onde)}" placeholder="Endereço, bairro ou cidade" style="margin-top:0">
-    <label class="field-label" for="sugerir-obs">Algo mais? <span class="reg-opcional">(opcional)</span></label>
-    <textarea class="form-field" id="sugerir-obs" rows="3" maxlength="500" style="resize:none;margin-top:0" placeholder="${s.tipo === "publica" ? "Ex.: são duas quadras de saibro; nos fins de semana, precisa agendar." : "Ex.: tem aula para crianças e locação à noite."}">${esc(s.obs)}</textarea>
+    <label class="field-label" for="sugerir-nome">${publica ? "Nome da quadra ou do parque" : "Nome da academia"}</label>
+    <input class="form-field" id="sugerir-nome" maxlength="120" enterkeyhint="next" autocomplete="off" value="${esc(s.nome)}" placeholder="${publica ? "Ex.: Parque do Ibirapuera" : "Ex.: Academia de Tênis Moema"}" style="margin-top:0">
+    <div class="sug-rotulo">
+      <label class="field-label" for="sugerir-onde">Endereço</label>
+      <button type="button" class="sug-local" id="sugerir-local" ${s.localizando ? "disabled" : ""}>${s.localizando ? bolaGirando(14) : icon('locate', 15, 'var(--green)')} Usar minha localização</button>
+    </div>
+    <input class="form-field" id="sugerir-onde" maxlength="200" enterkeyhint="next" autocomplete="off" value="${esc(s.onde)}" placeholder="Rua, número, bairro e cidade" style="margin-top:0">
+    <label class="field-label" for="sugerir-obs">Informações adicionais <span class="reg-opcional">(opcional)</span></label>
+    <textarea class="form-field" id="sugerir-obs" rows="3" maxlength="500" style="resize:none;margin-top:0" placeholder="${publica ? "Ex.: duas quadras de saibro; nos fins de semana, é preciso agendar." : "Ex.: aulas para crianças e locação de quadra à noite."}">${esc(s.obs)}</textarea>
     ${s.erro ? `<div class="form-error">${icon('warning', 13)} ${esc(s.erro)}</div>` : ""}
     <button type="button" class="cta-btn cta-primary" id="sugerir-enviar" style="width:100%;margin-top:14px" ${s.enviando ? "disabled" : ""}>${s.enviando ? bolaGirando(15) + " Enviando" : "Enviar sugestão"}</button>
-    <p class="footnote" style="margin-top:10px">O GuiaTennis confere antes de colocar no site e pode falar com você pelo e-mail da sua conta.</p>`, "sugerir-close");
+    <p class="footnote" style="margin-top:10px">A equipe do GuiaTennis confere as informações antes de publicar e responde pelo e-mail da sua conta.</p>`, "sugerir-close");
 }
-async function enviarSugestaoDeLugar() {
+function guardarSugestao() {
   const s = state.sugerirLugar;
   ["nome", "onde", "obs"].forEach(k => { const el = document.getElementById("sugerir-" + k); if (el) s[k] = el.value; });
+  return s;
+}
+// "Usar minha localização": a rua, o número, o bairro e a cidade do ponto, para
+// a pessoa conferir e corrigir; o ponto em si não é guardado.
+function sugerirComMinhaLocalizacao() {
+  const s = guardarSugestao();
+  const falhar = () => { s.localizando = false; s.erro = "Não foi possível usar a sua localização. Digite o endereço."; render(); focarSugestao("onde"); };
+  if (!navigator.geolocation) { falhar(); return; }
+  s.localizando = true; s.erro = ""; render();
+  navigator.geolocation.getCurrentPosition(async (pos) => {
+    try {
+      const a = await enderecoDoPonto(pos.coords.latitude, pos.coords.longitude);
+      const rua = [a.rua, a.numero].filter(Boolean).join(", ");
+      const texto = [rua, a.bairro, a.cidade].filter(Boolean).join(" · ");
+      if (!texto) { falhar(); return; }
+      s.onde = [rua, [a.bairro, a.cidade].filter(Boolean).join(", ")].filter(Boolean).join(" - ");
+      s.localizando = false; render(); focarSugestao("onde");
+    } catch (e) { falhar(); }
+  }, falhar, { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
+}
+function focarSugestao(campo) {
+  setTimeout(() => { const el = document.getElementById("sugerir-" + campo); if (el) { el.focus(); if (el.setSelectionRange) el.setSelectionRange(el.value.length, el.value.length); } }, 30);
+}
+async function enviarSugestaoDeLugar() {
+  const s = guardarSugestao();
   const nome = s.nome.trim(), onde = s.onde.trim(), obs = s.obs.trim();
-  if (!nome || !onde) { s.erro = `Falta ${!nome && !onde ? "o nome e onde fica" : !nome ? "o nome do lugar" : "onde fica"}.`; render(); return; }
+  if (!nome || !onde) {
+    s.erro = !nome && !onde ? "Informe o nome e o endereço." : !nome ? (s.tipo === "publica" ? "Informe o nome da quadra ou do parque." : "Informe o nome da academia.") : "Informe o endereço.";
+    render(); focarSugestao(!nome ? "nome" : "onde"); return;
+  }
   s.erro = ""; s.enviando = true; render();
   const texto = `${s.tipo === "publica" ? "Quadra pública" : "Academia"} sugerida: ${nome} · ${onde}${obs ? " · " + obs : ""}`.slice(0, 1000);
   let r;
   try { r = await sb.rpc('enviar_relato_do_chat', { p_site: state.page === "parceiros" ? "parceiros" : "jogadores", p_tipo: "sugestao", p_texto: texto, p_pagina: "Sugerir uma quadra ou academia", p_conversa: null }); }
   catch (e) { r = { error: e }; }
   s.enviando = false;
-  if (r.error) { s.erro = falhou("mandar a sugestão", r.error, { texto: "Não foi possível mandar agora. Tente de novo em instantes." }); render(); return; }
+  if (r.error) { s.erro = falhou("mandar a sugestão", r.error, { texto: "Não foi possível enviar agora. Tente de novo em instantes." }); render(); return; }
   s.enviado = true;
   registrarPasso("acao", { detalhe: "Sugeriu um lugar" });
   render();
@@ -32827,10 +32899,17 @@ function attachEvents() {
   if (sugerirOverlay) sugerirOverlay.onclick = (e) => { if (e.target === sugerirOverlay) fecharSugerir(); };
   const sugerirOk = document.getElementById("sugerir-ok");
   if (sugerirOk) sugerirOk.onclick = fecharSugerir;
+  document.querySelectorAll("[data-sugerir-da-busca]").forEach(el => { el.onclick = () => abrirSugerirLugar({ daBusca: true }); });
+  const sugerirLocal = document.getElementById("sugerir-local");
+  if (sugerirLocal) sugerirLocal.onclick = sugerirComMinhaLocalizacao;
+  // Enter no nome vai ao endereço; no endereço, às informações adicionais.
+  [["nome", "onde"], ["onde", "obs"]].forEach(([de, para]) => {
+    const el = document.getElementById("sugerir-" + de);
+    if (el) el.onkeydown = (e) => { if (e.key === "Enter" && !e.isComposing) { e.preventDefault(); const p = document.getElementById("sugerir-" + para); if (p) p.focus(); } };
+  });
   document.querySelectorAll("[data-sugerir-tipo]").forEach(el => {
     el.onclick = () => {
-      const s = state.sugerirLugar;
-      ["nome", "onde", "obs"].forEach(k => { const c = document.getElementById("sugerir-" + k); if (c) s[k] = c.value; });
+      const s = guardarSugestao();
       s.tipo = el.dataset.sugerirTipo; render();
     };
   });

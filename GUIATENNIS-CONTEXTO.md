@@ -10,7 +10,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 25/11/2026 (regra 331, troca de chat)
+**Atualizado em:** 25/11/2026 (regra 332)
 
 | | |
 |---|---|
@@ -468,8 +468,8 @@ sozinho vira "-", "Sob consulta"), numa linha
 
 ## 9. Estado atual e pendências (25/11/2026, troca de chat)
 
-**PR #5** (`ccr-0a610d86-k6plx0` → `main`) com tudo até a **regra 331**: verde, prévia no ar, descrição
-em dia (passos até o 167) e o SQL `20261125120000_nota_fiscal_automatica` já rodou no banco de teste
+**PR #5** (`ccr-0a610d86-k6plx0` → `main`) com tudo até a **regra 332**: verde, prévia no ar, descrição
+em dia (passos até o 169) e o SQL `20261125120000_nota_fiscal_automatica` já rodou no banco de teste
 (25/11). O chat de 25/11 (tarde) acompanha o PR; chat novo se inscreve de novo com `subscribe_pr_activity`.
 O "Banco de dados" desta branch é disparado à mão (`banco.yml`, `destino: teste`,
 `actions_run_trigger`); ele também leva o e-mail do código ao Supabase. **Conferir na prévia:** o
@@ -497,7 +497,7 @@ em 25/11 pelo "Banco de dados", que disse "Sem os segredos…"); quando o Breno 
 o primeiro código de teste.
 
 **Testes:** bateria completa de 23/11 (regra 327): **2.794 verificações** (as 3 falhas de testes com a
-ordem antiga, ajustadas); depois, só os afetados de 328 a 331, sem falha; `banco-emails.py`: **1.108**,
+ordem antiga, ajustadas); depois, só os afetados de 328 a 332, sem falha (332: `quadras-publicas.js`, `menu-e-home.js`, `jogador.js`, `buscas-e-avisos.js`, `chat-de-ajuda.js`); `banco-emails.py`: **1.108**,
 sem falha (25/11); `nota-fiscal.mjs`: 34; `nota-automatica.js`: 15. **Rodar a bateria completa no começo
 do próximo chat** (contêiner novo: montar o banco local, seção 6).
 
@@ -518,7 +518,7 @@ transação"): Pix comum pelo app do banco, conta do CNPJ confirmada, valor meno
 suporte do Mercado Pago.
 
 **Pendências e ofertas sem resposta:**
-1. **"Pode subir" do PR #5** (o Breno confere os passos 135 a 167 na prévia; antes, o A1 e o "Testar com a Prefeitura").
+1. **"Pode subir" do PR #5** (o Breno confere os passos 135 a 169 na prévia; antes, o A1 e o "Testar com a Prefeitura").
 2. **Pix Automático:** o Breno confere se a página da assinatura do Mercado Pago oferece o Pix
    Automático; se sim, `PIX_AUTOMATICO.real = true`; se não, suporte do Mercado Pago ou Asaas.
 3. **WhatsApp automático do código:** modelo de Autenticação criado no Gerenciador do WhatsApp. Em
@@ -606,6 +606,7 @@ mesmo histórico de 23/11 e nas descrições antigas do PR (`historico/PR5-descr
 - 329 (24/11) — todas as comodidades no Básico (Termos de 24/11).
 - 330 (24/11) — o resumo do Completo curto e com o que dizem as avaliações.
 - 331 (25/11) — a nota fiscal automática pela Prefeitura de São Paulo (certificado A1 no admin, teste e produção).
+- 332 (25/11) — "Sugerir uma quadra ou academia" com a cara do GuiaTennis ("não está em uma posição tão legal… muito básica e informal"): sai do topo do menu para o Suporte (antes do GuiaTennis Parceiros); no fim da lista da busca, "Conhece uma quadra ou academia que não está nesta lista?" (`fimDaBusca`, como o "Adicionar um lugar" do Google Maps), que abre com o bairro e a cidade procurados; a tela com o tipo em cartões (Academia/Quadra pública), "Endereço" com "Usar minha localização" (`sugerirComMinhaLocalizacao`, pelo `enderecoDoPonto`; o ponto não é guardado), Enter avança, erro leva ao campo e texto formal. Sem SQL.
 
 ## 11. WhatsApp e mensagem para as academias
 

@@ -90,6 +90,7 @@ declare
   v_academia text;
   v_link text;
   v_texto text;
+  v_numero bigint;
 begin
   if p_situacao not in ('emitida', 'testada', 'erro', 'cancelada') then
     raise exception 'Situação inválida.' using errcode = '22023';
@@ -125,6 +126,19 @@ begin
           'Você recebe este e-mail porque este endereço recebe as notas fiscais da ' || public.html_texto(coalesce(v_academia, 'academia')) || ' no GuiaTennis Parceiros.'),
         v_texto || E'\n\nVer a nota fiscal: ' || v_link);
     end if;
+  elsif p_situacao = 'cancelada' and coalesce(p_mensagem, '') like 'Cancelada na NFS-e Nacional%' then
+    -- A Contabilizei (25/11/2026): "cancelamentos feitos fora da Contabilizei não são
+    -- capturados automaticamente [...] atualize o status da nota para cancelada,
+    -- evitando que o valor seja incluído indevidamente no cálculo do DAS".
+    select numero_nfe into v_numero from public.notas_fiscais where compra_id = p_compra;
+    v_texto := 'A nota fiscal' || coalesce(' n.º ' || v_numero, '') || ' da ' || coalesce(v_academia, 'academia') || ', de R$ '
+      || coalesce(c.valor_pago, c.valor) || ', foi cancelada na NFS-e Nacional devido ao estorno.';
+    perform public.aviso_ao_admin('nota-cancelada:' || c.id, 'nota_cancelada',
+      'Nota cancelada: marque também na Contabilizei', 'Nota fiscal cancelada',
+      public.email_p(public.html_texto(v_texto))
+        || public.email_p('Marque a nota como cancelada na Contabilizei até o dia 5 do mês que vem, para o valor não entrar no DAS.'),
+      v_texto || E'\n\nMarque a nota como cancelada na Contabilizei até o dia 5 do mês que vem, para o valor não entrar no DAS.',
+      'compras');
   elsif p_situacao = 'erro' then
     v_texto := coalesce(v_academia, 'Academia') || ', R$ ' || coalesce(c.valor_pago, c.valor) || ': ' || coalesce(p_mensagem, 'erro sem mensagem') || '.';
     perform public.aviso_ao_admin('nota-erro:' || c.id || ':' || md5(coalesce(p_mensagem, '')), 'nota_erro',

@@ -29936,7 +29936,7 @@ function listaDeTarefasHtml(tarefas) {
 // Para onde leva cada aviso que chegou por e-mail.
 function abaDoAviso(tipo) {
   if (tipo === "falha_no_site") return "falhas";
-  if (tipo === "nota_a_emitir") return "compras";
+  if (["nota_a_emitir", "nota_erro", "nota_cancelada", "notas_do_mes"].includes(tipo)) return "compras";
   if (tipo === "avaliacao_do_guia") return "nota";
   if (["academia_no_ar", "academia_assumida", "academia_reaberta", "disputa", "pedido_guiatennis", "pedido_para_sair", "problema_na_ficha",
     "whatsapp_para_confirmar", "whatsapp_para_aprovar", "whatsapp_troca", "whatsapp_em_revisao", "avaliacao_denunciada", "analise_pedida",
@@ -30253,7 +30253,7 @@ const ADM_TIPOS_DE_EMAIL = {
   academia_reaberta: "Academia reaberta", pedido_de_reabertura: "Pedido para reabrir", reabertura_resposta: "Resposta: reabrir", analise_pedida: "Análise pedida pela academia",
   nome_suspenso: "Nome suspenso", nome_lembrete: "Lembrete: trocar o nome", nome_trocado: "Nome trocado", nome_para_conferir: "Nome trocado para conferir",
   nome_suspensao_cancelada: "Suspensão do nome cancelada", conta_excluida_nome: "Conta excluída pelo nome", academia_nome_alterado: "Nome da academia alterado",
-  nota_a_emitir: "Nota fiscal para emitir", nota_erro: "Nota fiscal com erro", notas_do_mes: "Notas do mês para a Contabilizei",
+  nota_a_emitir: "Nota fiscal para emitir", nota_erro: "Nota fiscal com erro", nota_cancelada: "Nota cancelada para marcar na Contabilizei", notas_do_mes: "Notas do mês para a Contabilizei",
   avaliacao_do_guia: "Feedback", resposta_do_guia: "Resposta ao feedback", feito_do_guia: "Você pediu, nós fizemos",
   relato_do_chat: "Erro ou sugestão no chat", resposta_no_chat: "Resposta no chat", relato_situacao: "Situação do relato",
 };

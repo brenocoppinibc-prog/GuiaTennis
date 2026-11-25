@@ -105,11 +105,12 @@ ok(/<prest><CNPJ>70120796000100<\/CNPJ><IM>05930642<\/IM><regTrib><opSimpNac>3<\
   "o prestador: CNPJ, a inscrição municipal, Simples Nacional ME/EPP apurando pelo SN; sem nome nem endereço (E0121, E0128)");
 ok(/<toma><CNPJ>12345678000195<\/CNPJ><xNome>SO AULA TENNIS LTDA<\/xNome><email>financeiro@soaula.com.br<\/email><\/toma>/.test(dps), "o tomador: CNPJ sem pontuação, razão social e e-mail");
 ok(/<cTribNac>172501<\/cTribNac><xDescServ>[^<]*Plano Premium mensal da academia Só Aula Tennis &amp; Cia no GuiaTennis\.<\/xDescServ>/.test(dps), "o serviço: 172501 (item 17.25) e a descrição com o plano");
+ok(/<\/xDescServ><cNBS>114063300<\/cNBS><\/cServ>/.test(dps), "o código NBS 114063300 (o da Contabilizei), depois da descrição no leiaute 1.01");
 ok(/<vServ>105.50<\/vServ>/.test(dps) && /<tribMun><tribISSQN>1<\/tribISSQN><tpRetISSQN>1<\/tpRetISSQN><\/tribMun>/.test(dps) && !/<pAliq>/.test(dps) && /<pTotTribSN>6<\/pTotTribSN>/.test(dps) && !/IBSCBS/.test(dps),
   "os valores: o valor pago, ISS tributável sem retenção e sem alíquota (E0625), 6% de tributos do Simples, sem IBS/CBS (só em 2027)");
 const teste = dpsXml({ ...dados, ambiente: "teste" }, cert, { numero: "1764090000", comIM: false, alg: "sha256" }).xml;
 a = confereAssinatura("teste", teste);
-ok(valida("teste", teste, "DPS_v1.01.xsd", "nfse-nacional-rtc") === "" && /<tpEmit>1<\/tpEmit><finNFSe>0<\/finNFSe><cLocEmi>/.test(teste) && !/finNFSe/.test(dps) && /<tpAmb>2<\/tpAmb>/.test(teste) && !/<IM>/.test(teste) && a.alg === "sha256" && a.digestConfere && a.assinaturaConfere,
+ok(valida("teste", teste, "DPS_v1.01.xsd", "nfse-nacional-rtc") === "" && /<tpEmit>1<\/tpEmit><finNFSe>0<\/finNFSe><cLocEmi>/.test(teste) && /<cTribNac>172501<\/cTribNac><cNBS>114063300<\/cNBS><xDescServ>/.test(teste) && !/finNFSe/.test(dps) && /<tpAmb>2<\/tpAmb>/.test(teste) && !/<IM>/.test(teste) && a.alg === "sha256" && a.digestConfere && a.assinaturaConfere,
   "teste: produção restrita (tpAmb 2) no leiaute da reforma (finNFSe 0, esquemas da produção restrita de 20/10/2026), sem a inscrição municipal e com RSA-SHA256");
 const semTomador = dpsXml({ ...dados, tomador: { documento: "", nome: "", email: "" } }, cert).xml;
 ok(valida("sem", semTomador, "DPS_v1.01.xsd") === "" && !/<toma>/.test(semTomador), "sem CPF/CNPJ do tomador: a DPS vai sem o tomador e passa no esquema");

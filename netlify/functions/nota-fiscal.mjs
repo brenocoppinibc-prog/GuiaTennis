@@ -56,6 +56,9 @@ export const SEFIN = {
   teste: "https://sefin.producaorestrita.nfse.gov.br/API/SefinNacional",
 };
 export const MUNICIPIO_SP = "3550308"; // código IBGE de São Paulo (cLocEmi e local da prestação)
+// O código NBS da Contabilizei (25/11/2026): "informe o código NBS 114063300 (Venda
+// de espaço para propaganda na rede mundial de computadores, exceto sob comissão)".
+export const CODIGO_NBS = "114063300";
 const VERSAO = "1.01";
 const VER_APLIC = "GuiaTennis-333";
 const NS = "http://www.sped.fazenda.gov.br/nfse";
@@ -208,7 +211,10 @@ export function dpsXml(d, cert, { comIM = true, alg = "sha1", numero, dhEmi = ag
     + `<prest><CNPJ>${CNPJ_DO_GUIA}</CNPJ>${im}<regTrib><opSimpNac>3</opSimpNac><regApTribSN>1</regApTribSN><regEspTrib>0</regEspTrib></regTrib></prest>`
     + toma
     + `<serv><locPrest><cLocPrestacao>${MUNICIPIO_SP}</cLocPrestacao></locPrest>`
-    + `<cServ><cTribNac>${so(d.codigo_servico).padStart(6, "0").slice(-6)}</cTribNac><xDescServ>${textoXml(discriminacao(d), 1000)}</xDescServ></cServ></serv>`
+    // O NBS fica antes da descrição no leiaute da reforma e depois dela no 1.01.
+    + `<cServ><cTribNac>${so(d.codigo_servico).padStart(6, "0").slice(-6)}</cTribNac>`
+    + (rtc ? `<cNBS>${CODIGO_NBS}</cNBS><xDescServ>${textoXml(discriminacao(d), 1000)}</xDescServ>` : `<xDescServ>${textoXml(discriminacao(d), 1000)}</xDescServ><cNBS>${CODIGO_NBS}</cNBS>`)
+    + `</cServ></serv>`
     + `<valores><vServPrest><vServ>${valorXml(d.valor)}</vServ></vServPrest>`
     + `<trib><tribMun><tribISSQN>1</tribISSQN><tpRetISSQN>1</tpRetISSQN></tribMun>`
     + `<totTrib><pTotTribSN>${percentualDoSimples(d.aliquota)}</pTotTribSN></totTrib></trib></valores>`;

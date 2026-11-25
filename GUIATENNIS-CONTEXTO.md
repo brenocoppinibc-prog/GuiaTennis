@@ -395,7 +395,7 @@ sozinho vira "-", "Sob consulta"), numa linha
   mais `onde.mjs`, `pagamento.mjs`, `cnpj.mjs`, `catalogo-meta.mjs` e `regiao.mjs`. O `falhas.txt`
   sempre aparece na lista (força erros de propósito).
 - **Gramática:** `testes/gramatica/` (LanguageTool pt-BR pelo Maven; o passo a passo no `LEIA.md`).
-- **Banco local** para o `testes/banco-emails.py` (**1.109 conferências**, 25/11/2026, regra 333,
+- **Banco local** para o `testes/banco-emails.py` (**1.110 conferências**, 25/11/2026, regra 333,
   nenhuma falha; o teste roda de novo SQLs antigos, e o
   `20261105130000` recoloca a trava dos cliques de antes: SQL que mexe em
   `cliques_tipo_valido` ou em `numeros_da_academia` é rodado de novo no começo
@@ -500,7 +500,15 @@ finNFSe troca de leiaute sozinho; esquemas da produção restrita em `testes/nfs
 (13h07):** esquema e assinatura passaram; **E0312** (o 172501 "não está administrado pelo município" na produção
 restrita). O "Testar a emissão" agora, com erro E03xx, consulta só para leitura os parâmetros de São Paulo
 (`parametros_municipais/3550308/convenio` e `/172501`) na produção restrita e na produção e mostra no "Último
-teste": com isso, decidir se é limitação da produção restrita (aí testar direto na produção) ou o código. Se o servidor recusar o TLS
+teste": com isso, decidir se é limitação da produção restrita (aí testar direto na produção) ou o código.
+**Contabilizei (25/11, respondeu):** código nacional 17.25.01 + **NBS 114063300** (agora em toda DPS, `CODIGO_NBS`;
+antes da descrição no leiaute RTC, depois no 1.01); Simples pelo SN, sem retenção; 6,00% (2,01% ISS + 3,99%
+federais), recalculada todo mês em Minhas rotinas › Ver minhas alíquotas; IM = CCM 05930642; IBS/CBS "Não" para o
+Simples. Eles importam as notas da API, mas é preciso **conferir até o dia 5** (se faltar, importar o XML) e
+**marcar como cancelada lá a nota cancelada fora da Contabilizei** (senão entra no DAS): o lembrete do dia 1 diz
+isso e cada cancelamento pelo site manda o aviso `nota_cancelada` ao admin (no `registrar_nota` do SQL 333, que
+no banco de teste ficou sem esse aviso: o arquivo mudou depois de aplicado). O Breno já entrou no Emissor
+Nacional com o certificado (configuração "Informar alíquota do Simples Nacional", 6%). Se o servidor recusar o TLS
 (cadeia ICP-Brasil) ou a produção restrita não tiver o CNPJ, corrigir com a mensagem que aparecer. Até ligar:
 nota à mão no Emissor Nacional (nfse.gov.br) ou pela Contabilizei.
 

@@ -3367,6 +3367,10 @@ ok(um(f"select situacao from public.notas_fiscais where compra_id = '{c1}'") == 
    and f"{c1}:cancelar" in (um("select string_agg(compra_id::text || ':' || acao, ',') from public.notas_para_processar()") or "")
    and json.loads(um(f"select public.nota_para_cancelar('{c1}')"))["chave"] == "35503082270120796000100000000000000012260000000012",
    "estorno total: a nota emitida vai para o cancelamento pela chave de acesso")
+um(f"select public.registrar_nota('{c1}', 'cancelada', null, null, 'Cancelada na NFS-e Nacional devido ao estorno.')")
+ok(um(f"select situacao from public.notas_fiscais where compra_id = '{c1}'") == "cancelada"
+   and um(f"select count(*) from public.emails_a_enviar where chave like '%nota-cancelada:{c1}%' and texto like '%nota fiscal n.º 17%cancelada na NFS-e Nacional%' and texto like '%Marque a nota como cancelada na Contabilizei%'") == "1",
+   "cancelada pelo site: o admin recebe o aviso para marcar a nota como cancelada na Contabilizei (para não entrar no DAS)")
 ct = compra_paga(20, de_teste=True)
 ok(um(f"select public.nota_para_emitir('{ct}') is null") == "t" and um(f"select situacao from public.notas_fiscais where compra_id = '{ct}'") == "cancelada",
    "compra de teste (prévia) nunca vira nota de verdade em produção")

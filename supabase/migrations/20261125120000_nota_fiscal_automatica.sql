@@ -526,12 +526,13 @@ begin
   end if;
   v_mes := (array['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro',
                   'outubro', 'novembro', 'dezembro'])[extract(month from (v_hoje - 1))::int];
-  v_texto := 'Baixe no Emissor Nacional da NFS-e (nfse.gov.br › Notas emitidas) as notas de ' || v_mes
-    || ' e envie à Contabilizei (Minhas Rotinas › Importar notas fiscais) até o dia 5, se ela ainda não as importou sozinha. '
+  v_texto := 'Confira na Contabilizei, até o dia 5, se todas as notas de ' || v_mes
+    || ' foram importadas; se faltar alguma, importe o XML dela (baixe no Emissor Nacional da NFS-e). '
+    || 'As notas canceladas pelo site também precisam ficar como canceladas lá, para não entrarem no DAS. '
     || 'Confira também a alíquota do ISS deste mês em Notas Fiscais › Minhas Alíquotas, na Contabilizei, '
     || 'e, se mudou, atualize em Admin › Compras e notas › Nota fiscal automática.';
   perform public.aviso_ao_admin('notas-do-mes:' || to_char(v_hoje, 'YYYY-MM'), 'notas_do_mes',
-    'Notas de ' || v_mes || ': envie o arquivo à Contabilizei até o dia 5', 'Notas do mês',
+    'Notas de ' || v_mes || ': confira na Contabilizei até o dia 5', 'Notas do mês',
     public.email_p(public.html_texto(v_texto)), v_texto, 'compras');
 end $$;
 

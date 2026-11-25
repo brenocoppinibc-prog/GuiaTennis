@@ -519,9 +519,12 @@ suporte do Mercado Pago.
    nacionais que ela passou: anúncios e créditos (Promover, alcance) = item 17.25, tributação 172501,
    NBS 114063300; planos = item 01.08, tributação 010801, NBS 117039900; descrição: "Prestação de
    serviços de disponibilização de espaço publicitário, veiculação de anúncios e assinatura de planos
-   na plataforma GuiaTennis." Falta: o **CCM** da empresa, a habilitação para emitir NFS-e no portal da
-   Prefeitura, os **códigos de serviço municipais** de São Paulo (5 números) dos dois tipos e a alíquota
-   que vai na nota. Plano: o web service da NFS-e Paulistana (SOAP, assinado com o A1; o
+   na plataforma GuiaTennis." Segunda resposta (25/11): **CCM 05930642**, já habilitado (o
+   web service autentica pelo e-CNPJ); **ISS 2,01%** (1ª faixa do Anexo III; muda com o faturamento, ver
+   "Notas Fiscais › Minhas Alíquotas" na Contabilizei); códigos municipais: **02690** (item 01.08, ligado
+   ao CNAE 6201-5/02) e **02917** (item 01.07, o padrão do CNAE 6319-4/00). Falta o código municipal
+   para os anúncios e créditos (17.25), ou a Contabilizei confirmar que tudo sai no 02917. No admin, o
+   código por tipo e a alíquota ficam editáveis (lembrete no dia 1, junto do CSV). Plano: o web service da NFS-e Paulistana (SOAP, assinado com o A1; o
    "TesteEnvioLoteRPS" valida sem emitir), uma nota por compra paga com o código pelo tipo do produto,
    o cancelamento junto com o estorno, o A1 enviado por tela do admin e guardado cifrado, e o lembrete
    do CSV no dia 1. "Baixar planilha do mês" em Compras e notas (oferecido).

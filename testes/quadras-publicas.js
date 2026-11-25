@@ -83,6 +83,8 @@ const { abrir, ok } = require('./harness');
   // No fim da busca, o atalho; o endereço já vem com o bairro e a cidade procurados.
   r = await page.evaluate(() => { state.sugerirLugar = null; state.origin = { lat: -23.6, lng: -46.66, bairro: 'Moema', cidade: 'São Paulo' }; state.searchStatus = 'done'; state.page = 'search'; state.view = 'list'; render(); const b = document.querySelector('[data-sugerir-da-busca]'); if (b) b.click(); return { fim: document.querySelector('.fim-da-busca')?.innerText.replace(/\s+/g, ' ').trim() || null, onde: document.getElementById('sugerir-onde')?.value }; });
   ok(r.onde === 'Moema, São Paulo', 'o fim da busca abre a sugestão com o bairro e a cidade — ' + JSON.stringify(r));
+  r = await page.evaluate(() => { state.sugerirLugar = null; render(); const c = [...document.querySelectorAll('.sitefooter .sf-col')].find(x => x.querySelector('h4')?.innerText.trim().toLowerCase() === 'suporte'); const t = c ? [...c.querySelectorAll('a, button')].map(x => x.innerText.trim()) : []; const b = c && c.querySelector('[data-sugerir-lugar]'); if (b) b.click(); return { t, aberta: !!document.getElementById('sugerir-nome') }; });
+  ok(r.t.indexOf('Sugerir uma quadra ou academia') === r.t.indexOf('Feedback') + 1 && r.aberta, 'no rodapé, em Suporte, depois do Feedback, e abre a tela — ' + JSON.stringify(r));
   await browser.close();
 
   // Sem conta: pede para entrar, com o motivo.

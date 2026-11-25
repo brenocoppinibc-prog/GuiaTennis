@@ -21605,6 +21605,8 @@ function renderSiteFooter() {
           <button type="button" id="footer-buscar">Como funciona</button>
           <button type="button" data-abrir-chat>Chat de ajuda</button>
           <a href="/feedback" data-ir-feedback>Feedback</a>
+          ${/* Regra 332: como o "Adicionar uma empresa" no rodapé do Yelp e do Tripadvisor. */ ""}
+          <button type="button" data-sugerir-lugar>Sugerir uma quadra ou academia</button>
           <a href="/parceiros" data-pc="inicio">GuiaTennis Parceiros</a>
           ${contaAcademia ? `<button type="button" data-abrir-conta>Painel da minha academia</button>` : ""}
         </div>
@@ -32900,6 +32902,7 @@ function attachEvents() {
   const sugerirOk = document.getElementById("sugerir-ok");
   if (sugerirOk) sugerirOk.onclick = fecharSugerir;
   document.querySelectorAll("[data-sugerir-da-busca]").forEach(el => { el.onclick = () => abrirSugerirLugar({ daBusca: true }); });
+  document.querySelectorAll("[data-sugerir-lugar]").forEach(el => { el.onclick = () => abrirSugerirLugar(); });
   const sugerirLocal = document.getElementById("sugerir-local");
   if (sugerirLocal) sugerirLocal.onclick = sugerirComMinhaLocalizacao;
   // Enter no nome vai ao endereço; no endereço, às informações adicionais.

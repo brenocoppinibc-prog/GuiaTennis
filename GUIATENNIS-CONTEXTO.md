@@ -10,7 +10,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 25/11/2026 (regra 331)
+**Atualizado em:** 25/11/2026 (regra 331, troca de chat)
 
 | | |
 |---|---|
@@ -466,19 +466,39 @@ sozinho vira "-", "Sob consulta"), numa linha
   SQL novo (05/11: o da regra 209 não rodou). Conferir em Actions e, se faltar,
   rodar à mão no banco de teste (`banco.yml`, `destino: teste`, na branch do PR).
 
-## 9. Estado atual e pendências (23/11/2026, troca de chat)
+## 9. Estado atual e pendências (25/11/2026, troca de chat)
 
-**PR #5** (`ccr-0a610d86-k6plx0` → `main`) com tudo até a **regra 331**; este chat acompanha o PR
-(`subscribe_pr_activity`). O "Banco de dados" desta branch é disparado à mão (`banco.yml`, `destino:
-teste`, `actions_run_trigger`); ele também leva o e-mail do código ao Supabase. **Conferir na prévia:**
-o assunto do e-mail do código deve chegar como "123456 é o seu código do GuiaTennis"; se chegar
-escrito "{{ .Token }}", voltar o assunto para "Seu código do GuiaTennis" no `banco.yml`. As regras 323,
-324 e 326 corrigiram textos de e-mail no próprio arquivo de SQL antigo (`20261013140000`,
-`20261121130000`, `20261123120000`): valem no banco de verdade com o merge.
+**PR #5** (`ccr-0a610d86-k6plx0` → `main`) com tudo até a **regra 331**: verde, prévia no ar, descrição
+em dia (passos até o 167) e o SQL `20261125120000_nota_fiscal_automatica` já rodou no banco de teste
+(25/11). Este chat deixou de acompanhar o PR: **o chat novo se inscreve com `subscribe_pr_activity`**.
+O "Banco de dados" desta branch é disparado à mão (`banco.yml`, `destino: teste`,
+`actions_run_trigger`); ele também leva o e-mail do código ao Supabase. **Conferir na prévia:** o
+assunto do e-mail do código deve chegar como "123456 é o seu código do GuiaTennis"; se chegar escrito
+"{{ .Token }}", voltar o assunto para "Seu código do GuiaTennis" no `banco.yml`. Textos de e-mail
+corrigidos no próprio arquivo de SQL antigo (regras 323, 324, 326, 328 e 329: `20261013140000`,
+`20261121130000`, `20261123120000`, `20261007130000`, `20261015130000`) valem no banco de verdade com o
+merge. **Ambiente do Claude:** este chat criou o ambiente "GuiaTennis" (rede liberada para
+prefeitura.sp.gov.br, notadomilhao.sf.prefeitura.sp.gov.br, nfe.prefeitura.sp.gov.br e
+nfews.prefeitura.sp.gov.br; o web service da Prefeitura responde 403 sem o certificado). O manual do web
+service (3.4.1) e os schemas estão em notadomilhao.sf.prefeitura.sp.gov.br/manuais (os do leiaute 1
+copiados em `testes/nfse-sp-v01/`).
 
-**Testes:** bateria completa de 23/11 (regra 327): **2.794 verificações**; as 3 que falharam esperavam a
-ordem antiga das partes e o texto antigo da declaração e foram ajustadas (passam); depois da 328, os
-afetados, sem falha. `banco-emails.py`: **1.087**, sem falha (22/11). Gramática: `testes/gramatica/`.
+**Nota fiscal automática (regra 331):** pronta e testada sem a Prefeitura de verdade. O primeiro
+contato real é o **"Testar com a Prefeitura"** depois de o Breno enviar o A1 na prévia (Admin › Compras e
+notas). Se der erro de TLS (cadeia ICP-Brasil do servidor da Prefeitura) ou da Prefeitura, corrigir no
+`nota-fiscal.mjs` com a mensagem que aparecer.
+
+**Meta (25/11):** domínio verificado pelo registro TXT no registro.br (e a metatag no site); portfólio
+"GuiaTennis" com o Breno entrando pelo Instagram @guiatennis (o perfil "Coppini Marinho" do Facebook não
+tinha acesso; aba anônima resolveu); **falta a Meta aprovar a verificação da empresa**. Conta do WhatsApp
+"GuiaTenni" com o número novo; o Breno diz que "tudo na Meta está alinhado": **conferir se os segredos
+`WHATSAPP_TOKEN`, `WHATSAPP_NUMERO_ID` e `WHATSAPP_NUMERO_DE_TESTE` estão no GitHub** (rodar o "Banco de
+dados": o registro diz "Sem os segredos…" se faltarem) e mandar o primeiro código de teste.
+
+**Testes:** bateria completa de 23/11 (regra 327): **2.794 verificações** (as 3 falhas de testes com a
+ordem antiga, ajustadas); depois, só os afetados de 328 a 331, sem falha; `banco-emails.py`: **1.108**,
+sem falha (25/11); `nota-fiscal.mjs`: 34; `nota-automatica.js`: 15. **Rodar a bateria completa no começo
+do próximo chat** (contêiner novo: montar o banco local, seção 6).
 
 **Mercado Pago:** conta do CNPJ com chave Pix; aplicação "Checkout Pro" (API de Preferences; trocar
 para a "API de Orders" quando o Mercado Pago marcar a data); na Netlify, `MERCADOPAGO_ACCESS_TOKEN`,
@@ -497,7 +517,7 @@ transação"): Pix comum pelo app do banco, conta do CNPJ confirmada, valor meno
 suporte do Mercado Pago.
 
 **Pendências e ofertas sem resposta:**
-1. **"Pode subir" do PR #5** (o Breno confere os passos 135 a 156 na prévia).
+1. **"Pode subir" do PR #5** (o Breno confere os passos 135 a 167 na prévia; antes, o A1 e o "Testar com a Prefeitura").
 2. **Pix Automático:** o Breno confere se a página da assinatura do Mercado Pago oferece o Pix
    Automático; se sim, `PIX_AUTOMATICO.real = true`; se não, suporte do Mercado Pago ou Asaas.
 3. **WhatsApp automático do código:** modelo de Autenticação criado no Gerenciador do WhatsApp. Em

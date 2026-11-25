@@ -483,7 +483,13 @@ nfews.prefeitura.sp.gov.br; o web service da Prefeitura responde 403 sem o certi
 service (3.4.1) e os schemas estão em notadomilhao.sf.prefeitura.sp.gov.br/manuais (os do leiaute 1
 copiados em `testes/nfse-sp-v01/`).
 
-**Nota fiscal automática (regra 331):** pronta e testada sem a Prefeitura de verdade. O primeiro
+**Nota fiscal automática (regra 331), 25/11 12h01:** o Breno enviou o A1 na prévia (BRENO COPPINI MARINHO
+LTDA, válido até 17/11/2027) e o "Testar com a Prefeitura" **conectou** (TLS e assinatura ok), mas a Prefeitura
+respondeu **Erro 1207** (prestador não autorizado) e **Erro 1647: o CNPJ está no CNC (Cadastro Nacional de
+Contribuintes) e deve emitir no ambiente nacional para fatos geradores a partir de 17/11/2026** (+ alerta 1651
+do IBS/CBS, Ato Conjunto RFB/CGIBS nº 4/2026). Ou seja: **a nota tem de sair pela NFS-e Nacional (Sefin
+Nacional, API REST com a DPS assinada, mTLS com o mesmo A1), não pelo web service de São Paulo.** Até adaptar,
+nota à mão no Emissor Nacional (nfse.gov.br) ou pela Contabilizei. Antes: O primeiro
 contato real é o **"Testar com a Prefeitura"** depois de o Breno enviar o A1 na prévia (Admin › Compras e
 notas). Se der erro de TLS (cadeia ICP-Brasil do servidor da Prefeitura) ou da Prefeitura, corrigir no
 `nota-fiscal.mjs` com a mensagem que aparecer.

@@ -233,6 +233,9 @@ resp = await pedir({ acao: "testar" });
 const t = await resp.json();
 ok(t.ok && sefin[0].url === `${SEFIN.teste}/nfse` && /<tpAmb>2<\/tpAmb>/.test(xmlMandado(0)) && /<vServ>1<\/vServ>/.test(xmlMandado(0)) && /Tudo certo: a NFS-e Nacional aceitou/.test(t.resultado),
   "\"Testar a emissão\": uma nota de R$ 1 na produção restrita — " + t.resultado);
+usarTransporte(async () => recusa("E0312", "O código de tributação nacional informado não está administrado pelo município."));
+const t3 = await (await pedir({ acao: "testar" })).json();
+ok(!t3.ok && /Erro E0312/.test(t3.resultado) && /Esperado no ambiente de testes da Receita/.test(t3.resultado), "E0312 no teste: explica que é do ambiente de testes (na produção, São Paulo tem o serviço)");
 
 console.log(falhas ? `\n${falhas} falha(s)` : "\nTudo certo.");
 process.exit(falhas ? 1 : 0);

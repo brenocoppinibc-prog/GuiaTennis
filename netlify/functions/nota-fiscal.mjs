@@ -382,7 +382,10 @@ async function testar() {
     const r = await mandarDps(d, cert, { numero: numeroDeTeste() });
     const resultado = r.sucesso
       ? `Tudo certo: a NFS-e Nacional aceitou a nota de teste${r.numero ? ` (n.º ${r.numero})` : ""} na produção restrita, sem valor fiscal.${r.alertas.length ? " " + resumoDoRetorno(r) : ""}`
-      : resumoDoRetorno(r) || "A Sefin Nacional recusou, sem dizer o motivo.";
+      : (resumoDoRetorno(r) || "A Sefin Nacional recusou, sem dizer o motivo.")
+        // Regra 333: na produção restrita, São Paulo não tem o 17.25.01; na produção, tem
+        // (conferido pelo Breno no Emissor Nacional em 25/11/2026).
+        + (r.erros.some(e => e.codigo === "E0312") ? " Esperado no ambiente de testes da Receita: na produção, São Paulo tem esse serviço. O teste real é a primeira nota em Produção." : "");
     await rpc("registrar_teste_da_nota", { p_resultado: resultado });
     return json(200, { ok: r.sucesso, resultado, erros: r.erros, alertas: r.alertas });
   } catch (e) {

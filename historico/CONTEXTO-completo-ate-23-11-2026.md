@@ -3001,6 +3001,29 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   hóspedes adoraram" do Booking e o "Pessoas mencionam" do Google Maps. Em Planos: "\"Sobre a
   academia\" com o resumo do que dizem as avaliações". Testes: `resumo-do-completo.js` (novo, 10),
   `cadastro.js`.
+- **331 (25/11) — a nota fiscal automática pela Prefeitura de São Paulo** ("não, já quero fazer
+  agora"). Dados da Contabilizei: em SP, ME/EPP do Simples emite pela Prefeitura (NFS-e Paulistana),
+  CCM 05930642, código 02917 para planos e anúncios, ISS 2,01% (muda com o faturamento). O manual do web
+  service (3.4.1, nov/2026, `notadomilhao.sf.prefeitura.sp.gov.br/manuais`) diz que o Simples ainda usa
+  o leiaute 1 (erro 641); o WSDL (ações `.../nfe/ws/envioRPS`, `testeenvio`, `cancelamentoNFe`, SOAP
+  1.1, `<Método>Request` com `VersaoSchema` e `MensagemXML`) veio de uma gravação pública da
+  `erpbrasil.edoc`; endereço `https://nfews.prefeitura.sp.gov.br/lotenfe.asmx`; link da nota
+  `nfe.prefeitura.sp.gov.br/contribuinte/notaprint.aspx?ccm=&nf=&cod=`. `netlify/functions/nota-fiscal.mjs`:
+  lê o .pfx (node-forge), confere o CNPJ 70120796000100 e a validade, guarda chave e certificado em PEM
+  no cofre (vault `nota_certificado`; a senha não fica); monta o RPS do leiaute 1 já na forma canônica,
+  a assinatura do RPS (86 posições, RSA-SHA1), a assinatura XML (enveloped, C14N, RSA-SHA1) e chama a
+  Prefeitura com TLS mútuo; "teste" = TesteEnvioLoteRPS (nada é emitido, nota "testada"), "producao" =
+  EnvioRPS com o RPS reservado no banco (mandar de novo nunca vira outra nota); estorno total =
+  CancelamentoNFe. O pagamento (aviso do Mercado Pago e estorno) anda a fila na hora (até 6 s) e o
+  `nota-fiscal-relogio.mjs` a cada 20 minutos (só no site de verdade). SQL `20261125120000`: a
+  configuração, a fila, o certificado, o e-mail "Sua nota fiscal" com o link para o e-mail da nota, o
+  aviso de erro ao admin, o lembrete do dia 1 (CSV para a Contabilizei até o dia 5 e a alíquota);
+  `avisar_compra_paga` só pede a nota à mão com a automática desligada. Admin › Compras e notas: o cartão
+  "Nota fiscal automática" (certificado, Testar com a Prefeitura, Processar a fila, Configurar) e a
+  situação da nota em cada compra ("Emitir a nota", "Emitir de novo", "nota n.º X Ver"). Pagamentos: "Ver a
+  nota fiscal". Privacidade e Termos em 25/11. Testes: `testes/nota-fiscal.mjs` (34, com o XML contra os
+  schemas oficiais em `testes/nfse-sp-v01/` e a assinatura conferida pelo lxml), `nota-automatica.js`
+  (15), `banco-emails.py` (1.108).
 
 ## 11. WhatsApp e mensagem para as academias
 

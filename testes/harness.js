@@ -89,6 +89,12 @@ async function abrir(opts = {}) {
     // sem ela, a função responde vazio, como fora do Brasil.
     if (u.includes('/.netlify/functions/onde')) return route.fulfill({ contentType: 'application/json', body: JSON.stringify(opts.onde || {}) });
     // opts.cnpj: o que a consulta da Receita responde (netlify/functions/cnpj.mjs).
+    // opts.notaFiscal(corpo, cabeçalhos): o que a função da nota fiscal responde
+    // (netlify/functions/nota-fiscal.mjs); __status escolhe o HTTP.
+    if (u.includes('/.netlify/functions/nota-fiscal')) {
+      const r = opts.notaFiscal ? await opts.notaFiscal(JSON.parse(route.request().postData() || '{}'), route.request().headers()) : { __status: 503, erro: 'desligado' };
+      return route.fulfill({ status: r.__status || 200, contentType: 'application/json', body: JSON.stringify(r) });
+    }
     if (u.includes('/.netlify/functions/cnpj')) return route.fulfill({ status: opts.cnpj ? 200 : 502, contentType: 'application/json', body: JSON.stringify(opts.cnpj || { erro: 'Não consegui falar com a Receita agora. Tente de novo em instantes.' }) });
     if (SITE && /\/app\.[a-f0-9]+\.js$/.test(u)) return route.fulfill({ contentType: 'application/javascript', body: fs.readFileSync(path.join(SITE, u.split('/').pop()), 'utf8') });
     if (u.startsWith(base)) return route.fulfill({ contentType: 'text/html', body: pagina });

@@ -71,7 +71,17 @@
 // A compra de plano (só no site de teste, por enquanto) passa igual.
 // Nada de pacote: só o que o Node do Netlify já tem (fetch).
 
+import { processarFila } from "./nota-fiscal.mjs";
+
 const MP = "https://api.mercadopago.com";
+// Regra 331: depois do aviso do Mercado Pago e do estorno, a fila da nota
+// fiscal anda na hora (a compra paga emite a nota; o estorno total a cancela),
+// sem passar de 6 segundos nem atrapalhar o pagamento. O relógio
+// (nota-fiscal-relogio.mjs) pega o que sobrar.
+async function andarComANota() {
+  try { await Promise.race([processarFila(), new Promise(ok => setTimeout(ok, 6000))]); }
+  catch (e) { console.error("nota fiscal:", e && e.message); }
+}
 const env = (nome) => (globalThis.Netlify?.env?.get(nome) ?? process.env[nome] ?? "").trim();
 const json = (status, obj) => new Response(JSON.stringify(obj), { status, headers: { "Content-Type": "application/json", "Cache-Control": "no-store" } });
 
@@ -394,7 +404,11 @@ export default async (req) => {
     return json(503, { erro: "desligado" });
   }
   try {
-    if (new URL(req.url).searchParams.get("mp") === "1") return await avisoDoMercadoPago(req);
+    if (new URL(req.url).searchParams.get("mp") === "1") {
+      const resposta = await avisoDoMercadoPago(req);
+      await andarComANota();
+      return resposta;
+    }
     let corpo = {};
     try { corpo = await req.json(); } catch { return json(400, { erro: "Corpo inválido." }); }
     if (corpo.acao === "conferir") return await conferirComOMercadoPago();
@@ -408,7 +422,11 @@ export default async (req) => {
     if (corpo.acao === "cobrar") return await cobrar(req, corpo.compra, corpo.noSite === true);
     if (corpo.acao === "cartao") return await cartaoNoSite(req, corpo.compra, corpo.cartao);
     if (corpo.acao === "consultar") return await consultar(corpo.compra);
-    if (corpo.acao === "estornar") return await estornar(corpo.compra);
+    if (corpo.acao === "estornar") {
+      const resposta = await estornar(corpo.compra);
+      await andarComANota();
+      return resposta;
+    }
     return json(400, { erro: "Ação inválida." });
   } catch (e) {
     console.error("pagamento:", e && e.message);

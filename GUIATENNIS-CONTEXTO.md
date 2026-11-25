@@ -1,7 +1,7 @@
 # GuiaTennis — contexto do projeto
 
 Versão enxuta (23/11/2026). Basta ler este arquivo para continuar o
-trabalho. O texto completo até 23/11/2026 (com o detalhe das regras 156 a 330) está em
+trabalho. O texto completo até 23/11/2026 (com o detalhe das regras 156 a 331) está em
 `historico/CONTEXTO-completo-ate-23-11-2026.md`; o anterior (regras 1 a 167, resumos de cada chat,
 todas as seções), em `historico/CONTEXTO-completo-ate-28-10-2026.md`;
 a descrição completa do PR #5 (seções 1 a 73, passos 1 a 99), em
@@ -10,7 +10,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 24/11/2026 (regra 330)
+**Atualizado em:** 25/11/2026 (regra 331)
 
 | | |
 |---|---|
@@ -335,7 +335,9 @@ sozinho vira "-", "Sob consulta"), numa linha
   conveniência (vistas recentes, última busca, hora das dicas).
 - **Funções da Netlify** (`netlify/functions/`): `onde.mjs` (cidade da
   conexão), `pagamento.mjs` (Mercado Pago e o pagamento de teste da
-  prévia), `cnpj.mjs` (Receita, para o "Conferir" do admin),
+  prévia), `nota-fiscal.mjs` e `nota-fiscal-relogio.mjs` (a NFS-e de São Paulo,
+  regra 331; usa o `node-forge` só para abrir o .pfx: a única dependência de
+  função), `cnpj.mjs` (Receita, para o "Conferir" do admin),
   `receber-email.mjs` (encaminha os e-mails do domínio, pelo Resend).
 - **E-mails** saem do banco pela fila `emails_a_enviar` (Resend, pg_net e
   pg_cron).
@@ -348,7 +350,7 @@ sozinho vira "-", "Sob consulta"), numa linha
   `supabase/aplicar.sh`: PR para a `main` → banco de **teste**; merge →
   banco de **verdade**. Depois, `supabase/conferir.sh` testa pela API o que
   o site lê. Resultado: Actions → "Banco de dados".
-- **Último SQL:** `20261116120000_fechamento_do_leilao` (96 arquivos na pasta; regra 284: o dia e a hora do fechamento do leilão em `leilao_config`, `proximo_fechamento()` pela config e `mudar_fechamento_do_leilao`, só o admin). Antes, `20261113130000_nome_do_logo_nos_emails` ( regra 260: o nome no alto dos e-mails em Arial negrito, "Guia" verde e "Tennis" dourado). Antes, `20261113120000_portugues_dos_emails` (regra 258: as 18 funções de e-mail com o texto revisado). Antes dele, `20261112120000_chat_com_o_guia_e_relatos`; antes, `20261111120000_feedback_so_o_admin_ve` ( `nota_do_guia` só para o admin, sai a `pagina_das_avaliacoes_do_guia` e o `sitemap()` volta sem `/avaliacoes`). Antes dele, `20261110160000_reserva_online` (coluna `reserva_link`, clique `reserva` e as funções dos números refeitas com ele). O `20261110150000_pagina_das_avaliacoes_do_guia` (regra 235) rodou só no banco de teste e saiu da pasta. O `20261105120000` (a mesma coisa com o Completo vendo quantos guardaram) rodou só no banco de teste e saiu da pasta. Os `20261029120000_textos_das_promocoes` (regra 176) e `20261029150000_textos_curtos_das_promocoes` (título 40, regra 177) rodaram só no banco de teste e saíram da pasta.
+- **Último SQL:** `20261125120000_nota_fiscal_automatica` (regra 331: `nota_configuracao`, `notas_fiscais`, o certificado no cofre e a fila; `avisar_compra_paga` e `minhas_compras` refeitos). Antes, `20261116120000_fechamento_do_leilao` (96 arquivos na pasta; regra 284: o dia e a hora do fechamento do leilão em `leilao_config`, `proximo_fechamento()` pela config e `mudar_fechamento_do_leilao`, só o admin). Antes, `20261113130000_nome_do_logo_nos_emails` ( regra 260: o nome no alto dos e-mails em Arial negrito, "Guia" verde e "Tennis" dourado). Antes, `20261113120000_portugues_dos_emails` (regra 258: as 18 funções de e-mail com o texto revisado). Antes dele, `20261112120000_chat_com_o_guia_e_relatos`; antes, `20261111120000_feedback_so_o_admin_ve` ( `nota_do_guia` só para o admin, sai a `pagina_das_avaliacoes_do_guia` e o `sitemap()` volta sem `/avaliacoes`). Antes dele, `20261110160000_reserva_online` (coluna `reserva_link`, clique `reserva` e as funções dos números refeitas com ele). O `20261110150000_pagina_das_avaliacoes_do_guia` (regra 235) rodou só no banco de teste e saiu da pasta. O `20261105120000` (a mesma coisa com o Completo vendo quantos guardaram) rodou só no banco de teste e saiu da pasta. Os `20261029120000_textos_das_promocoes` (regra 176) e `20261029150000_textos_curtos_das_promocoes` (título 40, regra 177) rodaram só no banco de teste e saíram da pasta.
 - **Coluna nova que o site lê:** `grant select (coluna) … to anon,
   authenticated` (a leitura é liberada coluna por coluna) e a coluna na
   lista de colunas novas do `lerPublico`. Função chamada pelo visitante
@@ -393,7 +395,7 @@ sozinho vira "-", "Sob consulta"), numa linha
   mais `onde.mjs`, `pagamento.mjs`, `cnpj.mjs`, `catalogo-meta.mjs` e `regiao.mjs`. O `falhas.txt`
   sempre aparece na lista (força erros de propósito).
 - **Gramática:** `testes/gramatica/` (LanguageTool pt-BR pelo Maven; o passo a passo no `LEIA.md`).
-- **Banco local** para o `testes/banco-emails.py` (**1.087 conferências**, 23/11/2026, regra 326,
+- **Banco local** para o `testes/banco-emails.py` (**1.108 conferências**, 25/11/2026, regra 331,
   nenhuma falha; o teste roda de novo SQLs antigos, e o
   `20261105130000` recoloca a trava dos cliques de antes: SQL que mexe em
   `cliques_tipo_valido` ou em `numeros_da_academia` é rodado de novo no começo
@@ -466,7 +468,7 @@ sozinho vira "-", "Sob consulta"), numa linha
 
 ## 9. Estado atual e pendências (23/11/2026, troca de chat)
 
-**PR #5** (`ccr-0a610d86-k6plx0` → `main`) com tudo até a **regra 330**; este chat acompanha o PR
+**PR #5** (`ccr-0a610d86-k6plx0` → `main`) com tudo até a **regra 331**; este chat acompanha o PR
 (`subscribe_pr_activity`). O "Banco de dados" desta branch é disparado à mão (`banco.yml`, `destino:
 teste`, `actions_run_trigger`); ele também leva o e-mail do código ao Supabase. **Conferir na prévia:**
 o assunto do e-mail do código deve chegar como "123456 é o seu código do GuiaTennis"; se chegar
@@ -512,24 +514,13 @@ suporte do Mercado Pago.
    os códigos do banco de teste), nunca pelo chat; depois, rodar o "Banco de dados".
 4. **Catálogo do WhatsApp Business** (preços definidos; fotos quadradas com o logo oferecidas).
 5. Carrosséis do Instagram e a plaquinha "Avalie no GuiaTennis" com QR (oferecidos).
-6. **Nota fiscal automática** (num PR novo depois do #5). O Breno **tem o e-CNPJ A1** (24/11). **A
-   Contabilizei respondeu (25/11): em São Paulo, ME/EPP do Simples emite pela Prefeitura (NFS-e
-   Paulistana), não pelo Emissor Nacional**; todo mês, o CSV das notas (Layout V.004) baixado no portal
-   da Prefeitura vai para a Contabilizei (Minhas Rotinas › Importar notas fiscais) até o dia 5. Códigos
-   nacionais que ela passou: anúncios e créditos (Promover, alcance) = item 17.25, tributação 172501,
-   NBS 114063300; planos = item 01.08, tributação 010801, NBS 117039900; descrição: "Prestação de
-   serviços de disponibilização de espaço publicitário, veiculação de anúncios e assinatura de planos
-   na plataforma GuiaTennis." Segunda resposta (25/11): **CCM 05930642**, já habilitado (o
-   web service autentica pelo e-CNPJ); **ISS 2,01%** (1ª faixa do Anexo III; muda com o faturamento, ver
-   "Notas Fiscais › Minhas Alíquotas" na Contabilizei); códigos municipais: **02690** (item 01.08, ligado
-   ao CNAE 6201-5/02) e **02917** (item 01.07, o padrão do CNAE 6319-4/00). **Decidido pela Contabilizei
-   (25/11): tudo (planos e anúncios/créditos) sai no código 02917**, ligado ao CNAE principal e
-   habilitado no CCM (o 02690 é só para web design sob encomenda). No admin, o código e a alíquota ficam
-   editáveis (lembrete no dia 1, junto do CSV). **Dados completos:** falta só o "pode subir" do PR #5
-   para começar o PR novo. Plano: o web service da NFS-e Paulistana (SOAP, assinado com o A1; o
-   "TesteEnvioLoteRPS" valida sem emitir), uma nota por compra paga com o código pelo tipo do produto,
-   o cancelamento junto com o estorno, o A1 enviado por tela do admin e guardado cifrado, e o lembrete
-   do CSV no dia 1. "Baixar planilha do mês" em Compras e notas (oferecido).
+6. **Nota fiscal automática: feita na regra 331 (25/11), no PR #5.** NFS-e Paulistana pelo web service
+   da Prefeitura (leiaute 1: o Simples Nacional ainda usa o 1), CCM 05930642, código 02917, ISS 2,01%.
+   Falta o Breno: **enviar o A1** em Admin › Compras e notas › Nota fiscal automática (na prévia vai
+   para o banco de teste; depois do merge, de novo no site de verdade), **"Testar com a Prefeitura"**
+   e, depois do merge, **Configurar › Ligada › Produção**. Todo dia 1, o lembrete do CSV para a
+   Contabilizei (até o dia 5) e da alíquota. Se a Prefeitura recusar o TLS do servidor dela (cadeia
+   ICP-Brasil), incluir a AC raiz no `nota-fiscal.mjs`. "Baixar planilha do mês" (oferecido).
 7. **Domínio na Meta (24/11):** a metatag `facebook-domain-verification` está no `<head>` do `index.html`
    (vale no guiatennis.com.br depois do merge; ou, sem esperar, o registro TXT no DNS); depois, "Verificar
    domínio" em Gerenciador de Negócios › Domínios.
@@ -593,6 +584,7 @@ mesmo histórico de 23/11 e nas descrições antigas do PR (`historico/PR5-descr
 - 328 (23/11) — a revisão na mesma ordem da ficha e a etiqueta do plano (Completo/Premium) no que o plano não mostra.
 - 329 (24/11) — todas as comodidades no Básico (Termos de 24/11).
 - 330 (24/11) — o resumo do Completo curto e com o que dizem as avaliações.
+- 331 (25/11) — a nota fiscal automática pela Prefeitura de São Paulo (certificado A1 no admin, teste e produção).
 
 ## 11. WhatsApp e mensagem para as academias
 

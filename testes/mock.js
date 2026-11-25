@@ -114,7 +114,7 @@
     if (window.__jogadorConfirmado) db.jogadores[db.jogadores.length - 1].email_confirmado_em = agora;
     window.__senhas["ana@exemplo.com"] = "senhadaana";
   }
-  let sessao = window.__admin ? { user: { id: "admin", email: ADMIN } }
+  let sessao = window.__admin ? { user: { id: "admin", email: ADMIN }, access_token: "token-do-admin" }
     : window.__jogador ? { user: { id: "j-ana", email: "ana@exemplo.com" } }
     : window.__academia ? { user: { id: "u-" + window.__academia, email: "quadra." + window.__academia + DOMINIO } } : null;
   // Para os testes trocarem de conta sem passar pelo login.
@@ -843,6 +843,7 @@
       if (a.p_oculta !== null && a.p_oculta !== undefined) y.oculta = a.p_oculta;
       return { data: { ...y }, error:null };
     }
+    function linkDaNotaMock(n) { return n && n.situacao === "emitida" && n.numero_nfe ? `https://nfe.prefeitura.sp.gov.br/contribuinte/notaprint.aspx?ccm=05930642&nf=${n.numero_nfe}&cod=${n.codigo_verificacao}` : null; }
     if (nome === "marcar_nota_emitida") {
       if (!souAdmin()) return erro("Só o admin marca a nota.", "42501");
       const k = (window.__compras || []).find(y => y.id === a.p_compra && y.situacao === "paga");
@@ -923,7 +924,7 @@
       if (!x || !possoNa(x.user_id, a.p_academia, "pagamentos")) return { data:null, error:null };
       const quem = (uid) => { const y = db.academia_acessos.find(z => z.user_id === uid); return y ? (y.nome_responsavel || y.email) : null; };
       return { data: (window.__compras || []).filter(y => y.academia_id === a.p_academia).slice().reverse()
-        .map(y => window.__semFuncoes ? y : { ...y, quem: y.quem || quem(y.user_id) }), error:null };
+        .map(y => window.__semFuncoes ? y : { ...y, quem: y.quem || quem(y.user_id), nota_link: linkDaNotaMock((window.__notas || {})[y.id]) }), error:null };
     }
     // Reembolso e estorno (regra 316). window.__pedidosReembolso guarda os pedidos.
     if (nome === "estorno_sugerido") {
@@ -959,6 +960,31 @@
       window.__estornoPedido = { compra: c.id, valor: a.p_valor, motivo: a.p_motivo };
       if (c.de_teste) { c.valor_estornado = a.p_valor; c.estornada_em = new Date().toISOString(); if (a.p_valor >= c.valor) c.situacao = "estornada"; if (c.reembolso) c.reembolso.situacao = "reembolsado"; return { data: "estornada", error:null }; }
       return { data: "mercadopago", error:null };
+    }
+    // Nota fiscal automática (regra 331): window.__notaCfg e window.__notas
+    // (por compra); window.__semNotaAutomatica finge o banco sem o SQL novo.
+    if (["nota_configuracao_do_admin", "notas_fiscais_do_admin", "salvar_nota_configuracao", "pedir_nota"].includes(nome)) {
+      if (window.__semNotaAutomatica) return erro(`Could not find the function public.${nome}`, "PGRST202");
+      if (!souAdmin()) return erro("Só o GuiaTennis.", "42501");
+      window.__notas = window.__notas || {};
+      const cfg = window.__notaCfg = { ligada: false, ambiente: "teste", ccm: "05930642", codigo_servico: "02917", aliquota: 0.0201, serie: "GT", proximo_rps: 1,
+        descricao: "Prestação de serviços de disponibilização de espaço publicitário, veiculação de anúncios e assinatura de planos na plataforma GuiaTennis.",
+        certificado_cnpj: null, certificado_titular: null, certificado_valido_ate: null, ultimo_teste_em: null, ultimo_teste: null, ...(window.__notaCfg || {}) };
+      const comContagem = () => { const n = Object.values(window.__notas); return { ...cfg, pendentes: n.filter(x => ["pendente", "processando", "cancelar"].includes(x.situacao)).length, com_erro: n.filter(x => x.situacao === "erro").length }; };
+      if (nome === "nota_configuracao_do_admin") return { data: comContagem(), error:null };
+      if (nome === "notas_fiscais_do_admin") return { data: Object.values(window.__notas).map(n => ({ ...n, link: linkDaNotaMock(n) })), error:null };
+      if (nome === "salvar_nota_configuracao") {
+        if (!["teste", "producao"].includes(a.p_ambiente)) return erro("Escolha Teste ou Produção.", "22023");
+        if (!/^[0-9]{4,5}$/.test(String(a.p_codigo || "").replace(/\D/g, ""))) return erro("O código do serviço tem 4 ou 5 números (ex.: 02917).", "22023");
+        if (!(a.p_aliquota >= 0 && a.p_aliquota <= 0.05)) return erro("A alíquota do ISS vai de 0% a 5%.", "22023");
+        Object.assign(cfg, { ligada: !!a.p_ligada, ambiente: a.p_ambiente, codigo_servico: String(a.p_codigo).replace(/\D/g, "").padStart(5, "0"), aliquota: Math.round(a.p_aliquota * 10000) / 10000, serie: String(a.p_serie || "").toUpperCase(), descricao: a.p_descricao });
+        return { data: comContagem(), error:null };
+      }
+      const k = (window.__compras || []).find(y => y.id === a.p_compra);
+      if (!k || k.situacao !== "paga") return erro("Só compra paga tem nota.", "22023");
+      if (window.__notas[k.id] && window.__notas[k.id].situacao === "emitida") return { data: "ja_emitida", error:null };
+      window.__notas[k.id] = { compra_id: k.id, situacao: "pendente", tentativas: 0, mensagem: null, atualizada_em: new Date().toISOString() };
+      return { data: "pendente", error:null };
     }
     if (nome === "compras_do_admin") {
       if (!souAdmin()) return erro("Só o admin vê as compras.", "42501");

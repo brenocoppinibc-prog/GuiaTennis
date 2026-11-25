@@ -491,10 +491,13 @@ notas). Se der erro de TLS (cadeia ICP-Brasil do servidor da Prefeitura) ou da P
 **Meta (25/11):** domínio verificado pelo registro TXT no registro.br (e a metatag no site); portfólio
 "GuiaTennis" com o Breno entrando pelo Instagram @guiatennis (o perfil "Coppini Marinho" do Facebook não
 tinha acesso; aba anônima resolveu); **falta a Meta aprovar a verificação da empresa**. Conta do WhatsApp
-"GuiaTenni" com o número novo; o Breno diz que "tudo na Meta está alinhado": **os segredos
-`WHATSAPP_TOKEN`, `WHATSAPP_NUMERO_ID` e `WHATSAPP_NUMERO_DE_TESTE` ainda não estão no GitHub** (conferido
-em 25/11 pelo "Banco de dados", que disse "Sem os segredos…"); quando o Breno salvar, rodar de novo e mandar
-o primeiro código de teste.
+"GuiaTenni" com o número novo; o Breno diz que "tudo na Meta está alinhado": os segredos
+`WHATSAPP_TOKEN`, `WHATSAPP_NUMERO_ID` (1303308766209946, o número novo **+55 11 93333-4613**, "Inscrito") e
+`WHATSAPP_NUMERO_DE_TESTE` **foram salvos em 25/11** e o "Banco de dados" guardou o token no banco de teste.
+Falta: o modelo de Autenticação **aprovado com o nome `codigo_guiatennis`** (pt_BR, botão "Copiar código"; é o
+nome que o SQL usa em `whatsapp_configuracao.modelo`), a forma de pagamento na conta "GuiaTenni" e o primeiro
+código de teste (uma disputa na prévia; Admin › "Avisos por e-mail" mostra "Código da disputa pelo WhatsApp" e o
+último erro da Meta).
 
 **Testes:** bateria completa de 23/11 (regra 327): **2.794 verificações** (as 3 falhas de testes com a
 ordem antiga, ajustadas); depois, só os afetados de 328 a 332, sem falha (332: `quadras-publicas.js`, `menu-e-home.js`, `jogador.js`, `buscas-e-avisos.js`, `chat-de-ajuda.js`); `banco-emails.py`: **1.108**,

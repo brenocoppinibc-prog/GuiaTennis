@@ -17,8 +17,31 @@ const check = (cor) => `<svg width="44" height="44" viewBox="0 0 24 24" style="f
 const ponto = (cor) => `<div style="flex:none;width:20px;height:20px;border-radius:50%;background:${cor};margin:20px 12px 0"></div>`;
 const numero = (n, cor, fundo) => `<div style="flex:none;width:64px;height:64px;border-radius:50%;background:${fundo};color:${cor};display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:700">${n}</div>`;
 
+// ---------- Peças da interface do site (os nomes reais dos botões e filtros) ----------
+const painel = (miolo, claro) => `<div style="margin-top:54px;padding:40px;border-radius:28px;background:${claro ? '#FFFFFF' : 'rgba(247,244,236,.07)'};border:2px solid ${claro ? 'rgba(31,77,61,.12)' : 'rgba(216,184,101,.28)'}">${miolo}</div>`;
+const lupa = (cor) => `<svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="${cor}" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>`;
+const mira = (cor) => `<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="${cor}" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.4" fill="${cor}"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>`;
+const UI = {
+  busca: (claro) => painel(`
+    <div style="display:flex;align-items:center;gap:22px;padding:28px 30px;border-radius:20px;background:${CREME};border:2px solid rgba(31,77,61,.2)">${lupa(VERDE)}<span style="font-size:40px;font-weight:500;color:${VERDE}">Moema, São Paulo</span><span style="width:3px;height:44px;background:${DOURADO}"></span></div>
+    <div style="display:flex;align-items:center;gap:16px;margin-top:28px;font-size:34px;font-weight:700;color:${claro ? VERDE : DOURADO_CLARO}">${mira(claro ? VERDE : DOURADO_CLARO)} Usar minha localização</div>`, claro),
+  filtros: (claro) => painel(`<div style="display:flex;flex-wrap:wrap;gap:18px">${[['Aulas', 1], ['Locação', 0], ['Coberta', 1], ['Saibro', 0], ['Rápida', 0], ['Crianças', 0], ['Quadras públicas', 0]].map(([n, on]) => `
+    <span style="padding:16px 28px;border-radius:999px;font-size:32px;font-weight:600;${on ? `background:${claro ? VERDE : DOURADO_CLARO};color:${claro ? CREME : VERDE}` : `border:2px solid ${claro ? 'rgba(31,77,61,.35)' : 'rgba(247,244,236,.4)'};color:${claro ? VERDE : CREME}`}">${n}</span>`).join('')}</div>
+    <div style="margin-top:30px;font-size:30px;font-weight:500;opacity:.8">Ordenar: <b>Mais perto</b> · Mais bem avaliadas · Menor preço</div>`, claro),
+  ficha: (claro) => painel(['Opções para jogar, com os preços', 'Estrutura: piso, cobertura e comodidades', 'Avaliações de quem joga', 'Horário e como chegar'].map((x, i) => `
+    <div style="display:flex;align-items:center;gap:22px;padding:${i ? '24px' : '0'} 0 24px;${i < 3 ? `border-bottom:2px solid ${claro ? 'rgba(31,77,61,.1)' : 'rgba(247,244,236,.12)'}` : 'padding-bottom:0'}">
+      <span style="flex:none;width:18px;height:18px;border-radius:50%;background:${claro ? DOURADO : DOURADO_CLARO}"></span><span style="font-size:36px;font-weight:500">${x}</span></div>`).join(''), claro),
+  whatsapp: (claro) => painel(`
+    <div style="display:flex;align-items:center;justify-content:center;gap:20px;padding:30px;border-radius:20px;background:#1F7A4D;color:#FFFFFF;font-size:40px;font-weight:700">
+      <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-12.4 7.4L3 20.5l1.6-5.4A8.4 8.4 0 1 1 21 11.5z"/></svg>Falar no WhatsApp</div>
+    <div style="margin-top:26px;text-align:center;font-size:30px;font-weight:500;opacity:.8">A conversa é diretamente com a academia</div>`, claro),
+  varias: (claro) => painel(`
+    <div style="font-size:38px;font-weight:700">Peça o preço a várias academias de uma vez</div>
+    <div style="margin-top:18px;font-size:32px;font-weight:500;opacity:.85">Uma mensagem pronta para cada uma; você envia pelo WhatsApp.</div>`, claro),
+};
+
 // Um cartão do carrossel. tom "verde" (fundo da marca) ou "creme" (o creme do site).
-function slide({ tom = 'verde', eyebrow = '', titulo = '', texto = '', itens = [], numerados = false, pontos = false, rodape = '', quadra = 0, pagina = '', grande = false }) {
+function slide({ tom = 'verde', eyebrow = '', titulo = '', texto = '', itens = [], numerados = false, pontos = false, ui = '', rodape = '', quadra = 0, pagina = '', grande = false }) {
   const claro = tom === 'creme';
   const cor = claro ? VERDE : CREME, destaque = claro ? DOURADO : DOURADO_CLARO;
   const lista = itens.length ? `<div style="display:flex;flex-direction:column;gap:34px;margin-top:54px">${itens.map((t, i) => `
@@ -34,6 +57,7 @@ function slide({ tom = 'verde', eyebrow = '', titulo = '', texto = '', itens = [
     <h1 style="margin:0;font-size:${grande ? 86 : 66}px;line-height:1.1;font-weight:700;letter-spacing:-.5px">${titulo}</h1>
     ${texto ? `<p style="margin:40px 0 0;font-size:${grande ? 44 : 40}px;line-height:1.38;font-weight:500;color:${grande ? destaque : cor};opacity:${grande ? 1 : .92}">${texto}</p>` : ''}
     ${lista}
+    ${ui ? UI[ui](claro) : ''}
   </div>
   ${rodape ? `<div style="position:absolute;left:80px;right:80px;bottom:150px;font-size:36px;font-weight:700;color:${destaque}">${rodape}</div>` : ''}
   <div class="pe" style="left:80px;bottom:70px;font-size:28px;color:${cor}">guiatennis.com.br</div>
@@ -54,25 +78,28 @@ function stories({ eyebrow = '', titulo = '', texto = '' }) {
   <div class="linha" style="bottom:150px;font-size:38px;font-weight:500;opacity:.92">@guiatennis</div>`, 700);
 }
 
-// ---------- Carrossel 1 (quinta): a nossa ideia ----------
-const ideia = [
-  { grande: true, quadra: 560, eyebrow: 'Por que o GuiaTennis existe', titulo: 'Encontrar aula de tênis em São Paulo deveria ser simples.', texto: 'Foi por isso que criamos o GuiaTennis.', rodape: 'Deslize ›' },
-  { tom: 'creme', pontos: true, eyebrow: 'Você já passou por isso?', titulo: 'Procurar aula ou quadra ainda dá trabalho.', itens: [
-    'Você chama várias academias e quase nenhuma informa o preço.',
-    'Só descobre se a quadra é coberta, de saibro ou rápida depois de ir até lá.',
-    'A academia perto de casa só aparece meses depois, por indicação.'] },
-  { eyebrow: 'A nossa ideia', titulo: 'Todas as quadras e academias de tênis em um só lugar.', texto: 'Com o que importa antes de você chamar: preço, estrutura, horários e avaliações de quem joga.' },
-  { tom: 'creme', eyebrow: 'Como funciona', titulo: 'Em três passos.', numerados: true, itens: [
-    'Busque pelo seu bairro, pelo CEP ou pela sua localização.',
-    'Compare preço, estrutura e nota de cada academia.',
-    'Fale direto com a academia pelo WhatsApp.'] },
-  { eyebrow: 'O nosso compromisso', titulo: 'Feito para quem joga.', itens: [
-    'Grátis para quem joga.',
-    'Sem cadastro para buscar e comparar.',
-    'Sem taxa e sem intermediário: você combina tudo direto com a academia.',
-    'Avaliações só de contas com e-mail confirmado.'] },
-  { tom: 'creme', eyebrow: 'Para as academias', titulo: 'Um espaço próprio: o GuiaTennis Parceiros.', texto: 'A academia mantém a ficha completa, responde às avaliações e recebe mais alunos. Os 15 primeiros donos a chegar ganham o selo "Fundadora do GuiaTennis", para sempre.' },
-  { grande: true, quadra: 560, eyebrow: 'Domingo, 29 de novembro', titulo: 'O novo GuiaTennis chega para todos.', texto: 'Ative as notificações do perfil para acompanhar o lançamento.', rodape: 'Salve e compartilhe com quem joga' },
+// ---------- Carrossel 1 (quinta): como usar o site, passo a passo ----------
+// O perfil já apresentou a ideia (25/11/2026: "já falamos algumas coisas sobre a ideia,
+// mas não muito como usar o site"): agora o passo a passo, com os botões e os filtros
+// com os nomes que estão no site.
+const passoAPasso = [
+  { grande: true, quadra: 560, eyebrow: 'Passo a passo', titulo: 'Como encontrar aula de tênis perto de você em 1 minuto.', texto: 'Salve para usar quando precisar.', rodape: 'Deslize ›' },
+  { tom: 'creme', ui: 'busca', eyebrow: 'Passo 1', titulo: 'Diga onde você está.', texto: 'Em guiatennis.com.br, digite o bairro ou o CEP, ou toque em "Usar minha localização".' },
+  { ui: 'filtros', eyebrow: 'Passo 2', titulo: 'Filtre do seu jeito.', texto: 'Aula ou locação, piso, quadra coberta e aulas para crianças.' },
+  { tom: 'creme', ui: 'ficha', eyebrow: 'Passo 3', titulo: 'Abra a ficha da academia.', texto: 'Tudo o que você precisa saber antes de chamar:' },
+  { ui: 'whatsapp', eyebrow: 'Passo 4', titulo: 'Chame direto no WhatsApp.', texto: 'Sem intermediário e sem taxa: você combina o horário e o valor com a academia.' },
+  { tom: 'creme', ui: 'varias', eyebrow: 'Dica', titulo: 'Quer comparar preços?', texto: 'Na lista da busca, peça o preço a várias academias de uma vez.' },
+  { grande: true, quadra: 560, eyebrow: 'Teste agora', titulo: 'guiatennis.com.br', texto: 'Mande para quem quer começar a jogar.', rodape: 'O link está na bio' },
+];
+// ---------- Carrossel 4 (semana que vem): funções que facilitam ----------
+const funcoes = [
+  { grande: true, quadra: 560, eyebrow: 'Você sabia?', titulo: '5 funções do GuiaTennis que facilitam a sua vida.', texto: 'Salve para não esquecer.', rodape: 'Deslize ›' },
+  { tom: 'creme', eyebrow: '1 · Comparar academias', titulo: 'Lado a lado.', texto: 'Escolha algumas academias e veja preço, estrutura e nota uma ao lado da outra.' },
+  { eyebrow: '2 · Favoritas', titulo: 'Guarde as que você gostou.', texto: 'Toque no coração da ficha e encontre as academias depois, no menu, em "Favoritas".' },
+  { tom: 'creme', eyebrow: '3 · Vou viajar', titulo: 'A raquete vai junto.', texto: 'Informe a cidade e o lugar em que você vai ficar e veja as quadras mais perto de lá.' },
+  { eyebrow: '4 · Quadras públicas', titulo: 'Jogar sem pagar.', texto: 'Use o filtro "Quadras públicas" para encontrar as quadras gratuitas em parques e praças.' },
+  { tom: 'creme', eyebrow: '5 · Sugerir', titulo: 'Falta alguma quadra?', texto: 'Toque em "Sugerir uma quadra ou academia", no fim da busca ou no menu. A equipe do GuiaTennis confere e coloca no site.' },
+  { grande: true, quadra: 560, eyebrow: 'Conte para nós', titulo: 'Qual delas você vai usar primeiro?', texto: 'Responda nos comentários.', rodape: 'guiatennis.com.br · link na bio' },
 ];
 // ---------- Carrossel 2 (domingo): o lançamento ----------
 const lancamento = [
@@ -113,9 +140,10 @@ const historias = {
   const browser = await chromium.launch();
   const lista = [];
   const carrossel = (nome, cartoes) => cartoes.forEach((c, i) => lista.push([`${nome}-${i + 1}.png`, slide({ ...c, pagina: `${i + 1}/${cartoes.length}` }), 1080, 1350]));
-  carrossel('carrossel-1-quinta-ideia', ideia);
+  carrossel('carrossel-1-quinta-passo-a-passo', passoAPasso);
   carrossel('carrossel-2-domingo-lancamento', lancamento);
   carrossel('carrossel-3-segunda-academias', academias);
+  carrossel('carrossel-4-semana-que-vem-funcoes', funcoes);
   Object.entries(historias).forEach(([nome, s]) => lista.push([nome, stories(s), 1080, 1920]));
   const so = process.argv.slice(2);
   for (const [nome, html, w, h] of lista) {

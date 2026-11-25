@@ -1,19 +1,21 @@
 # Lançamento do novo GuiaTennis no Instagram (domingo, 29/11/2026)
 
-A linha: **conversar antes de vender**. Primeiro, a ideia e o porquê (quinta e sexta); depois, o site novo
-(domingo); por fim, as academias (segunda). Em todo post, um convite para o público responder: comentário,
-enquete ou pergunta. Quem responde vê mais os posts seguintes e vira contato.
+A linha: **conversar e ensinar**. O perfil já apresentou a ideia; agora mostra **como usar o site**, em
+carrosséis de passo a passo e, principalmente, em **vídeos com você falando**: no perfil, eles tiveram de 2 a
+10 vezes mais visualizações que os carrosséis (1.416 e 627, contra 140 a 293). Em todo post, um convite para o
+público responder: comentário, enquete ou pergunta. Quem responde vê mais os posts seguintes e vira contato.
 
 ## Cronograma
 
 | Quando | O quê | Arquivos |
 |---|---|---|
 | **Quarta (hoje)** | Trocar a bio (abaixo). Conferir as fichas da região em que for divulgar mais (preço e foto). | — |
-| **Quinta, 12h** | Carrossel "A nossa ideia" + Stories com contagem regressiva e enquete | `carrossel-1-quinta-ideia-1` a `7`, `stories-1`, `stories-2` |
-| **Sexta, 18h** | Reels do fundador (você falando, roteiro abaixo) + Stories com caixa de perguntas | `stories-3` |
+| **Quinta, 12h** | Carrossel "Como encontrar aula de tênis em 1 minuto" (passo a passo) + Stories com contagem regressiva e enquete | `carrossel-1-quinta-passo-a-passo-1` a `7`, `stories-1`, `stories-2` |
+| **Sexta, 18h** | Reels 1, você falando com o site na tela (roteiro abaixo) + Stories com caixa de perguntas | `stories-3` |
 | **Sábado** | Stories respondendo às perguntas de sexta e repostando as academias que já estão no Guia | — |
 | **Domingo, 18h** | Carrossel "Chegou" + Reels gravando a tela + Stories com o link. Fixar os carrosséis de quinta e de domingo no perfil | `carrossel-2-domingo-lancamento-1` a `7`, `stories-4` |
 | **Segunda, 12h** | Carrossel para academias + Stories + mensagem no WhatsApp para cada academia | `carrossel-3-segunda-academias-1` a `5`, `stories-5` |
+| **Semana que vem** | Carrossel "5 funções que facilitam" (quarta) e os Reels 2, 3 e 4 (terça, quinta e sábado, 18h) | `carrossel-4-semana-que-vem-funcoes-1` a `7` |
 
 ## Bio
 
@@ -26,14 +28,12 @@ Destaques fixos: **Como usar** (o Reels de domingo), **Academias** (o carrossel 
 
 ## Legendas
 
-**Quinta — "A nossa ideia"**
+**Quinta — "Como encontrar aula de tênis em 1 minuto"**
 
-> Encontrar aula de tênis em São Paulo deveria ser simples. Muitas vezes não é: quase nenhuma academia
-> informa o preço, a quadra só se conhece indo até lá e a academia perto de casa aparece por acaso.
+> Aula de tênis perto de você em 4 passos: diga onde você está, filtre do seu jeito, abra a ficha da
+> academia e chame direto no WhatsApp. Sem cadastro, sem taxa e sem intermediário.
 >
-> Criamos o GuiaTennis para mudar isso: as quadras e academias de tênis em um só lugar, com preço,
-> estrutura e avaliações de quem joga. Grátis, sem cadastro e sem taxa.
->
+> Salve este post para usar quando precisar e mande para quem quer começar a jogar.
 > No domingo, o novo GuiaTennis chega para todos.
 >
 > 💬 Conte nos comentários: em que bairro você joga?
@@ -76,21 +76,38 @@ Destaques fixos: **Como usar** (o Reels de domingo), **Academias** (o carrossel 
 4. **Domingo — `stories-4`:** figurinha de **link** para guiatennis.com.br. Em seguida, a gravação da tela.
 5. **Segunda — `stories-5`:** figurinha de **link** para guiatennis.com.br/parceiros.
 
-## Reels de sexta: o fundador (30 a 40 segundos)
+## Reels com você falando (o formato que mais funciona no perfil)
 
-Gravado no celular, na vertical, de preferência numa quadra. Fale olhando para a câmera, com legenda
-automática ligada. É o post que mais cria conexão: as pessoas seguem pessoas.
+Como os dois vídeos que mais deram certo: você olhando para a câmera, a frase-gancho escrita na tela nos
+primeiros 3 segundos e legenda automática ligada. Para mostrar o site atrás de você, use o efeito **"Tela
+verde"** do Instagram (Reels › Efeitos › Tela verde) com um print do site. De 20 a 35 segundos cada.
 
-1. **Gancho (até 3 s):** "Por que é tão difícil saber o preço de uma aula de tênis em São Paulo?"
-2. **Quem é você (5 s):** "Eu sou o Breno, criador do GuiaTennis."
-3. **A história (10 a 15 s):** conte, com as suas palavras, quando você sentiu esse problema (procurando
-   aula, quadra ou academia para alguém). Uma situação real, curta.
-4. **A ideia (10 s):** "Por isso criamos o GuiaTennis: as quadras e academias de tênis em um só lugar, com
-   preço, estrutura e avaliações de quem joga, e você fala direto com a academia pelo WhatsApp."
-5. **O convite (5 s):** "Domingo, o novo GuiaTennis chega para todos. Siga o perfil para não perder."
+**Reels 1 (sexta) — "Como achar aula de tênis perto de você"**
+- Texto na tela: **"Aula de tênis perto de você em 1 minuto"**
+- "Quer jogar tênis e não sabe por onde começar? Olha só." (tela verde com a busca) "Entra no
+  guiatennis.com.br, digita o seu bairro ou toca em 'Usar minha localização'." (print da lista) "Aparecem as
+  academias mais perto, com o preço." (print da ficha) "Abre a que você gostou, vê a quadra, o preço e as
+  avaliações e chama direto no WhatsApp. Sem taxa. Salva este vídeo e manda para quem quer começar."
 
-Legenda: "Domingo, o novo GuiaTennis chega para todos. Conte nos comentários o que mais dificulta
-encontrar aula de tênis para você."
+**Reels 2 — "Quanto custa aula de tênis em São Paulo?"**
+- Texto na tela: **"Quanto custa aula de tênis em SP?"**
+- "Essa é a pergunta que mais recebemos. Depende do bairro e do tipo de aula: individual, em dupla ou em
+  grupo." (tela verde com o filtro "Menor preço") "No GuiaTennis, você ordena por menor preço e vê o valor de
+  cada academia antes de chamar. Comenta o seu bairro que eu respondo com as opções de lá."
+
+**Reels 3 — "Seu filho quer jogar tênis?"**
+- Texto na tela: **"Aula de tênis para crianças perto de você"**
+- "Seu filho quer jogar tênis? Usa o filtro 'Crianças' no GuiaTennis." (print do filtro) "Aparecem só as
+  academias com aula infantil, com a idade de cada turma e o preço. Manda para a mãe ou o pai que está
+  procurando."
+
+**Reels 4 — "Vai viajar? Leva a raquete"**
+- Texto na tela: **"Vai viajar? Leve a raquete"**
+- "Vai viajar e quer jogar tênis lá? No menu do GuiaTennis, toca em 'Vou viajar', informa a cidade e onde
+  você vai ficar, e aparecem as quadras mais perto. Salva para a próxima viagem."
+
+Legenda de todos: a frase do texto na tela, mais "Link na bio: guiatennis.com.br" e uma pergunta para os
+comentários.
 
 ## Reels de domingo: o site na prática (15 segundos)
 

@@ -512,13 +512,19 @@ suporte do Mercado Pago.
    os códigos do banco de teste), nunca pelo chat; depois, rodar o "Banco de dados".
 4. **Catálogo do WhatsApp Business** (preços definidos; fotos quadradas com o logo oferecidas).
 5. Carrosséis do Instagram e a plaquinha "Avalie no GuiaTennis" com QR (oferecidos).
-6. **Nota fiscal automática** no Emissor Nacional, num PR novo depois do #5; "Baixar planilha do mês"
-   em Compras e notas (oferecido). O Breno **já tem o e-CNPJ A1** (24/11). Combinado: ele emite uma
-   nota à mão no Emissor Nacional com o A1 para confirmar o cadastro e o código do serviço; no PR
-   novo, o admin envia o arquivo .pfx e a senha por uma tela própria (nunca pelo chat nem pelo GitHub),
-   guardados cifrados fora das variáveis da Netlify (o limite de 4 KB das funções não comporta o
-   certificado); a função assina a DPS e manda à API do Sefin Nacional (primeiro na produção restrita);
-   aviso 30 dias antes de o A1 vencer.
+6. **Nota fiscal automática** (num PR novo depois do #5). O Breno **tem o e-CNPJ A1** (24/11). **A
+   Contabilizei respondeu (25/11): em São Paulo, ME/EPP do Simples emite pela Prefeitura (NFS-e
+   Paulistana), não pelo Emissor Nacional**; todo mês, o CSV das notas (Layout V.004) baixado no portal
+   da Prefeitura vai para a Contabilizei (Minhas Rotinas › Importar notas fiscais) até o dia 5. Códigos
+   nacionais que ela passou: anúncios e créditos (Promover, alcance) = item 17.25, tributação 172501,
+   NBS 114063300; planos = item 01.08, tributação 010801, NBS 117039900; descrição: "Prestação de
+   serviços de disponibilização de espaço publicitário, veiculação de anúncios e assinatura de planos
+   na plataforma GuiaTennis." Falta: o **CCM** da empresa, a habilitação para emitir NFS-e no portal da
+   Prefeitura, os **códigos de serviço municipais** de São Paulo (5 números) dos dois tipos e a alíquota
+   que vai na nota. Plano: o web service da NFS-e Paulistana (SOAP, assinado com o A1; o
+   "TesteEnvioLoteRPS" valida sem emitir), uma nota por compra paga com o código pelo tipo do produto,
+   o cancelamento junto com o estorno, o A1 enviado por tela do admin e guardado cifrado, e o lembrete
+   do CSV no dia 1. "Baixar planilha do mês" em Compras e notas (oferecido).
 7. **Domínio na Meta (24/11):** a metatag `facebook-domain-verification` está no `<head>` do `index.html`
    (vale no guiatennis.com.br depois do merge; ou, sem esperar, o registro TXT no DNS); depois, "Verificar
    domínio" em Gerenciador de Negócios › Domínios.

@@ -470,7 +470,7 @@ sozinho vira "-", "Sob consulta"), numa linha
 
 **PR #5** (`ccr-0a610d86-k6plx0` → `main`) com tudo até a **regra 331**: verde, prévia no ar, descrição
 em dia (passos até o 167) e o SQL `20261125120000_nota_fiscal_automatica` já rodou no banco de teste
-(25/11). Este chat deixou de acompanhar o PR: **o chat novo se inscreve com `subscribe_pr_activity`**.
+(25/11). O chat de 25/11 (tarde) acompanha o PR; chat novo se inscreve de novo com `subscribe_pr_activity`.
 O "Banco de dados" desta branch é disparado à mão (`banco.yml`, `destino: teste`,
 `actions_run_trigger`); ele também leva o e-mail do código ao Supabase. **Conferir na prévia:** o
 assunto do e-mail do código deve chegar como "123456 é o seu código do GuiaTennis"; se chegar escrito
@@ -491,9 +491,10 @@ notas). Se der erro de TLS (cadeia ICP-Brasil do servidor da Prefeitura) ou da P
 **Meta (25/11):** domínio verificado pelo registro TXT no registro.br (e a metatag no site); portfólio
 "GuiaTennis" com o Breno entrando pelo Instagram @guiatennis (o perfil "Coppini Marinho" do Facebook não
 tinha acesso; aba anônima resolveu); **falta a Meta aprovar a verificação da empresa**. Conta do WhatsApp
-"GuiaTenni" com o número novo; o Breno diz que "tudo na Meta está alinhado": **conferir se os segredos
-`WHATSAPP_TOKEN`, `WHATSAPP_NUMERO_ID` e `WHATSAPP_NUMERO_DE_TESTE` estão no GitHub** (rodar o "Banco de
-dados": o registro diz "Sem os segredos…" se faltarem) e mandar o primeiro código de teste.
+"GuiaTenni" com o número novo; o Breno diz que "tudo na Meta está alinhado": **os segredos
+`WHATSAPP_TOKEN`, `WHATSAPP_NUMERO_ID` e `WHATSAPP_NUMERO_DE_TESTE` ainda não estão no GitHub** (conferido
+em 25/11 pelo "Banco de dados", que disse "Sem os segredos…"); quando o Breno salvar, rodar de novo e mandar
+o primeiro código de teste.
 
 **Testes:** bateria completa de 23/11 (regra 327): **2.794 verificações** (as 3 falhas de testes com a
 ordem antiga, ajustadas); depois, só os afetados de 328 a 331, sem falha; `banco-emails.py`: **1.108**,

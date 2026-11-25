@@ -566,7 +566,7 @@ suporte do Mercado Pago.
    `WHATSAPP_NUMERO_ID` (o ID do número novo) e `WHATSAPP_NUMERO_DE_TESTE` (5511927456457, que recebe
    os códigos do banco de teste), nunca pelo chat; depois, rodar o "Banco de dados".
 4. **Catálogo do WhatsApp Business** (preços definidos; fotos quadradas com o logo oferecidas).
-5. Carrosséis do Instagram e a plaquinha "Avalie no GuiaTennis" com QR (oferecidos).
+5. **Lançamento no Instagram no domingo, 29/11** (25/11): kit em `divulgacao/lancamento/` (`ROTEIRO.md` com o cronograma de quinta a segunda, legendas, Stories, roteiro do Reels do fundador e do Reels de tela, bio e mensagem às academias; 3 carrosséis e 5 Stories gerados por `gerar-lancamento.js`, com o visual do `gerar-imagens.js`; a pasta dá 404 no site). A plaquinha "Avalie no GuiaTennis" com QR (oferecida).
 6. **Nota fiscal automática: regras 331 e 333 (25/11), no PR #5, pela NFS-e Nacional** (código 172501, série 1,
    CCM 05930642 como IM, ISS 2,01%). O A1 já foi enviado na prévia. Falta o Breno: **"Testar a emissão"** na prévia
    (Admin › Compras e notas; uma nota de R$ 1 na produção restrita, sem valor fiscal); depois do merge, enviar o A1

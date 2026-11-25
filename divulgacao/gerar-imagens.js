@@ -176,7 +176,9 @@ const logoEmPe = (guia) => `<!doctype html><html><head><meta charset="utf-8">
 </head><body>${logo(600, {})}${nomeSvg(120, guia, '#B8933F')}</body></html>`;
 const quadradoComNome = sozinho(1080, { comNome: true });
 
-(async () => {
+// O kit de lançamento (divulgacao/lancamento/gerar-lancamento.js) usa o mesmo visual.
+module.exports = { rede, NOME_CLARO, nomeSvg, FONTE, FUNDO, quadraEm, logo };
+if (require.main === module) (async () => {
   const browser = await chromium.launch();
   const imagens = [
     [path.join(RAIZ, 'favicon-32.png'), sozinho(32, {}), 32, 32],

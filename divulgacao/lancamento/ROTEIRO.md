@@ -38,7 +38,7 @@ Cada peça segue a mesma ordem (a dos grandes perfis de produto, como o Nubank e
 
 | Quando | O quê | Arquivos |
 |---|---|---|
-| **Quarta (hoje)** | Trocar a bio e a categoria (abaixo). Conferir as fichas do bairro que você vai mostrar nos vídeos (preço e foto). | — |
+| **Quinta, de manhã** | Trocar a bio e a categoria (abaixo). Conferir as fichas do bairro que você vai mostrar nos vídeos (preço e foto). | — |
 | **Quinta, 12h** | Carrossel "Pare de mandar mensagem para 10 academias" (passo a passo) + Stories com contagem regressiva e enquete | `carrossel-1-quinta-passo-a-passo-1` a `7`, `stories-1`, `stories-2` |
 | **Sexta, 18h** | Reels 1, você falando com o site na tela + Stories "Em que bairro você joga?" | `stories-3` |
 | **Sábado** | Stories respondendo aos bairros e repostando as academias que já estão no Guia (prova social) | — |

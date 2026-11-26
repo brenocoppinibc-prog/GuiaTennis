@@ -10,7 +10,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 25/11/2026 (regra 333)
+**Atualizado em:** 26/11/2026 (regra 333, kit do Instagram, troca de chat)
 
 | | |
 |---|---|
@@ -466,11 +466,26 @@ sozinho vira "-", "Sob consulta"), numa linha
   SQL novo (05/11: o da regra 209 não rodou). Conferir em Actions e, se faltar,
   rodar à mão no banco de teste (`banco.yml`, `destino: teste`, na branch do PR).
 
-## 9. Estado atual e pendências (25/11/2026, troca de chat)
+## 9. Estado atual e pendências (26/11/2026, troca de chat)
 
 **PR #5** (`ccr-0a610d86-k6plx0` → `main`) com tudo até a **regra 333**: verde, prévia no ar, descrição
-em dia (passos até o 171) e o SQL `20261125120000_nota_fiscal_automatica` já rodou no banco de teste
-(25/11). O chat de 25/11 (tarde) acompanha o PR; chat novo se inscreve de novo com `subscribe_pr_activity`.
+em dia (passos até o 171) e os SQL `20261125120000_nota_fiscal_automatica` e
+`20261125150000_nota_fiscal_nacional` já rodaram no banco de teste (25/11; o `registrar_nota` do 333 ganhou
+depois o aviso `nota_cancelada`, que só entra no banco de verdade com o merge). **O chat de 25-26/11 deixou de
+acompanhar o PR: o chat novo se inscreve com `subscribe_pr_activity`.**
+
+**Lançamento no domingo, 29/11, e a nova fase (26/11):** o Breno quer "ativar o GuiaTennis no domingo para
+todos". O site está pronto; o foco passa a ser **divulgar e trazer academias** (fichas completas com preço e
+foto primeiro, como o Airbnb e o iFood). O Claude vira manutenção semanal (corrigir o que usuários e academias
+apontarem e ajustar pelas Metas do admin), sem detalhar o que só o Breno percebe. Antes de domingo: o "pode
+subir" do PR #5. Depois do merge: A1 no site de verdade e nota em Produção, Search Console, "Verificar domínio"
+na Meta. **Kit do Instagram** em `divulgacao/lancamento/` (`ROTEIRO.md`: estratégia "carrossel explica, vídeo
+'Testei' prova, você falando conecta", gatilhos verdadeiros, cronograma de quinta a segunda, legendas, Stories,
+destaques com o dia de criar cada um, roteiros dos vídeos e mensagem às academias; imagens por
+`gerar-lancamento.js`: 4 carrosséis, 5 Stories, 6 capas de destaque e 5 Stories de "Dúvidas"). Perfil
+@guiatennis em 26/11: 83 seguidores, 6 posts; os vídeos com o rosto renderam 1.416 e 627 visualizações, os
+carrosséis de 140 a 293. Análise do público de SP feita na conversa (adultos A/B das Zonas Sul e Oeste, pais
+de crianças, locação; janeiro é o pico; chuva de dezembro a março vende "Coberta").
 O "Banco de dados" desta branch é disparado à mão (`banco.yml`, `destino: teste`,
 `actions_run_trigger`); ele também leva o e-mail do código ao Supabase. **Conferir na prévia:** o
 assunto do e-mail do código deve chegar como "123456 é o seu código do GuiaTennis"; se chegar escrito
@@ -480,9 +495,8 @@ corrigidos no próprio arquivo de SQL antigo (regras 323, 324, 326, 328 e 329: `
 merge. **Ambiente do Claude:** este chat criou o ambiente "GuiaTennis" (rede liberada para
 prefeitura.sp.gov.br, notadomilhao.sf.prefeitura.sp.gov.br, nfe.prefeitura.sp.gov.br,
 nfews.prefeitura.sp.gov.br e, na regra 333, www.gov.br, sefin.producaorestrita.nfse.gov.br e
-adn.producaorestrita.nfse.gov.br; a Sefin responde 403 sem o certificado). O manual do web
-service (3.4.1) e os schemas estão em notadomilhao.sf.prefeitura.sp.gov.br/manuais (os do leiaute 1
-copiados em `testes/nfse-sp-v01/`).
+adn.producaorestrita.nfse.gov.br; a Sefin responde 403 sem o certificado). Os esquemas e o manual da
+NFS-e Nacional estão em www.gov.br/nfse (documentação atual e produção restrita).
 
 **Nota fiscal automática (regras 331 e 333):** o A1 já está no banco de teste (BRENO COPPINI MARINHO LTDA,
 válido até 17/11/2027). O primeiro "Testar com a Prefeitura" conectou, mas a Prefeitura respondeu **Erro 1647**
@@ -519,7 +533,8 @@ nota à mão no Emissor Nacional (nfse.gov.br) ou pela Contabilizei.
 
 **Meta (25/11):** domínio verificado pelo registro TXT no registro.br (e a metatag no site); portfólio
 "GuiaTennis" com o Breno entrando pelo Instagram @guiatennis (o perfil "Coppini Marinho" do Facebook não
-tinha acesso; aba anônima resolveu); **falta a Meta aprovar a verificação da empresa**. Conta do WhatsApp
+tinha acesso; aba anônima resolveu); **a verificação da empresa está "Em análise" desde 25/11** (não reenviar;
+acompanhar a Central de Segurança). Conta do WhatsApp
 "GuiaTenni" com o número novo; o Breno diz que "tudo na Meta está alinhado": os segredos
 `WHATSAPP_TOKEN`, `WHATSAPP_NUMERO_ID` (1303308766209946, o número novo **+55 11 93333-4613**, "Inscrito") e
 `WHATSAPP_NUMERO_DE_TESTE` **foram salvos em 25/11** e o "Banco de dados" guardou o token no banco de teste.
@@ -529,7 +544,7 @@ código de teste (uma disputa na prévia; Admin › "Avisos por e-mail" mostra "
 último erro da Meta).
 
 **Testes:** bateria completa de 23/11 (regra 327): **2.794 verificações** (as 3 falhas de testes com a
-ordem antiga, ajustadas); depois, só os afetados de 328 a 332, sem falha (332: `quadras-publicas.js`, `menu-e-home.js`, `jogador.js`, `buscas-e-avisos.js`, `chat-de-ajuda.js`); `banco-emails.py`: **1.108**,
+ordem antiga, ajustadas); depois, só os afetados de 328 a 333, sem falha (332: `quadras-publicas.js`, `menu-e-home.js`, `jogador.js`, `buscas-e-avisos.js`, `chat-de-ajuda.js`, `links.js`, `sobre.js`, `ficha-basica.js`); `banco-emails.py`: **1.110**,
 sem falha (25/11); `nota-fiscal.mjs`: 45 (regra 333; 44 depois de tirar a consulta dos parâmetros); `nota-automatica.js`: 16; `dados-para-nota.js`: 30. **Rodar a bateria completa no começo
 do próximo chat** (contêiner novo: montar o banco local, seção 6).
 

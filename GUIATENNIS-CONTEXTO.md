@@ -480,8 +480,12 @@ foto primeiro, como o Airbnb e o iFood). **Regra 334 (pré-lançamento):** até 
 mostram só a página do lançamento (`renderPreLancamento`, `LANCAMENTO_EM`; "deixe mais completo": "Achar aula de
 tênis vai ficar muito mais fácil.", a contagem em dias, horas e minutos, Instagram, "Lembrar no calendário" com
 `lancamento.ics`, os números reais `carregarNumerosDoLancamento` (academias e bairros, só com 5 academias ou mais),
-"Como vai funcionar", as 8 novidades `PRE_NOVIDADES`, "Para academias" em verde com as vagas de Fundadora, o que
-ganha, "Como entrar" e o código, as perguntas `PRE_PERGUNTAS` e "Nos vemos domingo, às 18h."); o código de acesso (no
+"O novo GuiaTennis, por dentro" com as telas reais do site novo em `lancamento/*.jpg` (`PRE_TELAS`: filtros, ficha,
+opções da ficha e chat; "só o que é novo": o Breno lembrou que preço, comparação, mapa etc. já existiam), "E mais"
+(`PRE_MAIS`), "Para academias" com o GuiaTennis Parceiros (a tela, o que ganha com o plano de cada item, as vagas de
+Fundadora, "Como entrar" e o código), as perguntas `PRE_PERGUNTAS` e "Nos vemos domingo, às 18h."). As telas foram
+tiradas do site com o banco de verdade, só lendo (o ambiente do Claude liberou eultezheqwmxyakvgyjy.supabase.co em
+26/11), com a letra Roboto; a ficha mostrada é a Reinaldo Junqueira Tennis e a busca, a Morumbi Tennis; o código de acesso (no
 link `?acesso=`, ou digitado na página; só a conta dele fica no código, `ACESSO_ANTECIPADO_CONTA`; o código
 está na conversa com o Breno) libera o site inteiro no navegador; admin logado entra direto; às 18h abre
 sozinho. O Breno convida as academias de quinta a sábado (roteiro, "Pré-lançamento"); depois de domingo, a
@@ -663,7 +667,7 @@ mesmo histórico de 23/11 e nas descrições antigas do PR (`historico/PR5-descr
 - 331 (25/11) — a nota fiscal automática pela Prefeitura de São Paulo (certificado A1 no admin, teste e produção).
 - 332 (25/11) — "Sugerir uma quadra ou academia" com a cara do GuiaTennis ("não está em uma posição tão legal… muito básica e informal"): sai do topo do menu para o Suporte (antes do GuiaTennis Parceiros) e entra no rodapé, em Suporte, depois do Feedback (como o "Adicionar uma empresa" do Yelp); no fim da lista da busca, "Conhece uma quadra ou academia que não está nesta lista?" (`fimDaBusca`, como o "Adicionar um lugar" do Google Maps), que abre com o bairro e a cidade procurados; a tela com o tipo em cartões (Academia/Quadra pública), "Endereço" com "Usar minha localização" (`sugerirComMinhaLocalizacao`, pelo `enderecoDoPonto`; o ponto não é guardado), Enter avança, erro leva ao campo e texto formal. Sem SQL.
 - 333 (25/11) — a nota fiscal automática pela NFS-e Nacional (a Prefeitura respondeu "Erro 1647": CNPJ no CNC emite no ambiente nacional desde 17/11/2026): DPS 1.01 assinada, Sefin Nacional com TLS mútuo, produção restrita no Teste, cancelamento pelo evento 101101, código 172501 e série numérica; textos do admin, da ajuda, da Privacidade e dos e-mails do admin. SQL `20261125150000_nota_fiscal_nacional`.
-- 334 (26/11) — pré-lançamento: até domingo, 29/11, 18h, o link normal mostra a página do lançamento (refeita para vender e completa: título, contagem, calendário, números reais, como funciona, 8 novidades, "Para academias" com vagas e passos, perguntas) e o código de acesso das academias libera o site inteiro (`testes/pre-lancamento.js`, 27).
+- 334 (26/11) — pré-lançamento: até domingo, 29/11, 18h, o link normal mostra a página do lançamento (refeita para vender, com as telas reais do que é novo: filtros, ficha, chat e o Parceiros) e o código de acesso das academias libera o site inteiro (`testes/pre-lancamento.js`, 28).
 
 ## 11. WhatsApp e mensagem para as academias
 

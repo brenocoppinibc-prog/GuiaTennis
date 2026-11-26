@@ -233,9 +233,11 @@ Legenda de todos: a frase do texto na tela, o pedido do fim do vídeo e "Link na
 
 Até domingo, 29/11, às 18h, o guiatennis.com.br mostra só a página do lançamento: "Achar aula de tênis vai ficar
 muito mais fácil.", a contagem até domingo, "Acompanhe no Instagram", "Lembrar no calendário" (o lembrete às 18h
-no celular), os números reais (academias e bairros), "Como vai funcionar", 8 novidades do site ("Um pouco do que
-vem por aí… E tem mais. O resto, só no domingo."), a parte "Para academias" (as vagas de Fundadora, o que a
-academia ganha, "Como entrar", o código e "Peça o seu pelo WhatsApp") e as perguntas frequentes. Nas Stories de quinta a sábado, um
+no celular), os números reais (academias e bairros), "O novo GuiaTennis, por dentro" com as telas reais do que é
+novo (mais filtros, a ficha nova, mais informação na ficha e o chat de ajuda), "E mais" (quadras públicas, "Também
+oferece", sugerir, página do bairro), a parte "Para academias" com o GuiaTennis Parceiros (a tela, o que a academia
+ganha, as vagas de Fundadora, "Como entrar", o código e "Peça o seu pelo WhatsApp") e as perguntas frequentes. As
+telas (pasta `lancamento/` do site) também servem para as Stories de teaser. Nas Stories de quinta a sábado, um
 print dessa página serve de teaser. O site inteiro abre com o **código de
 acesso** (está na conversa com o Claude; não publicar): no link do convite,
 `guiatennis.com.br/parceiros?acesso=[código]`, ou digitado na própria página. O navegador lembra; às 18h de

@@ -100,6 +100,8 @@ async function abrir(opts = {}) {
     }
     if (u.includes('/.netlify/functions/cnpj')) return route.fulfill({ status: opts.cnpj ? 200 : 502, contentType: 'application/json', body: JSON.stringify(opts.cnpj || { erro: 'Não consegui falar com a Receita agora. Tente de novo em instantes.' }) });
     if (SITE && /\/app\.[a-f0-9]+\.js$/.test(u)) return route.fulfill({ contentType: 'application/javascript', body: fs.readFileSync(path.join(SITE, u.split('/').pop()), 'utf8') });
+    // Os prints da página do pré-lançamento (26/11/2026).
+    if (u.startsWith(base + 'lancamento/')) return route.fulfill({ contentType: 'image/jpeg', body: fs.readFileSync(path.join(DIR, '..', 'lancamento', u.split('/').pop())) });
     if (u.startsWith(base)) return route.fulfill({ contentType: 'text/html', body: pagina });
     if (u.includes('supabase-js')) return route.fulfill({ contentType: 'application/javascript', body: fs.readFileSync(path.join(DIR, 'mock.js'), 'utf8') });
     if (u.includes('leaflet') && u.endsWith('.js')) return route.fulfill({ contentType: 'application/javascript', body: fs.readFileSync(path.join(DIR, 'leaflet-stub.js'), 'utf8') });

@@ -3761,6 +3761,18 @@
   .pre-novidades li > svg { flex-shrink: 0; margin-top: 2px; }
   .pre-novidades strong { display: block; font-size: 16px; }
   .pre-novidades span { display: block; margin-top: 2px; font-size: 14.5px; line-height: 1.45; color: var(--muted); }
+  .pre-intro { margin: -12px 0 8px; font-size: 15px; color: var(--muted); }
+  .pre-tela { display: grid; gap: 16px; margin: 32px 0 0; }
+  .pre-tela figcaption .pre-sobre { margin-bottom: 6px; }
+  .pre-tela h3 { margin: 0; }
+  .pre-tela figcaption p:last-child { margin: 6px 0 0; font-size: 15px; line-height: 1.5; color: var(--muted); }
+  .pre-tela img { display: block; width: 100%; height: auto; margin: 0 auto; border: 1px solid var(--border); border-radius: 22px; box-shadow: 0 12px 30px rgba(33,31,26,.12); background: var(--card); }
+  .pre-tela img { max-width: 280px; }
+  .pre-tela-parceiros { margin: 24px 0 8px; }
+  .pre-tela-parceiros img { border-color: rgba(255,255,255,.25); box-shadow: 0 12px 30px rgba(0,0,0,.25); }
+  .pre-mais-titulo { margin-top: 40px !important; }
+  .pre-checks em { font-style: normal; font-size: 13px; font-weight: 600; color: var(--gold-light); }
+  .pre-planos { margin: 14px 0 0; font-size: 14px; color: rgba(255,255,255,.8); }
   .pre-mais { margin: 26px 0 0; font-size: 16px; font-weight: 700; color: var(--green); }
   .pre-academias { background: var(--green); color: #fff; }
   .pre-academias .pre-sobre { color: var(--gold-light); }
@@ -3802,6 +3814,8 @@
     .pre-novidades { grid-template-columns: 1fr 1fr; gap: 24px 32px; }
     .pre-passos-deitados { grid-template-columns: repeat(3, 1fr); }
     .pre-passos-deitados li { flex-direction: column; gap: 10px; }
+    .pre-tela { grid-template-columns: 1fr 280px; align-items: center; gap: 40px; }
+    .pre-tela:nth-of-type(even) figcaption { order: 2; }
   }
 </style>
 </head>
@@ -34486,15 +34500,22 @@ function faltaParaOLancamento(ms) {
   const partes = (d ? [n(d, "dia", "dias"), n(h, "hora", "horas")] : h ? [n(h, "hora", "horas"), n(m, "minuto", "minutos")] : [n(m, "minuto", "minutos")]).filter(Boolean);
   return `${(d || h || m) === 1 ? "Falta" : "Faltam"} ${partes.join(" e ")}`;
 }
-const PRE_NOVIDADES = [
-  ["tag", "O preço antes de chamar", "O valor da aula e da locação já na lista, quando a academia informa."],
-  ["comparar", "Academias lado a lado", "Preço, estrutura e avaliações, uma ao lado da outra, para escolher sem dúvida."],
-  ["map", "O mapa com quem está perto", "As academias no mapa, com o preço e a nota em cada cartão."],
-  ["home", "Quadra coberta para os dias de chuva", "Filtre por piso, cobertura e o que mais importa para você."],
-  ["pessoa", "Aula para crianças, por idade", "As turmas de cada academia por faixa de idade, de 3 a 17 anos."],
-  ["bubble", "Avaliações de quem joga", "Uma por conta confirmada. A academia responde, mas não apaga."],
-  ["pin", "Tênis também na viagem", "Encontre aula e quadra na cidade para onde você vai."],
-  ["whatsapp", "Direto no WhatsApp da academia", "Sem taxa, sem cadastro e sem intermediário."],
+// O que é novo de verdade (26/11/2026: "todas essas informações já tinha no site. Agora nós temos mais filtros,
+// melhora da visualização da ficha, mais informações da ficha, chat para ajuda e suporte e site separado para os
+// parceiros"), cada um com o print do site novo, com academias reais ("prints mostrando e comprovando").
+const PRE_TELAS = [
+  ["filtros", "Busca", "Mais filtros para achar a academia certa", "“Aberto agora”, comodidades como vestiário, estacionamento e empréstimo de raquete, piso, cobertura, preço por hora, avaliação e distância.", "A tela de filtros do novo GuiaTennis, com Aberto agora e as comodidades"],
+  ["ficha", "Ficha", "A ficha da academia, de cara nova", "Fotos em destaque, a estrutura em um toque e o preço sempre à vista, com o botão do WhatsApp junto.", "A ficha de uma academia no novo GuiaTennis, com a foto, o endereço e o preço"],
+  ["ficha-opcoes", "Ficha", "Muito mais informação na ficha", "A aula e a locação em cartões, com o valor de cada uma, o horário com “Aberto agora” e, quando a academia informa, o cancelamento e como chegar.", "As opções para jogar, o contato e o horário na ficha de uma academia"],
+  ["chat", "Ajuda", "Chat de ajuda e suporte", "Tire as suas dúvidas na hora, escolhendo um assunto ou escrevendo com as suas palavras. Se precisar, a equipe do GuiaTennis responde.", "O chat de ajuda do novo GuiaTennis"],
+];
+// A altura de cada print (o corte na parte que importa), para a página não pular ao carregar.
+const PRE_ALTURAS = { filtros: 720, ficha: 720, "ficha-opcoes": 750, chat: 500 };
+const PRE_MAIS = [
+  ["pin", "Quadras públicas", "Onde jogar de graça, com o jeito de usar cada uma."],
+  ["trofeu", "Também oferece", "Locação para eventos, ranking e projeto social de cada academia."],
+  ["plus", "Sugerir uma quadra ou academia", "Conhece um lugar que ainda não está no Guia? Envie em segundos."],
+  ["map", "Uma página para cada bairro", "As academias, os preços e as mais bem avaliadas do seu bairro."],
 ];
 const PRE_PERGUNTAS = [
   ["O GuiaTennis é grátis?", "Sim. Para quem joga, buscar, comparar e chamar a academia é grátis e não pede cadastro."],
@@ -34559,33 +34580,42 @@ function renderPreLancamento() {
       </div></section>
       ${numeros ? `<ul class="pre-numeros">${numeros.map(([n, t]) => `<li><strong>${n}</strong><span>${t}</span></li>`).join("")}</ul>` : ""}
       <section class="pre-bloco"><div class="pre-centro">
-        <h2>Como vai funcionar</h2>
-        <ol class="pre-passos pre-passos-deitados">
-          ${passo("Diga onde você está", "O bairro, o CEP ou a sua localização.")}
-          ${passo("Compare", "Preço, piso, cobertura, avaliações e distância.")}
-          ${passo("Chame no WhatsApp", "Direto com a academia, sem taxa e sem cadastro.")}
-        </ol>
-      </div></section>
-      <section class="pre-bloco pre-linha-cima"><div class="pre-centro">
-        <h2>Um pouco do que vem por aí</h2>
+        <p class="pre-sobre">O que muda</p>
+        <h2>O novo GuiaTennis, por dentro</h2>
+        <p class="pre-intro">Telas do site novo, com academias de verdade.</p>
+        ${PRE_TELAS.map(([arq, sobre, titulo, texto, alt]) => `
+        <figure class="pre-tela">
+          <figcaption><p class="pre-sobre">${sobre}</p><h3>${titulo}</h3><p>${texto}</p></figcaption>
+          <img src="/lancamento/${arq}.jpg" width="390" height="${PRE_ALTURAS[arq]}" loading="lazy" decoding="async" alt="${alt}">
+        </figure>`).join("")}
+        <h3 class="pre-mais-titulo">E mais</h3>
         <ul class="pre-novidades">
-          ${PRE_NOVIDADES.map(([ic, titulo, texto]) => `<li>${icon(ic, 22, "var(--green)")}<div><strong>${titulo}</strong><span>${texto}</span></div></li>`).join("")}
+          ${PRE_MAIS.map(([ic, titulo, texto]) => `<li>${icon(ic, 22, "var(--green)")}<div><strong>${titulo}</strong><span>${texto}</span></div></li>`).join("")}
         </ul>
         <p class="pre-mais">E tem mais. O resto, só no domingo.</p>
       </div></section>
       <section class="pre-bloco pre-academias" id="pre-academias"><div class="pre-centro">
         <p class="pre-sobre">Para academias</p>
-        <h2>A sua academia já no lançamento.</h2>
-        <p class="pre-texto">Quem procura aula ou quadra perto de você chama direto no seu WhatsApp, sem comissão por aluno. Entre antes de domingo e esteja no ar quando os jogadores chegarem.</p>
+        <h2>GuiaTennis Parceiros: um site só para a sua academia.</h2>
+        <p class="pre-texto">Quem procura aula ou quadra perto de você chama direto no seu WhatsApp, sem comissão por aluno. E, no Parceiros, você cuida de tudo pelo celular. Entre antes de domingo e esteja no ar quando os jogadores chegarem.</p>
         ${restam !== null && restam > 0 ? `<p class="pre-vagas">${restam === 1 ? "Resta 1 vaga" : `Restam ${restam} vagas`} de Fundadora</p>` : ""}
+        <figure class="pre-tela pre-tela-parceiros">
+          <img src="/lancamento/parceiros.jpg" width="390" height="780" loading="lazy" decoding="async" alt="A página do GuiaTennis Parceiros, o site das academias">
+        </figure>
         <h3>O que a sua academia ganha</h3>
         <ul class="pre-checks">
-          ${marca("Ficha grátis, com preços, fotos e horários")}
-          ${marca("O jogador chama direto no seu WhatsApp, sem comissão")}
+          ${marca("Ficha grátis, com preços, horários, comodidades e até 3 fotos")}
+          ${marca("Cadastro passo a passo, com a prévia da ficha antes de publicar")}
+          ${marca("Mudou o preço ou o horário? Atualize pelo celular, e a ficha muda na hora")}
           ${marca("Resposta às avaliações, para mostrar como você atende")}
-          ${marca("A ficha no ar na hora, depois de confirmar o e-mail")}
+          ${marca("Quantas pessoas chamaram a sua academia <em>(Completo)</em>")}
+          ${marca("Equipe com acesso por convite, cada pessoa com as suas funções <em>(Completo)</em>")}
+          ${marca("Promoções na ficha <em>(Completo)</em> e o destaque “Patrocinado” no topo da busca <em>(Premium)</em>")}
+          ${marca("Imagem pronta para divulgar no Instagram as suas avaliações e promoções")}
+          ${marca("Chat de suporte dentro do Parceiros")}
           ${restam === null || restam > 0 ? marca(`Selo “Fundadora do GuiaTennis” na ficha, para sempre, para os ${FUNDADORAS} primeiros donos de academia`) : ""}
         </ul>
+        <p class="pre-planos">Grátis no plano Básico, sem comissão. O Premium tem o 1º mês grátis.</p>
         <h3>Como entrar</h3>
         <ol class="pre-passos">
           ${passo("Abra o link do convite", "Ou informe o código logo abaixo.")}

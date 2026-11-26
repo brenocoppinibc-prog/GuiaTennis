@@ -12,14 +12,15 @@ const texto = page => page.evaluate(() => document.body.innerText);
   ok(await page.$eval('.pre-botao', a => a.href) === 'https://instagram.com/guiatennis', 'botão leva ao Instagram');
   ok(t.includes('Achar aula de tênis vai ficar muito mais fácil.'), 'o título que vende');
   ok(await page.$$eval('.pre-contagem strong', l => l.length) === 3 && /^Faltam? \d+ (dia|hora|minuto).* para o lançamento$/.test(await page.$eval('.pre-contagem', e => e.getAttribute('aria-label'))), 'a contagem até domingo (dias, horas e minutos)');
-  ok(t.includes('Como vai funcionar') && await page.$$eval('.pre-passos li', l => l.length) === 6, 'Como vai funcionar e Como entrar, 3 passos cada');
+  ok(t.includes('O novo GuiaTennis, por dentro') && await page.$$eval('.pre-tela img', l => l.length) === 5, 'O que muda: os 5 prints do site novo');
+  ok(await page.$$eval('.pre-passos li', l => l.length) === 3, 'Como entrar, em 3 passos');
   ok(await page.$$eval('.pre-perguntas details', l => l.length) === 5, 'as 5 perguntas frequentes');
   ok(t.includes('Restam 15 vagas de Fundadora'), 'as vagas de Fundadora, de verdade');
   ok(await page.evaluate(() => !preNumeros || preNumeros.academias < 5 ? !document.querySelector('.pre-numeros') : !!document.querySelector('.pre-numeros')), 'os números só com 5 academias ou mais');
   ok(t.includes('Nos vemos domingo, às 18h.'), 'o fecho com o Instagram');
-  ok(await page.$$eval('.pre-novidades li', l => l.length) === 8 && t.includes('E tem mais. O resto, só no domingo.'), 'as 8 novidades e o "E tem mais"');
+  ok(await page.$$eval('.pre-novidades li', l => l.length) === 4 && t.includes('E tem mais. O resto, só no domingo.'), 'as 4 novidades a mais e o "E tem mais"');
   ok(await page.$eval('.pre-botao-sec', a => a.getAttribute('href')) === '/lancamento.ics', 'Lembrar no calendário');
-  ok(t.includes('A sua academia já no lançamento.') && t.includes('15 primeiros donos de academia'), 'a parte das academias com as Fundadoras');
+  ok(t.includes('GuiaTennis Parceiros: um site só para a sua academia.') && t.includes('15 primeiros donos de academia'), 'a parte das academias com as Fundadoras');
   ok(t.includes('Ainda sem convite? Peça o seu pelo WhatsApp.'), 'academia sem código pede o convite');
   ok(await page.evaluate(() => [faltaParaOLancamento(2 * 864e5 + 5 * 36e5), faltaParaOLancamento(864e5 + 36e5), faltaParaOLancamento(3 * 36e5 + 6e5), faltaParaOLancamento(36e5), faltaParaOLancamento(30e3)].join('|'))
     === 'Faltam 2 dias e 5 horas|Falta 1 dia e 1 hora|Faltam 3 horas e 10 minutos|Falta 1 hora|Falta 1 minuto', 'a contagem por extenso');

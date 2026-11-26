@@ -78,62 +78,68 @@ function stories({ eyebrow = '', titulo = '', texto = '' }) {
   <div class="linha" style="bottom:150px;font-size:38px;font-weight:500;opacity:.92">@guiatennis</div>`, 700);
 }
 
-// ---------- Carrossel 1 (quinta): como usar o site, passo a passo ----------
-// O perfil já apresentou a ideia (25/11/2026: "já falamos algumas coisas sobre a ideia,
-// mas não muito como usar o site"): agora o passo a passo, com os botões e os filtros
-// com os nomes que estão no site.
+// ---------- Os textos (regra de marketing de 22/11/2026 e pedido de 26/11/2026: "a melhor
+// estratégia para o Instagram de marketing, como aquela regra de gatilhos para venda [...]
+// a gente precisa conversar com o público, trabalhamos com brasileiros e precisamos vender
+// o site também"). Gatilhos só verdadeiros: a dor real de quem joga em São Paulo (preço
+// escondido, trânsito, chuva), risco zero (grátis, sem cadastro, sem taxa), escassez real
+// (as 15 vagas de Fundadora, contadas no site), novidade, curiosidade e reciprocidade
+// (conteúdo útil para salvar). Prova social só com o que existe (academias marcadas,
+// comentários e avaliações reais); nenhum número inventado.
+// ---------- Carrossel 1 (quinta): o passo a passo ----------
 const passoAPasso = [
-  { grande: true, quadra: 560, eyebrow: 'Passo a passo', titulo: 'Como encontrar aula de tênis perto de você em 1 minuto.', texto: 'Salve para usar quando precisar.', rodape: 'Deslize ›' },
-  { tom: 'creme', ui: 'busca', eyebrow: 'Passo 1', titulo: 'Diga onde você está.', texto: 'Em guiatennis.com.br, digite o bairro ou o CEP, ou toque em "Usar minha localização".' },
-  { ui: 'filtros', eyebrow: 'Passo 2', titulo: 'Filtre do seu jeito.', texto: 'Aula ou locação, piso, quadra coberta, preço e horário.' },
-  { tom: 'creme', ui: 'ficha', eyebrow: 'Passo 3', titulo: 'Abra a ficha da academia.', texto: 'Tudo o que você precisa saber antes de chamar:' },
+  { grande: true, quadra: 560, eyebrow: 'Salve este post', titulo: 'Pare de mandar mensagem para 10 academias só para saber o preço.', texto: 'Veja como encontrar aula de tênis perto de você em 1 minuto.', rodape: 'Deslize ›' },
+  { tom: 'creme', ui: 'busca', eyebrow: 'Passo 1', titulo: 'Diga onde você está.', texto: 'Em guiatennis.com.br, digite o bairro ou o CEP, ou toque em "Usar minha localização". Perto de casa ou do trabalho: menos trânsito, mais quadra.' },
+  { ui: 'filtros', eyebrow: 'Passo 2', titulo: 'Filtre do seu jeito.', texto: 'Aula ou locação, piso, quadra coberta para os dias de chuva, preço e horário.' },
+  { tom: 'creme', ui: 'ficha', eyebrow: 'Passo 3', titulo: 'Veja tudo antes de chamar.', texto: 'Na ficha de cada academia:' },
   { ui: 'whatsapp', eyebrow: 'Passo 4', titulo: 'Chame direto no WhatsApp.', texto: 'Sem intermediário e sem taxa: você combina o horário e o valor com a academia.' },
-  { tom: 'creme', ui: 'varias', eyebrow: 'Dica', titulo: 'Quer comparar preços?', texto: 'Na lista da busca, peça o preço a várias academias de uma vez.' },
-  { grande: true, quadra: 560, eyebrow: 'Teste agora', titulo: 'guiatennis.com.br', texto: 'Mande para quem quer começar a jogar.', rodape: 'O link está na bio' },
-];
-// ---------- Carrossel 4 (semana que vem): funções que facilitam ----------
-const funcoes = [
-  { grande: true, quadra: 560, eyebrow: 'Você sabia?', titulo: '5 funções do GuiaTennis que facilitam a sua vida.', texto: 'Salve para não esquecer.', rodape: 'Deslize ›' },
-  { tom: 'creme', eyebrow: '1 · Comparar academias', titulo: 'Lado a lado.', texto: 'Escolha algumas academias e veja preço, estrutura e nota uma ao lado da outra.' },
-  { eyebrow: '2 · Favoritas', titulo: 'Guarde as que você gostou.', texto: 'Toque no coração da ficha e encontre as academias depois, no menu, em "Favoritas".' },
-  { tom: 'creme', eyebrow: '3 · Vou viajar', titulo: 'A raquete vai junto.', texto: 'Informe a cidade e o lugar em que você vai ficar e veja as quadras mais perto de lá.' },
-  { eyebrow: '4 · Quadras públicas', titulo: 'Jogar sem pagar.', texto: 'Use o filtro "Quadras públicas" para encontrar as quadras gratuitas em parques e praças.' },
-  { tom: 'creme', eyebrow: '5 · Sugerir', titulo: 'Falta alguma quadra?', texto: 'Toque em "Sugerir uma quadra ou academia", no fim da busca ou no menu. A equipe do GuiaTennis confere e coloca no site.' },
-  { grande: true, quadra: 560, eyebrow: 'Conte para nós', titulo: 'Qual delas você vai usar primeiro?', texto: 'Responda nos comentários.', rodape: 'guiatennis.com.br · link na bio' },
+  { tom: 'creme', ui: 'varias', eyebrow: 'Dica de quem economiza', titulo: 'Compare antes de decidir.', texto: 'Na lista da busca, peça o preço a várias academias de uma vez e escolha com calma.' },
+  { grande: true, quadra: 560, eyebrow: 'Grátis · sem cadastro · sem taxa', titulo: 'Teste agora: guiatennis.com.br', texto: 'Mande este post para quem joga com você.', rodape: 'O link está na bio' },
 ];
 // ---------- Carrossel 2 (domingo): o lançamento ----------
 const lancamento = [
-  { grande: true, quadra: 560, eyebrow: 'Chegou', titulo: 'O novo GuiaTennis está no ar.', texto: 'Aula e quadra de tênis perto de você: compare e fale direto com a academia.', rodape: 'Deslize ›' },
+  { grande: true, quadra: 560, eyebrow: 'Chegou', titulo: 'O novo GuiaTennis está no ar.', texto: 'Aula e quadra de tênis perto de você, em um só lugar.', rodape: 'Deslize e veja o que mudou ›' },
   { tom: 'creme', eyebrow: 'Busque', titulo: 'Pelo seu bairro.', texto: 'Digite o bairro ou o CEP, ou use a sua localização. As academias mais perto aparecem primeiro, na lista ou no mapa.' },
-  { eyebrow: 'Compare', titulo: 'Antes de chamar.', itens: [
+  { eyebrow: 'Compare', titulo: 'Sem surpresa na hora de pagar.', itens: [
     'Preço das aulas e da locação de quadra.',
-    'Tipo de piso e se a quadra é coberta.',
+    'Piso e se a quadra é coberta.',
     'Estacionamento, vestiário e outras comodidades.',
     'Aulas para adultos e para crianças.'] },
-  { tom: 'creme', eyebrow: 'Confie', titulo: 'Avaliações de quem joga.', texto: 'Só contas com e-mail confirmado avaliam, uma vez por academia. A academia pode responder, mas não pode apagar.' },
-  { eyebrow: 'Chame', titulo: 'Direto no WhatsApp.', texto: 'Sem intermediário e sem taxa: você combina o horário e o valor direto com a academia.' },
-  { tom: 'creme', eyebrow: 'Feito para quem joga', titulo: 'Grátis, sem cadastro e sem taxa.', texto: 'Conhece uma quadra ou academia que ainda não está no GuiaTennis? Sugira pelo site.' },
-  { grande: true, quadra: 560, eyebrow: 'Experimente agora', titulo: 'guiatennis.com.br', texto: 'O link está na bio.', rodape: 'Marque quem precisa de uma quadra' },
+  { tom: 'creme', eyebrow: 'Confie', titulo: 'Veja o que dizem os jogadores.', texto: 'Só contas com e-mail confirmado avaliam, uma vez por academia. A academia pode responder, mas não pode apagar.' },
+  { eyebrow: 'Choveu?', titulo: 'Filtre as quadras cobertas.', texto: 'E use "Aberto agora" para achar onde jogar hoje.' },
+  { tom: 'creme', eyebrow: 'Chame', titulo: 'Direto no WhatsApp, sem taxa.', texto: 'Você combina tudo com a academia. O GuiaTennis não fica no meio e não cobra nada de quem joga.' },
+  { grande: true, quadra: 560, eyebrow: 'Grátis · sem cadastro · sem taxa', titulo: 'Experimente agora.', texto: 'Comente o seu bairro: respondemos com as academias de lá.', rodape: 'guiatennis.com.br · link na bio' },
 ];
 // ---------- Carrossel 3 (segunda): para as academias ----------
 const academias = [
-  { grande: true, quadra: 560, eyebrow: 'Para academias de tênis', titulo: 'A sua academia no GuiaTennis.', texto: 'Mais alunos chegando pelo WhatsApp, sem taxa por aluno.', rodape: 'Deslize ›' },
-  { tom: 'creme', eyebrow: 'Quem chega já sabe o que quer', titulo: 'O jogador chama pronto para marcar.', texto: 'Ele vê preço, estrutura e avaliações antes de chamar. A conversa no WhatsApp já começa pela aula ou pelo horário.' },
+  { grande: true, quadra: 560, eyebrow: 'Para donos de academia de tênis', titulo: 'Os alunos procuram aula no celular. A sua academia aparece?', texto: 'No GuiaTennis, ela aparece para quem procura no bairro, e de graça.', rodape: 'Deslize ›' },
+  { tom: 'creme', eyebrow: 'Quem chega já está decidido', titulo: 'O jogador chama pronto para marcar.', texto: 'Ele vê o preço, a estrutura e as avaliações antes. A conversa no WhatsApp já começa pelo horário.' },
   { eyebrow: 'GuiaTennis Parceiros, grátis', titulo: 'Tudo da academia em um só lugar.', itens: [
     'Preços, horários e todas as comodidades na ficha.',
     'Fotos da academia.',
     'Resposta pública a cada avaliação.',
     'QR code da ficha para a recepção.'], rodape: 'Nos planos Completo e Premium: mais fotos, Instagram e site e quantos chamaram' },
-  { tom: 'creme', eyebrow: 'Fundadoras: 15 vagas', titulo: 'O selo "Fundadora do GuiaTennis".', texto: 'Os 15 primeiros donos de academia a chegar ao GuiaTennis ganham o selo na ficha, para sempre.' },
-  { grande: true, quadra: 560, eyebrow: 'guiatennis.com.br/parceiros', titulo: 'Comece grátis.', texto: 'Cadastre a academia ou assuma a ficha que já está no Guia.', rodape: 'Marque a academia em que você joga' },
+  { tom: 'creme', eyebrow: 'Sem risco', titulo: 'Sem comissão por aluno.', texto: 'O jogador chama direto no WhatsApp da academia. E o Premium pode ser testado por 1 mês grátis.' },
+  { eyebrow: 'Só 15 vagas', titulo: 'Selo "Fundadora do GuiaTennis", para sempre.', texto: 'Para os 15 primeiros donos de academia a chegar ao GuiaTennis. Veja no site quantas vagas restam.' },
+  { grande: true, quadra: 560, eyebrow: 'guiatennis.com.br/parceiros', titulo: 'Garanta a vaga da sua academia.', texto: 'Cadastre a academia ou assuma a ficha que já está no Guia.', rodape: 'Marque a academia em que você joga' },
+];
+// ---------- Carrossel 4 (semana que vem): funções que facilitam ----------
+const funcoes = [
+  { grande: true, quadra: 560, eyebrow: 'Salve para não esquecer', titulo: '5 funções do GuiaTennis que facilitam a sua vida.', texto: 'A 3ª é para quem vai viajar.', rodape: 'Deslize ›' },
+  { tom: 'creme', eyebrow: '1 · Comparar academias', titulo: 'Lado a lado.', texto: 'Escolha algumas academias e veja preço, estrutura e nota uma ao lado da outra.' },
+  { eyebrow: '2 · Favoritas', titulo: 'Guarde as de que você gostou.', texto: 'Toque no coração da ficha e encontre as academias depois, no menu, em "Favoritas".' },
+  { tom: 'creme', eyebrow: '3 · Vou viajar', titulo: 'A raquete vai junto.', texto: 'Informe a cidade e o lugar em que você vai ficar e veja as quadras mais perto de lá.' },
+  { eyebrow: '4 · Quadras públicas', titulo: 'Jogar sem pagar.', texto: 'Use o filtro "Quadras públicas" para encontrar as quadras gratuitas em parques e praças.' },
+  { tom: 'creme', eyebrow: '5 · Sugerir', titulo: 'Falta alguma quadra?', texto: 'Toque em "Sugerir uma quadra ou academia", no fim da busca ou no menu. A equipe do GuiaTennis confere e coloca no site.' },
+  { grande: true, quadra: 560, eyebrow: 'Responda nos comentários', titulo: 'Qual delas você vai usar primeiro?', texto: 'Comente só o número: 1, 2, 3, 4 ou 5.', rodape: 'guiatennis.com.br · link na bio' },
 ];
 // ---------- Stories ----------
 const historias = {
-  'stories-1-quinta-contagem.png': { eyebrow: 'Domingo, 29/11', titulo: 'Algo novo chega para quem joga tênis.', figurinha: 'adicione aqui a figurinha de contagem regressiva' },
-  'stories-2-quinta-enquete.png': { eyebrow: 'Responda', titulo: 'Em que bairro você joga?', figurinha: 'adicione aqui a figurinha de enquete ou de pergunta' },
-  'stories-3-sexta-perguntas.png': { eyebrow: 'Queremos ouvir você', titulo: 'O que mais dificulta encontrar aula de tênis?', figurinha: 'adicione aqui a caixa de perguntas' },
-  'stories-4-domingo-no-ar.png': { eyebrow: 'Está no ar', titulo: 'O novo GuiaTennis chegou.', texto: 'Aula e quadra de tênis perto de você.', figurinha: 'adicione aqui a figurinha de link: guiatennis.com.br' },
-  'stories-5-segunda-academias.png': { eyebrow: 'Para academias', titulo: 'Sua academia no GuiaTennis, grátis.', texto: 'Os 15 primeiros donos ganham o selo Fundadora.', figurinha: 'adicione aqui o link: guiatennis.com.br/parceiros' },
+  'stories-1-quinta-contagem.png': { eyebrow: 'Domingo, 18h', titulo: 'Algo novo para quem joga tênis em São Paulo.', texto: 'Toque em "Lembrar" para não perder.' },
+  'stories-2-quinta-enquete.png': { eyebrow: 'Responda', titulo: 'O que mais atrapalha na hora de achar aula de tênis?' },
+  'stories-3-sexta-perguntas.png': { eyebrow: 'Queremos ouvir você', titulo: 'Em que bairro você joga?', texto: 'Respondemos com as academias de lá.' },
+  'stories-4-domingo-no-ar.png': { eyebrow: 'Está no ar', titulo: 'O novo GuiaTennis chegou.', texto: 'Grátis, sem cadastro e sem taxa.' },
+  'stories-5-segunda-academias.png': { eyebrow: 'Só 15 vagas', titulo: 'Selo "Fundadora do GuiaTennis".', texto: 'Para os 15 primeiros donos de academia a chegar.' },
 };
 
 (async () => {

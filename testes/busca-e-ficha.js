@@ -16,7 +16,7 @@ const { abrir, ok } = require('./harness');
   let cl = await page.evaluate(() => window.__cliques.map(c => c.tipo + ':' + (c.detalhe || '')));
   ok(cl.includes('busca:Pinheiros, São Paulo'), 'visitante: busca registrada com a região — ' + cl.join(' | '));
   const cepGravado = await page.evaluate(() => window.__cliques.filter(c => c.tipo === 'busca').map(c => c.cep));
-  ok(cepGravado[0] === '05422-000', 'busca por CEP guarda o CEP digitado — ' + cepGravado);
+  ok(cepGravado[0] === '05422', 'busca por CEP guarda só a região do CEP (5 primeiros números, regra 336) — ' + cepGravado);
   const filtro = await page.evaluate(() => document.body.innerHTML.includes('Empréstimo de raquete') && !document.body.innerHTML.includes('Empresta raquete'));
   ok(filtro, 'rótulo "Empréstimo de raquete"');
   await browser.close();
@@ -67,7 +67,7 @@ const { abrir, ok } = require('./harness');
   ({ browser, page } = await abrir({ q: '?busca=05422-000' }));
   await page.waitForTimeout(1200);
   cl = await page.evaluate(() => window.__cliques.filter(c => c.tipo === 'busca').map(c => c.detalhe + '|' + c.cep));
-  ok(cl.join() === 'Pinheiros, São Paulo|05422-000', 'abrir link ?busca=CEP faz a busca e grava — ' + cl);
+  ok(cl.join() === 'Pinheiros, São Paulo|05422', 'abrir link ?busca=CEP faz a busca e grava (só a região do CEP) — ' + cl);
   ok(await page.evaluate(() => state.origin && state.origin.bairro === 'Pinheiros' && location.search.includes('05422')), 'link mantém o CEP e ordena por distância');
   await browser.close();
 

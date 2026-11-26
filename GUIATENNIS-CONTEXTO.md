@@ -10,7 +10,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 26/11/2026 (regras 334 e 335: pré-lançamento com código de acesso e a comodidade Acessibilidade)
+**Atualizado em:** 26/11/2026 (regras 334 a 336: pré-lançamento, a comodidade Acessibilidade e a busca só com a região)
 
 | | |
 |---|---|
@@ -179,8 +179,8 @@ Técnica
 - Coluna nova no banco **degrada com elegância** (o site funciona com o
   banco antigo: `lerPublico` com a lista de colunas novas, `faltaColunaNova`).
 - Commits, comentários e nomes de função em português.
-- **Privacidade:** de uma busca guarda só bairro, cidade, CEP e o ponto
-  arredondado (~100 m); de cada acesso, origem e aparelho; nunca IP,
+- **Privacidade:** de uma busca, a estatística guarda só a região (bairro, cidade, os 5
+  primeiros números do CEP e o ponto arredondado em ~1 km, regra 336); de cada acesso, origem e aparelho; nunca IP,
   endereço digitado ou identificador do aparelho. Admin não grava nada.
   Mudou isso, muda a Política de Privacidade.
 
@@ -669,6 +669,7 @@ mesmo histórico de 23/11 e nas descrições antigas do PR (`historico/PR5-descr
 - 333 (25/11) — a nota fiscal automática pela NFS-e Nacional (a Prefeitura respondeu "Erro 1647": CNPJ no CNC emite no ambiente nacional desde 17/11/2026): DPS 1.01 assinada, Sefin Nacional com TLS mútuo, produção restrita no Teste, cancelamento pelo evento 101101, código 172501 e série numérica; textos do admin, da ajuda, da Privacidade e dos e-mails do admin. SQL `20261125150000_nota_fiscal_nacional`.
 - 334 (26/11) — pré-lançamento: até domingo, 29/11, 18h, o link normal mostra a página do lançamento (refeita para vender, com as telas reais do que é novo: filtros, ficha, chat e o Parceiros) e o código de acesso das academias libera o site inteiro (`testes/pre-lancamento.js`, 28).
 - 335 (26/11) — a comodidade "Acessibilidade" (`acessibilidade`, ícone `acessivel`, como o grupo do Airbnb e do Booking): cadastro, Filtros, "Com acessibilidade" na inicial e destaque na ficha (`testes/comodidade-acessibilidade.js`); no pré-lançamento, "Reservar online" nas novidades e para as academias (Completo) e sem "preço sempre à vista" (há "Sob consulta").
+- 336 (26/11) — a busca guarda só a região ("dizer que não guardamos o endereço digitado é uma ilusão… temos o nome da rua"): na estatística (`cliques`), os 5 primeiros números do CEP e o ponto em ~1 km (`pontoDaBusca`; a `pontoAproximado` de ~100 m segue só na conta, nas buscas salvas e na última busca, que a Política explica); SQL `20261126120000_busca_so_a_regiao` deixa as linhas antigas assim (conferido num Postgres local; a seção nova do `banco-emails.py` não rodou: este contêiner não tem o banco local); "Sobre" e Política (26/11/2026) dizem isso, com a conta à parte; Admin: "Regiões do CEP buscadas".
 
 ## 11. WhatsApp e mensagem para as academias
 

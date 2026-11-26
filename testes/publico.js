@@ -34,8 +34,8 @@ const { abrir, ok } = require('./harness');
   });
   await page.fill('#cep-input', 'Rua B, Moema'); await page.keyboard.press('Enter'); await page.waitForTimeout(1500);
   cl = await page.evaluate(() => window.__cliques.find(c => c.tipo === 'busca'));
-  ok(cl.cep === '04077-000', 'busca por endereço grava o CEP da região — ' + cl.cep);
-  ok(cl.lat === -23.601 && cl.lng === -46.666, 'ponto arredondado para ~100 m — ' + cl.lat + ', ' + cl.lng);
+  ok(cl.cep === '04077', 'busca por endereço grava só a região do CEP (5 primeiros números, regra 336) — ' + cl.cep);
+  ok(cl.lat === -23.6 && cl.lng === -46.67, 'ponto arredondado em ~1 km (regra 336) — ' + cl.lat + ', ' + cl.lng);
   ok(cl.dispositivo === 'Computador', 'busca grava o aparelho');
   await browser.close();
 
@@ -72,7 +72,7 @@ const { abrir, ok } = require('./harness');
   await page.evaluate(() => openCourt('a1'));
   await page.waitForTimeout(300);
   let vis = await page.evaluate(() => window.__cliques.find(c => c.tipo === 'visualizacao'));
-  ok(vis && vis.origem === 'bio-instagram' && vis.detalhe === 'Pinheiros, São Paulo' && vis.cep === '05422-000' && vis.dispositivo, 'ficha aberta leva origem, região e aparelho — ' + JSON.stringify(vis));
+  ok(vis && vis.origem === 'bio-instagram' && vis.detalhe === 'Pinheiros, São Paulo' && vis.cep === '05422' && vis.dispositivo, 'ficha aberta leva origem, região e aparelho — ' + JSON.stringify(vis));
   await page.evaluate(() => trackClick('a1', 'whatsapp'));
   const wa = await page.evaluate(() => window.__cliques.find(c => c.tipo === 'whatsapp'));
   ok(wa.origem === 'bio-instagram' && wa.detalhe === 'Pinheiros, São Paulo', 'contato no WhatsApp também');
@@ -102,6 +102,6 @@ const { abrir, ok } = require('./harness');
   // Política de Privacidade conta o que é guardado
   ({ browser, page } = await abrir());
   const pol = await page.evaluate(() => PRIVACY_HTML);
-  ok(pol.includes('arredondado para cerca de 100 metros') && pol.includes('8 de outubro de 2026') && pol.includes('fontes públicas'), 'Política de Privacidade atualizada');
+  ok(pol.includes('ponto arredondado em cerca de 1 km') && pol.includes('Não guardamos a rua, o número, o que foi digitado') && pol.includes('8 de outubro de 2026') && pol.includes('fontes públicas'), 'Política de Privacidade atualizada');
   await browser.close();
 })();

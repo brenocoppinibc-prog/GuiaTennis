@@ -3389,5 +3389,15 @@ ok("permission denied" in erro("select * from public.notas_fiscais", papel="auth
    "as tabelas da nota são fechadas")
 sql("update public.nota_configuracao set ligada = false, ambiente = 'teste' where id = 1")
 
+# ---- Regra 336 (26/11/2026): a estatística da busca guarda só a região (SQL 20261126120000_busca_so_a_regiao) ----
+sql("insert into public.cliques (tipo, detalhe, cep, lat, lng) values ('busca', 'Jardim Guedala, São Paulo', '05630-090', -23.60712, -46.72138)")
+for _ in range(2):
+    r = subprocess.run(["psql", BANCO, "-X", "-q", "-v", "ON_ERROR_STOP=1", "-f", "supabase/migrations/20261126120000_busca_so_a_regiao.sql"], capture_output=True, text=True)
+ok(r.returncode == 0, "o SQL da busca só com a região roda (e de novo, sem estragar) " + r.stderr[:200])
+ok(um("select cep || '|' || lat || '|' || lng from public.cliques where detalhe = 'Jardim Guedala, São Paulo' and tipo = 'busca'") == "05630|-23.61|-46.72",
+   "a busca antiga fica só com a região: os 5 primeiros números do CEP e o ponto em ~1 km")
+ok(um("select count(*) from public.cliques where cep ~ '[^0-9]' or length(cep) > 5 or lat <> round(lat, 2) or lng <> round(lng, 2)") == "0",
+   "nenhuma linha fica com o CEP inteiro ou o ponto de ~100 m")
+
 print(f"\n{'Tudo certo' if not falhas else str(falhas) + ' falha(s)'}")
 sys.exit(1 if falhas else 0)

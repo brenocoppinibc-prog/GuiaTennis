@@ -10,7 +10,7 @@
 const { chromium } = require('playwright');
 const path = require('path');
 const { execFileSync } = require('child_process');
-const { rede, NOME_CLARO, nomeSvg, FONTE } = require('../gerar-imagens.js');
+const { rede, NOME_CLARO, nomeSvg, FONTE, logo } = require('../gerar-imagens.js');
 
 const VERDE = '#1F4D3D', DOURADO = '#B8933F', DOURADO_CLARO = '#D8B865', CREME = '#F7F4EC';
 const check = (cor) => `<svg width="44" height="44" viewBox="0 0 24 24" style="flex:none;margin-top:4px"><circle cx="12" cy="12" r="11" fill="${cor}"/><path d="M7 12.5l3.2 3.2L17 9" fill="none" stroke="${cor === DOURADO ? CREME : VERDE}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
@@ -142,6 +142,28 @@ const historias = {
   'stories-5-segunda-academias.png': { eyebrow: 'Só 15 vagas', titulo: 'Selo "Fundadora do GuiaTennis".', texto: 'Para os 15 primeiros donos de academia a chegar.' },
 };
 
+// ---------- Destaques do perfil (26/11/2026: "quais capas eu coloco nos destaques e o que
+// colocar?"): a capa é um Stories de 1080×1920 e o Instagram mostra só o círculo do meio;
+// fundo verde e o ícone dourado no centro, sem texto (o nome vai embaixo do círculo).
+const tracoDourado = (d, extra = '') => `<svg width="420" height="420" viewBox="0 0 24 24" fill="none" stroke="${DOURADO_CLARO}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${d}${extra}</svg>`;
+const ICONES = {
+  'destaque-1-como-usar.png': tracoDourado('<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/>'),
+  'destaque-2-bairros.png': tracoDourado('<path d="M12 21.5s-7-6.3-7-11.7a7 7 0 0 1 14 0c0 5.4-7 11.7-7 11.7z"/><circle cx="12" cy="9.8" r="2.6"/>'),
+  'destaque-3-duvidas.png': tracoDourado('<circle cx="12" cy="12" r="9.5"/><path d="M9.4 9.3a2.7 2.7 0 1 1 3.9 2.4c-.8.4-1.3 1-1.3 1.8v.6"/><circle cx="12" cy="17.2" r=".6" fill="' + DOURADO_CLARO + '"/>'),
+  'destaque-4-academias.png': tracoDourado('<rect x="5" y="3" width="14" height="18" rx="1.2"/><path d="M9 7h1.5M13.5 7H15M9 10.5h1.5M13.5 10.5H15M9 14h1.5M13.5 14H15M10.5 21v-3h3v3"/>'),
+  'destaque-5-novidades.png': tracoDourado('<path d="M11 3.5l1.7 4.8 4.8 1.7-4.8 1.7L11 16.5l-1.7-4.8L4.5 10l4.8-1.7z"/><path d="M18 14.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/>'),
+  'destaque-6-o-guia.png': logo(1080, { quadrado: true }),
+};
+const capaDeDestaque = (icone) => rede(1080, 1920, `<div style="position:absolute;left:0;right:0;top:0;bottom:0;display:flex;align-items:center;justify-content:center">${icone}</div>`, 0);
+// ---------- Stories de "Dúvidas" (o destaque com as perguntas de sempre) ----------
+const duvidas = {
+  'duvidas-1-gratis.png': { eyebrow: 'Dúvidas', titulo: 'O GuiaTennis é grátis?', texto: 'Sim. Para quem joga, buscar, comparar e chamar a academia é grátis.' },
+  'duvidas-2-cadastro.png': { eyebrow: 'Dúvidas', titulo: 'Preciso criar uma conta?', texto: 'Não para buscar e chamar. A conta, também grátis, serve para avaliar as academias e salvar as buscas.' },
+  'duvidas-3-taxa.png': { eyebrow: 'Dúvidas', titulo: 'O GuiaTennis cobra taxa ou fica no meio?', texto: 'Não. Você combina o horário e o valor direto com a academia, pelo WhatsApp.' },
+  'duvidas-4-avaliacoes.png': { eyebrow: 'Dúvidas', titulo: 'As avaliações são de verdade?', texto: 'Só contas com e-mail confirmado avaliam, uma vez por academia. A academia responde, mas não apaga.' },
+  'duvidas-5-academia.png': { eyebrow: 'Dúvidas', titulo: 'Tenho uma academia. Como entro?', texto: 'Em guiatennis.com.br/parceiros: cadastre a academia ou assuma a ficha que já está no Guia. É grátis.' },
+};
+
 (async () => {
   const browser = await chromium.launch();
   const lista = [];
@@ -151,6 +173,8 @@ const historias = {
   carrossel('carrossel-3-segunda-academias', academias);
   carrossel('carrossel-4-semana-que-vem-funcoes', funcoes);
   Object.entries(historias).forEach(([nome, s]) => lista.push([nome, stories(s), 1080, 1920]));
+  Object.entries(ICONES).forEach(([nome, icone]) => lista.push([nome, capaDeDestaque(icone), 1080, 1920]));
+  Object.entries(duvidas).forEach(([nome, s]) => lista.push([nome, stories(s), 1080, 1920]));
   const so = process.argv.slice(2);
   for (const [nome, html, w, h] of lista) {
     if (so.length && !so.some(x => nome.includes(x))) continue;

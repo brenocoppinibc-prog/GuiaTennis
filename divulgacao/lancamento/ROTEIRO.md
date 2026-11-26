@@ -57,8 +57,24 @@ site estiverem no ar.
 > 👇 Grátis, sem cadastro
 
 O link guiatennis.com.br fica no campo de link, logo abaixo. **Categoria:** troque "Health & wellness website"
-por uma de esporte (em Editar perfil › Categoria, procure "esporte"). **Destaques fixos:** "Como usar" (os
-Reels), "Academias" (o carrossel de segunda) e "Novidades".
+por uma de esporte (em Editar perfil › Categoria, procure "esporte"). Os destaques estão logo abaixo.
+
+## Destaques (as bolinhas embaixo da bio)
+
+A capa é a imagem `destaque-…png` (o Instagram mostra só o círculo do meio). Ao criar ou editar o destaque:
+"Editar capa" › escolher a imagem da galeria. Nesta ordem, porque no celular aparecem os 4 ou 5 primeiros:
+
+| Nome | Capa | O que colocar |
+|---|---|---|
+| **Como usar** | `destaque-1-como-usar` (lupa) | O Reels 1, o Reels de tela de domingo e os prints do site (busca, filtros, ficha, WhatsApp). É o destaque que mais vende: quem chega ao perfil entende o site em 30 segundos |
+| **Bairros** | `destaque-2-bairros` (pino) | Cada resposta a "Em que bairro você joga?", com a figurinha de link para a página do bairro (ex.: guiatennis.com.br/quadras/sao-paulo/moema). Cresce sozinho a cada semana |
+| **Dúvidas** | `destaque-3-duvidas` (interrogação) | As 5 Stories `duvidas-1` a `5` (é grátis? precisa de conta? tem taxa? as avaliações são de verdade? como entra a academia?), cada uma com a figurinha de link para o site. Responde antes de a pessoa perguntar (risco zero) |
+| **Academias** | `destaque-4-academias` (prédio) | O carrossel de segunda em Stories, o `stories-5` com as 15 vagas de Fundadora, o Reels 5 e o link para guiatennis.com.br/parceiros. Mais tarde, as academias que entrarem (prova social) |
+| **Novidades** | `destaque-5-novidades` (brilho) | O `stories-4` do lançamento e cada função nova do site (ex.: "Sugerir uma quadra ou academia") |
+| **O Guia** | `destaque-6-o-guia` (o logo) | O que já está lá: a ideia do GuiaTennis. Pode ficar por último |
+
+Quando chegarem as primeiras avaliações e comentários de quem usou, crie o destaque **"Quem usa"** (prova
+social real, com autorização).
 
 ## Legendas
 

@@ -22,6 +22,7 @@ const texto = page => page.evaluate(() => document.body.innerText);
   ok(await page.$eval('.pre-botao-sec', a => a.getAttribute('href')) === '/lancamento.ics', 'Lembrar no calendário');
   ok(t.includes('GuiaTennis Parceiros: um site só para a sua academia.') && t.includes('Selo “Fundadora do GuiaTennis” na ficha, para sempre'), 'a parte das academias com as Fundadoras');
   ok(t.includes('Ainda sem convite? Peça o seu pelo WhatsApp.'), 'academia sem código pede o convite');
+  ok(decodeURIComponent(await page.$eval('.pre-convite a', a => a.href)).includes('wa.me/5511927456457?text=Olá! Sou responsável pela academia [nome da academia] e gostaria de receber o código de acesso'), 'o pedido do código já escrito no WhatsApp');
   ok(await page.evaluate(() => [faltaParaOLancamento(2 * 864e5 + 5 * 36e5), faltaParaOLancamento(864e5 + 36e5), faltaParaOLancamento(3 * 36e5 + 6e5), faltaParaOLancamento(36e5), faltaParaOLancamento(30e3)].join('|'))
     === 'Faltam 2 dias e 5 horas|Falta 1 dia e 1 hora|Faltam 3 horas e 10 minutos|Falta 1 hora|Falta 1 minuto', 'a contagem por extenso');
   await page.setViewportSize({ width: 390, height: 900 });

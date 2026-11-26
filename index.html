@@ -34518,6 +34518,9 @@ const PRE_MAIS = [
   ["plus", "Sugerir uma quadra ou academia", "Conhece um lugar que ainda não está no Guia? Envie a sugestão em poucos segundos."],
   ["map", "Uma página para cada bairro", "As academias, os preços e as mais bem avaliadas do seu bairro."],
 ];
+// A mensagem que já vem escrita no WhatsApp ao tocar em "Peça o seu pelo WhatsApp" (26/11/2026: "elabore a
+// mensagem… eu quero o código"); a academia completa com o nome dela.
+const PRE_PEDIDO_DE_CODIGO = "Olá! Sou responsável pela academia [nome da academia] e gostaria de receber o código de acesso para entrar no novo GuiaTennis antes do lançamento.";
 const PRE_PERGUNTAS = [
   ["O GuiaTennis cobra alguma coisa?", "Não. Para quem joga, buscar, comparar e chamar a academia é grátis. Você fala direto com a academia pelo WhatsApp e combina tudo com ela: o GuiaTennis não faz reservas e não fica no meio."],
   ["As avaliações são de verdade?", "Cada avaliação vem de uma conta com o e-mail confirmado, uma por academia. A academia pode responder, mas não pode apagar."],
@@ -34629,7 +34632,7 @@ function renderPreLancamento() {
           </div>
           ${errado !== null ? `<p class="pre-erro" id="pre-erro" role="alert">${errado ? "Código inválido. Confira o convite e tente de novo." : "Informe o código de acesso."}</p>` : ""}
         </form>
-        <p class="pre-convite">Ainda sem convite? <a href="https://wa.me/${WHATSAPP_GUIA}" target="_blank" rel="noopener">Peça o seu pelo WhatsApp</a>.</p>
+        <p class="pre-convite">Ainda sem convite? <a href="${esc(whatsappGuia(PRE_PEDIDO_DE_CODIGO))}" target="_blank" rel="noopener">Peça o seu pelo WhatsApp</a>.</p>
       </div></section>
       <section class="pre-bloco pre-perguntas"><div class="pre-centro">
         <h2>Perguntas frequentes</h2>

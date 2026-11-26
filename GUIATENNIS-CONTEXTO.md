@@ -485,7 +485,7 @@ opções da ficha e chat; "só o que é novo": o Breno lembrou que preço, compa
 (`PRE_MAIS`), "Para academias" com o GuiaTennis Parceiros (a tela, o que ganha com o plano de cada item, as vagas de
 Fundadora, "Como entrar" e o código), as perguntas `PRE_PERGUNTAS` e "Nos vemos domingo, às 18h."). As telas foram
 tiradas do site com o banco de verdade, só lendo (o ambiente do Claude liberou eultezheqwmxyakvgyjy.supabase.co em
-26/11), com a letra Roboto; a ficha mostrada é a Reinaldo Junqueira Tennis e a busca, a Morumbi Tennis; o código de acesso (no
+26/11), com a letra Roboto; a ficha mostrada é a Reinaldo Junqueira Tennis e a busca, a Morumbi Tennis; revisão de marketing, design e gramática: "Grátis para quem joga · Sem cadastro · Sem taxa" no alto, o plano de cada item como etiqueta, "Quanto custa para a academia?" nas perguntas, o dourado dos títulos pequenos em #7E6020 (contraste de leitura) e texto formal ("em um lugar só", "A nova ficha da academia"); o código de acesso (no
 link `?acesso=`, ou digitado na página; só a conta dele fica no código, `ACESSO_ANTECIPADO_CONTA`; o código
 está na conversa com o Breno) libera o site inteiro no navegador; admin logado entra direto; às 18h abre
 sozinho. O Breno convida as academias de quinta a sábado (roteiro, "Pré-lançamento"); depois de domingo, a

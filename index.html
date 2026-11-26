@@ -3733,7 +3733,9 @@
   .pre-logo { display: block; width: 40px; height: 40px; }
   .pre-topo .logo-nome { font-size: 24px; color: var(--green); }
   .pre-abre { padding: 40px 0 36px; text-align: center; }
-  .pre-sobre { margin: 0 0 10px; font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--gold); }
+  .pre-sobre { margin: 0 0 10px; font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #7E6020; }
+  .pre-garantia { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 14px 0 0; font-size: 14px; color: var(--muted); }
+  .pre-plano { display: inline-block; margin-left: 4px; padding: 1px 7px; border-radius: 6px; background: rgba(216,184,101,.18); color: var(--gold-light); font-size: 12px; font-weight: 700; vertical-align: 1px; }
   .pre h1, .pre h2, .pre-data { text-wrap: balance; }
   .pre h1 { margin: 0; font-family: var(--fonte-titulo); font-size: 34px; line-height: 1.15; letter-spacing: -0.01em; color: var(--green); }
   .pre-data { margin: 16px 0 0; font-size: 17px; line-height: 1.5; }
@@ -3771,7 +3773,6 @@
   .pre-tela-parceiros { margin: 24px 0 8px; }
   .pre-tela-parceiros img { border-color: rgba(255,255,255,.25); box-shadow: 0 12px 30px rgba(0,0,0,.25); }
   .pre-mais-titulo { margin-top: 40px !important; }
-  .pre-checks em { font-style: normal; font-size: 13px; font-weight: 600; color: var(--gold-light); }
   .pre-planos { margin: 14px 0 0; font-size: 14px; color: rgba(255,255,255,.8); }
   .pre-mais { margin: 26px 0 0; font-size: 16px; font-weight: 700; color: var(--green); }
   .pre-academias { background: var(--green); color: #fff; }
@@ -34504,17 +34505,17 @@ function faltaParaOLancamento(ms) {
 // melhora da visualização da ficha, mais informações da ficha, chat para ajuda e suporte e site separado para os
 // parceiros"), cada um com o print do site novo, com academias reais ("prints mostrando e comprovando").
 const PRE_TELAS = [
-  ["filtros", "Busca", "Mais filtros para achar a academia certa", "“Aberto agora”, comodidades como vestiário, estacionamento e empréstimo de raquete, piso, cobertura, preço por hora, avaliação e distância.", "A tela de filtros do novo GuiaTennis, com Aberto agora e as comodidades"],
-  ["ficha", "Ficha", "A ficha da academia, de cara nova", "Fotos em destaque, a estrutura em um toque e o preço sempre à vista, com o botão do WhatsApp junto.", "A ficha de uma academia no novo GuiaTennis, com a foto, o endereço e o preço"],
+  ["filtros", "Busca", "Mais filtros para achar a academia certa", "Filtre por “Aberto agora”, comodidades (vestiário, estacionamento, empréstimo de raquete e outras), piso, cobertura, preço por hora, avaliação e distância.", "A tela de filtros do novo GuiaTennis, com Aberto agora e as comodidades"],
+  ["ficha", "Ficha", "A nova ficha da academia", "Fotos em destaque, a estrutura em um toque e o preço sempre à vista, ao lado do botão do WhatsApp.", "A ficha de uma academia no novo GuiaTennis, com a foto, o endereço e o preço"],
   ["ficha-opcoes", "Ficha", "Muito mais informação na ficha", "A aula e a locação em cartões, com o valor de cada uma, o horário com “Aberto agora” e, quando a academia informa, o cancelamento e como chegar.", "As opções para jogar, o contato e o horário na ficha de uma academia"],
   ["chat", "Ajuda", "Chat de ajuda e suporte", "Tire as suas dúvidas na hora, escolhendo um assunto ou escrevendo com as suas palavras. Se precisar, a equipe do GuiaTennis responde.", "O chat de ajuda do novo GuiaTennis"],
 ];
 // A altura de cada print (o corte na parte que importa), para a página não pular ao carregar.
 const PRE_ALTURAS = { filtros: 720, ficha: 720, "ficha-opcoes": 750, chat: 500 };
 const PRE_MAIS = [
-  ["pin", "Quadras públicas", "Onde jogar de graça, com o jeito de usar cada uma."],
+  ["pin", "Quadras públicas", "Onde jogar de graça e como usar cada uma."],
   ["trofeu", "Também oferece", "Locação para eventos, ranking e projeto social de cada academia."],
-  ["plus", "Sugerir uma quadra ou academia", "Conhece um lugar que ainda não está no Guia? Envie em segundos."],
+  ["plus", "Sugerir uma quadra ou academia", "Conhece um lugar que ainda não está no Guia? Envie a sugestão em poucos segundos."],
   ["map", "Uma página para cada bairro", "As academias, os preços e as mais bem avaliadas do seu bairro."],
 ];
 const PRE_PERGUNTAS = [
@@ -34522,6 +34523,7 @@ const PRE_PERGUNTAS = [
   ["O GuiaTennis cobra alguma taxa?", "Não. Você fala direto com a academia pelo WhatsApp e combina tudo com ela. O GuiaTennis não faz reservas, não cobra e não fica no meio."],
   ["As avaliações são de verdade?", "Cada avaliação vem de uma conta com o e-mail confirmado, uma por academia. A academia pode responder, mas não pode apagar."],
   ["Quando o site abre?", "Domingo, 29 de novembro, às 18h, para todos. Toque em “Lembrar no calendário” para receber o aviso no celular."],
+  ["Quanto custa para a academia?", "A ficha é grátis no plano Básico, sem comissão por aluno. Os planos Completo e Premium têm mais recursos, e o Premium tem o 1º mês grátis."],
   ["Tenho uma academia. Como entro?", `Peça o seu convite <a href="https://wa.me/${WHATSAPP_GUIA}" target="_blank" rel="noopener">pelo WhatsApp</a>. Com ele, você cria a conta, completa a ficha e já aparece no lançamento. A ficha é grátis.`],
 ];
 // Números de verdade para a página do lançamento (prova social): as academias publicadas e os bairros, arredondados
@@ -34571,12 +34573,13 @@ function renderPreLancamento() {
       <section class="pre-abre"><div class="pre-centro">
         <p class="pre-sobre">Lançamento · domingo, 29/11, às 18h</p>
         <h1>Achar aula de tênis vai ficar muito mais fácil.</h1>
-        <p class="pre-data">O novo GuiaTennis chega domingo, 29 de novembro, às 18h. Aula e quadra de tênis perto de você, com preço, estrutura e avaliações num lugar só.</p>
+        <p class="pre-data">O novo GuiaTennis chega domingo, 29 de novembro, às 18h. Aula e quadra de tênis perto de você, com preço, estrutura e avaliações em um lugar só.</p>
         <div class="pre-contagem" id="pre-contagem" role="timer" aria-label="${faltaParaOLancamento(lancamento - Date.now())} para o lançamento">${contagemDoLancamento(lancamento - Date.now())}</div>
         <div class="pre-acoes">
           <a class="btn-primary pre-botao" href="https://instagram.com/guiatennis" target="_blank" rel="noopener">${icon("instagram", 18, "#fff")} Acompanhe no Instagram</a>
           <a class="pre-botao-sec" href="/lancamento.ics">${icon("calendario", 18, "var(--green)")} Lembrar no calendário</a>
         </div>
+        <p class="pre-garantia">${icon("check", 16, "var(--green)")} Grátis para quem joga · Sem cadastro · Sem taxa</p>
       </div></section>
       ${numeros ? `<ul class="pre-numeros">${numeros.map(([n, t]) => `<li><strong>${n}</strong><span>${t}</span></li>`).join("")}</ul>` : ""}
       <section class="pre-bloco"><div class="pre-centro">
@@ -34608,9 +34611,9 @@ function renderPreLancamento() {
           ${marca("Cadastro passo a passo, com a prévia da ficha antes de publicar")}
           ${marca("Mudou o preço ou o horário? Atualize pelo celular, e a ficha muda na hora")}
           ${marca("Resposta às avaliações, para mostrar como você atende")}
-          ${marca("Quantas pessoas chamaram a sua academia <em>(Completo)</em>")}
-          ${marca("Equipe com acesso por convite, cada pessoa com as suas funções <em>(Completo)</em>")}
-          ${marca("Promoções na ficha <em>(Completo)</em> e o destaque “Patrocinado” no topo da busca <em>(Premium)</em>")}
+          ${marca("Quantas pessoas chamaram a sua academia <span class='pre-plano'>Completo</span>")}
+          ${marca("Equipe com acesso por convite, cada pessoa com as suas funções <span class='pre-plano'>Completo</span>")}
+          ${marca("Promoções na ficha <span class='pre-plano'>Completo</span> e o destaque “Patrocinado” no topo da busca <span class='pre-plano'>Premium</span>")}
           ${marca("Imagem pronta para divulgar no Instagram as suas avaliações e promoções")}
           ${marca("Chat de suporte dentro do Parceiros")}
           ${restam === null || restam > 0 ? marca(`Selo “Fundadora do GuiaTennis” na ficha, para sempre, para os ${FUNDADORAS} primeiros donos de academia`) : ""}

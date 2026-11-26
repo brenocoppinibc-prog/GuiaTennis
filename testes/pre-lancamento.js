@@ -14,7 +14,7 @@ const texto = page => page.evaluate(() => document.body.innerText);
   ok(await page.$$eval('.pre-contagem strong', l => l.length) === 3 && /^Faltam? \d+ (dia|hora|minuto).* para o lançamento$/.test(await page.$eval('.pre-contagem', e => e.getAttribute('aria-label'))), 'a contagem até domingo (dias, horas e minutos)');
   ok(t.includes('O novo GuiaTennis, por dentro') && await page.$$eval('.pre-tela img', l => l.length) === 5, 'O que muda: os 5 prints do site novo');
   ok(await page.$$eval('.pre-passos li', l => l.length) === 3, 'Como entrar, em 3 passos');
-  ok(await page.$$eval('.pre-perguntas details', l => l.length) === 5, 'as 5 perguntas frequentes');
+  ok(await page.$$eval('.pre-perguntas details', l => l.length) === 6 && t.includes('Grátis para quem joga · Sem cadastro · Sem taxa'), 'as 6 perguntas frequentes e o risco zero no alto');
   ok(t.includes('Restam 15 vagas de Fundadora'), 'as vagas de Fundadora, de verdade');
   ok(await page.evaluate(() => !preNumeros || preNumeros.academias < 5 ? !document.querySelector('.pre-numeros') : !!document.querySelector('.pre-numeros')), 'os números só com 5 academias ou mais');
   ok(t.includes('Nos vemos domingo, às 18h.'), 'o fecho com o Instagram');

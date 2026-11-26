@@ -34562,7 +34562,6 @@ function renderPreLancamento() {
   const numeros = preNumeros && preNumeros.academias >= 5 ? [
     [numeroRedondo(preNumeros.academias), "academias de tênis"],
     preNumeros.bairros >= 2 ? [numeroRedondo(preNumeros.bairros), "bairros"] : null,
-    ["R$ 0", "para quem joga"],
   ].filter(Boolean) : null;
   document.getElementById("app").innerHTML = `
     <main class="pre">

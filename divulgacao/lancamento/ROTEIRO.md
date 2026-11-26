@@ -44,7 +44,7 @@ Destaques fixos: **Como usar** (o Reels de domingo), **Academias** (o carrossel 
 
 > O novo GuiaTennis está no ar. 🎾
 >
-> Busque pelo seu bairro, compare preço e estrutura e fale direto com a academia pelo WhatsApp. Sem
+> Busque pelo seu bairro, compare preço, estrutura e avaliações e fale direto com a academia pelo WhatsApp. Sem
 > intermediário, sem taxa e sem cadastro para buscar.
 >
 > Comente o seu bairro: respondemos com as academias de lá.
@@ -84,27 +84,29 @@ verde"** do Instagram (Reels › Efeitos › Tela verde) com um print do site. D
 
 **Reels 1 (sexta) — "Como achar aula de tênis perto de você"**
 - Texto na tela: **"Aula de tênis perto de você em 1 minuto"**
-- "Quer jogar tênis e não sabe por onde começar? Olha só." (tela verde com a busca) "Entra no
-  guiatennis.com.br, digita o seu bairro ou toca em 'Usar minha localização'." (print da lista) "Aparecem as
-  academias mais perto, com o preço." (print da ficha) "Abre a que você gostou, vê a quadra, o preço e as
-  avaliações e chama direto no WhatsApp. Sem taxa. Salva este vídeo e manda para quem quer começar."
+- "Quer jogar tênis e não sabe por onde começar? Veja como é simples." (tela verde com a busca) "Entre no
+  guiatennis.com.br, digite o seu bairro ou toque em 'Usar minha localização'." (print da lista) "Aparecem as
+  academias mais perto, com o preço de quem informa." (print da ficha) "Abra a de que você gostou, veja a
+  quadra, o preço e as avaliações e chame direto no WhatsApp, sem taxa. Salve este vídeo e mande para quem
+  quer começar."
 
 **Reels 2 — "Quanto custa aula de tênis em São Paulo?"**
 - Texto na tela: **"Quanto custa aula de tênis em SP?"**
-- "Essa é a pergunta que mais recebemos. Depende do bairro e do tipo de aula: individual, em dupla ou em
-  grupo." (tela verde com o filtro "Menor preço") "No GuiaTennis, você ordena por menor preço e vê o valor de
-  cada academia antes de chamar. Comenta o seu bairro que eu respondo com as opções de lá."
+- "Essa é uma das perguntas que mais recebemos. Depende do bairro e do tipo de aula: individual, em dupla
+  ou em grupo." (tela verde com a ordem "Menor preço") "No GuiaTennis, você ordena por menor preço e vê o
+  valor antes de chamar, nas academias que informam o preço. Comente o seu bairro, e eu respondo com as
+  opções de lá."
 
 **Reels 3 — "Seu filho quer jogar tênis?"**
 - Texto na tela: **"Aula de tênis para crianças perto de você"**
-- "Seu filho quer jogar tênis? Usa o filtro 'Crianças' no GuiaTennis." (print do filtro) "Aparecem só as
-  academias com aula infantil, com a idade de cada turma e o preço. Manda para a mãe ou o pai que está
-  procurando."
+- "Seu filho quer jogar tênis? No GuiaTennis, busque pelo seu bairro e abra a ficha das academias." (print
+  da ficha) "No cartão 'Aulas para crianças', aparecem as turmas por idade e o preço. Mande este vídeo para
+  quem está procurando aula para o filho."
 
 **Reels 4 — "Vai viajar? Leva a raquete"**
 - Texto na tela: **"Vai viajar? Leve a raquete"**
-- "Vai viajar e quer jogar tênis lá? No menu do GuiaTennis, toca em 'Vou viajar', informa a cidade e onde
-  você vai ficar, e aparecem as quadras mais perto. Salva para a próxima viagem."
+- "Vai viajar e quer jogar tênis lá? No menu do GuiaTennis, toque em 'Vou viajar', informe a cidade e onde
+  você vai ficar, e aparecem as quadras mais perto. Salve para a próxima viagem."
 
 Legenda de todos: a frase do texto na tela, mais "Link na bio: guiatennis.com.br" e uma pergunta para os
 comentários.
@@ -118,7 +120,7 @@ Grave a tela do celular no site (gravação de tela do próprio celular):
 3. Rolar a lista devagar e abrir uma ficha com preço e foto.
 4. Mostrar o preço e a estrutura e tocar em "Falar no WhatsApp" (pare antes de enviar).
 
-Texto na tela: "Aula de tênis perto de você, com preço à vista." · "Compare." · "Fale direto no WhatsApp."
+Texto na tela: "Aula de tênis perto de você." · "Compare preço e estrutura." · "Fale direto no WhatsApp."
 Música em alta do Instagram, baixa.
 
 ## Mensagem para as academias (WhatsApp, segunda)
@@ -127,8 +129,8 @@ Música em alta do Instagram, baixa.
 > São Paulo.
 >
 > A [nome da academia] já está no Guia, e quem procura aula ou quadra na região chega direto ao seu
-> WhatsApp, sem taxa por aluno. Para deixar a ficha completa (preços, fotos, horários) e acompanhar quantos
-> jogadores chamaram, basta entrar no GuiaTennis Parceiros, que é grátis:
+> WhatsApp, sem taxa por aluno. Para deixar a ficha completa (preços, horários e fotos) e responder às
+> avaliações, basta entrar no GuiaTennis Parceiros, que é grátis:
 > guiatennis.com.br/parceiros
 >
 > Os 15 primeiros donos de academia a chegar ganham o selo "Fundadora do GuiaTennis" na ficha, para sempre.

@@ -25,7 +25,7 @@ const UI = {
   busca: (claro) => painel(`
     <div style="display:flex;align-items:center;gap:22px;padding:28px 30px;border-radius:20px;background:${CREME};border:2px solid rgba(31,77,61,.2)">${lupa(VERDE)}<span style="font-size:40px;font-weight:500;color:${VERDE}">Moema, São Paulo</span><span style="width:3px;height:44px;background:${DOURADO}"></span></div>
     <div style="display:flex;align-items:center;gap:16px;margin-top:28px;font-size:34px;font-weight:700;color:${claro ? VERDE : DOURADO_CLARO}">${mira(claro ? VERDE : DOURADO_CLARO)} Usar minha localização</div>`, claro),
-  filtros: (claro) => painel(`<div style="display:flex;flex-wrap:wrap;gap:18px">${[['Aulas', 1], ['Locação', 0], ['Coberta', 1], ['Saibro', 0], ['Rápida', 0], ['Crianças', 0], ['Quadras públicas', 0]].map(([n, on]) => `
+  filtros: (claro) => painel(`<div style="display:flex;flex-wrap:wrap;gap:18px">${[['Aulas', 1], ['Locação', 0], ['Coberta', 1], ['Saibro', 0], ['Rápida', 0], ['Aberto agora', 0], ['Quadras públicas', 0]].map(([n, on]) => `
     <span style="padding:16px 28px;border-radius:999px;font-size:32px;font-weight:600;${on ? `background:${claro ? VERDE : DOURADO_CLARO};color:${claro ? CREME : VERDE}` : `border:2px solid ${claro ? 'rgba(31,77,61,.35)' : 'rgba(247,244,236,.4)'};color:${claro ? VERDE : CREME}`}">${n}</span>`).join('')}</div>
     <div style="margin-top:30px;font-size:30px;font-weight:500;opacity:.8">Ordenar: <b>Mais perto</b> · Mais bem avaliadas · Menor preço</div>`, claro),
   ficha: (claro) => painel(['Opções para jogar, com os preços', 'Estrutura: piso, cobertura e comodidades', 'Avaliações de quem joga', 'Horário e como chegar'].map((x, i) => `
@@ -85,7 +85,7 @@ function stories({ eyebrow = '', titulo = '', texto = '' }) {
 const passoAPasso = [
   { grande: true, quadra: 560, eyebrow: 'Passo a passo', titulo: 'Como encontrar aula de tênis perto de você em 1 minuto.', texto: 'Salve para usar quando precisar.', rodape: 'Deslize ›' },
   { tom: 'creme', ui: 'busca', eyebrow: 'Passo 1', titulo: 'Diga onde você está.', texto: 'Em guiatennis.com.br, digite o bairro ou o CEP, ou toque em "Usar minha localização".' },
-  { ui: 'filtros', eyebrow: 'Passo 2', titulo: 'Filtre do seu jeito.', texto: 'Aula ou locação, piso, quadra coberta e aulas para crianças.' },
+  { ui: 'filtros', eyebrow: 'Passo 2', titulo: 'Filtre do seu jeito.', texto: 'Aula ou locação, piso, quadra coberta, preço e horário.' },
   { tom: 'creme', ui: 'ficha', eyebrow: 'Passo 3', titulo: 'Abra a ficha da academia.', texto: 'Tudo o que você precisa saber antes de chamar:' },
   { ui: 'whatsapp', eyebrow: 'Passo 4', titulo: 'Chame direto no WhatsApp.', texto: 'Sem intermediário e sem taxa: você combina o horário e o valor com a academia.' },
   { tom: 'creme', ui: 'varias', eyebrow: 'Dica', titulo: 'Quer comparar preços?', texto: 'Na lista da busca, peça o preço a várias academias de uma vez.' },
@@ -103,11 +103,11 @@ const funcoes = [
 ];
 // ---------- Carrossel 2 (domingo): o lançamento ----------
 const lancamento = [
-  { grande: true, quadra: 560, eyebrow: 'Chegou', titulo: 'O novo GuiaTennis está no ar.', texto: 'Aula e quadra de tênis perto de você, com preço à vista.', rodape: 'Deslize ›' },
+  { grande: true, quadra: 560, eyebrow: 'Chegou', titulo: 'O novo GuiaTennis está no ar.', texto: 'Aula e quadra de tênis perto de você: compare e fale direto com a academia.', rodape: 'Deslize ›' },
   { tom: 'creme', eyebrow: 'Busque', titulo: 'Pelo seu bairro.', texto: 'Digite o bairro ou o CEP, ou use a sua localização. As academias mais perto aparecem primeiro, na lista ou no mapa.' },
   { eyebrow: 'Compare', titulo: 'Antes de chamar.', itens: [
     'Preço das aulas e da locação de quadra.',
-    'Tipo de piso, quadra coberta e iluminação.',
+    'Tipo de piso e se a quadra é coberta.',
     'Estacionamento, vestiário e outras comodidades.',
     'Aulas para adultos e para crianças.'] },
   { tom: 'creme', eyebrow: 'Confie', titulo: 'Avaliações de quem joga.', texto: 'Só contas com e-mail confirmado avaliam, uma vez por academia. A academia pode responder, mas não pode apagar.' },
@@ -119,11 +119,11 @@ const lancamento = [
 const academias = [
   { grande: true, quadra: 560, eyebrow: 'Para academias de tênis', titulo: 'A sua academia no GuiaTennis.', texto: 'Mais alunos chegando pelo WhatsApp, sem taxa por aluno.', rodape: 'Deslize ›' },
   { tom: 'creme', eyebrow: 'Quem chega já sabe o que quer', titulo: 'O jogador chama pronto para marcar.', texto: 'Ele vê preço, estrutura e avaliações antes de chamar. A conversa no WhatsApp já começa pela aula ou pelo horário.' },
-  { eyebrow: 'GuiaTennis Parceiros', titulo: 'Tudo da academia em um só lugar.', itens: [
-    'Ficha completa, com fotos, preços e horários.',
+  { eyebrow: 'GuiaTennis Parceiros, grátis', titulo: 'Tudo da academia em um só lugar.', itens: [
+    'Preços, horários e todas as comodidades na ficha.',
+    'Fotos da academia.',
     'Resposta pública a cada avaliação.',
-    'Quantos jogadores chamaram a academia.',
-    'Equipe com acesso, cada um com a sua função.'] },
+    'QR code da ficha para a recepção.'], rodape: 'Nos planos Completo e Premium: mais fotos, Instagram e site e quantos chamaram' },
   { tom: 'creme', eyebrow: 'Fundadoras: 15 vagas', titulo: 'O selo "Fundadora do GuiaTennis".', texto: 'Os 15 primeiros donos de academia a chegar ao GuiaTennis ganham o selo na ficha, para sempre.' },
   { grande: true, quadra: 560, eyebrow: 'guiatennis.com.br/parceiros', titulo: 'Comece grátis.', texto: 'Cadastre a academia ou assuma a ficha que já está no Guia.', rodape: 'Marque a academia em que você joga' },
 ];

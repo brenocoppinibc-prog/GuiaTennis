@@ -10,7 +10,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 26/11/2026 (regra 334, pré-lançamento com código de acesso)
+**Atualizado em:** 26/11/2026 (regras 334 e 335: pré-lançamento com código de acesso e a comodidade Acessibilidade)
 
 | | |
 |---|---|
@@ -668,6 +668,7 @@ mesmo histórico de 23/11 e nas descrições antigas do PR (`historico/PR5-descr
 - 332 (25/11) — "Sugerir uma quadra ou academia" com a cara do GuiaTennis ("não está em uma posição tão legal… muito básica e informal"): sai do topo do menu para o Suporte (antes do GuiaTennis Parceiros) e entra no rodapé, em Suporte, depois do Feedback (como o "Adicionar uma empresa" do Yelp); no fim da lista da busca, "Conhece uma quadra ou academia que não está nesta lista?" (`fimDaBusca`, como o "Adicionar um lugar" do Google Maps), que abre com o bairro e a cidade procurados; a tela com o tipo em cartões (Academia/Quadra pública), "Endereço" com "Usar minha localização" (`sugerirComMinhaLocalizacao`, pelo `enderecoDoPonto`; o ponto não é guardado), Enter avança, erro leva ao campo e texto formal. Sem SQL.
 - 333 (25/11) — a nota fiscal automática pela NFS-e Nacional (a Prefeitura respondeu "Erro 1647": CNPJ no CNC emite no ambiente nacional desde 17/11/2026): DPS 1.01 assinada, Sefin Nacional com TLS mútuo, produção restrita no Teste, cancelamento pelo evento 101101, código 172501 e série numérica; textos do admin, da ajuda, da Privacidade e dos e-mails do admin. SQL `20261125150000_nota_fiscal_nacional`.
 - 334 (26/11) — pré-lançamento: até domingo, 29/11, 18h, o link normal mostra a página do lançamento (refeita para vender, com as telas reais do que é novo: filtros, ficha, chat e o Parceiros) e o código de acesso das academias libera o site inteiro (`testes/pre-lancamento.js`, 28).
+- 335 (26/11) — a comodidade "Acessibilidade" (`acessibilidade`, ícone `acessivel`, como o grupo do Airbnb e do Booking): cadastro, Filtros, "Com acessibilidade" na inicial e destaque na ficha (`testes/comodidade-acessibilidade.js`); no pré-lançamento, "Reservar online" nas novidades e para as academias (Completo) e sem "preço sempre à vista" (há "Sob consulta").
 
 ## 11. WhatsApp e mensagem para as academias
 

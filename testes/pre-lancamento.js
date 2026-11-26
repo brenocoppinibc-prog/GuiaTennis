@@ -18,7 +18,7 @@ const texto = page => page.evaluate(() => document.body.innerText);
   ok(t.includes('Restam 15 vagas de Fundadora'), 'as vagas de Fundadora, de verdade');
   ok(await page.evaluate(() => !preNumeros || preNumeros.academias < 5 ? !document.querySelector('.pre-numeros') : !!document.querySelector('.pre-numeros')), 'os números só com 5 academias ou mais');
   ok(t.includes('Nos vemos domingo, às 18h.'), 'o fecho com o Instagram');
-  ok(await page.$$eval('.pre-novidades li', l => l.length) === 4 && t.includes('E tem mais. O resto, só no domingo.'), 'as 4 novidades a mais e o "E tem mais"');
+  ok(await page.$$eval('.pre-novidades li', l => l.length) === 5 && t.includes('Reservar online') && t.includes('E tem mais. O resto, só no domingo.'), 'as 5 novidades a mais (com o Reservar online) e o "E tem mais"');
   ok(await page.$eval('.pre-botao-sec', a => a.getAttribute('href')) === '/lancamento.ics', 'Lembrar no calendário');
   ok(t.includes('GuiaTennis Parceiros: um site só para a sua academia.') && t.includes('Selo “Fundadora do GuiaTennis” na ficha, para sempre'), 'a parte das academias com as Fundadoras');
   ok(t.includes('Ainda sem convite? Peça o seu pelo WhatsApp.'), 'academia sem código pede o convite');

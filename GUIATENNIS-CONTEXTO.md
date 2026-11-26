@@ -10,7 +10,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 26/11/2026 (regra 333, kit do Instagram, troca de chat)
+**Atualizado em:** 26/11/2026 (regra 333, kit do Instagram com o "Guia do bairro", troca de chat)
 
 | | |
 |---|---|
@@ -472,15 +472,16 @@ sozinho vira "-", "Sob consulta"), numa linha
 em dia (passos até o 171) e os SQL `20261125120000_nota_fiscal_automatica` e
 `20261125150000_nota_fiscal_nacional` já rodaram no banco de teste (25/11; o `registrar_nota` do 333 ganhou
 depois o aviso `nota_cancelada`, que só entra no banco de verdade com o merge). **O chat de 25-26/11 deixou de
-acompanhar o PR: o chat novo se inscreve com `subscribe_pr_activity`.**
+acompanhar o PR; o chat de 26/11 voltou a acompanhar.**
 
 **Lançamento no domingo, 29/11, e a nova fase (26/11):** o Breno quer "ativar o GuiaTennis no domingo para
 todos". O site está pronto; o foco passa a ser **divulgar e trazer academias** (fichas completas com preço e
 foto primeiro, como o Airbnb e o iFood). O Claude vira manutenção semanal (corrigir o que usuários e academias
 apontarem e ajustar pelas Metas do admin), sem detalhar o que só o Breno percebe. Antes de domingo: o "pode
 subir" do PR #5. Depois do merge: A1 no site de verdade e nota em Produção, Search Console, "Verificar domínio"
-na Meta. **Kit do Instagram** em `divulgacao/lancamento/` (`ROTEIRO.md`: estratégia "carrossel explica, vídeo
-'Testei' prova, você falando conecta", gatilhos verdadeiros, cronograma de quinta a segunda, legendas, Stories,
+na Meta. **Kit do Instagram** em `divulgacao/lancamento/` (`ROTEIRO.md`: estratégia "carrossel explica, Reels
+'Guia do bairro' prova, você falando conecta" (26/11: a série "Testei" saiu, o Breno não achou que fazia
+sentido; no lugar, "Onde jogar tênis em [bairro]" com as academias de ficha completa marcadas, para repostarem), gatilhos verdadeiros, cronograma de quinta a segunda, legendas, Stories,
 destaques com o dia de criar cada um, roteiros dos vídeos e mensagem às academias; imagens por
 `gerar-lancamento.js`: 4 carrosséis, 5 Stories, 6 capas de destaque e 5 Stories de "Dúvidas"). Perfil
 @guiatennis em 26/11: 83 seguidores, 6 posts; os vídeos com o rosto renderam 1.416 e 627 visualizações, os

@@ -43,7 +43,7 @@ const PARTES = ['Um guia de quadras de tênis feito por um professor', 'Nossa hi
   await page.waitForTimeout(900);
   ok(await page.evaluate(() => { const r = document.getElementById('sobre-site').getBoundingClientRect(), t = document.querySelector('.sb-topo').getBoundingClientRect(); return Math.abs(r.top - t.bottom) < 40; }), 'tocar em "O site" leva à parte, logo embaixo do menu');
   let aba = await texto(page, '.pag-sobre');
-  ok(await page.evaluate(() => location.pathname === '/sobre/site') && aba.includes('Perto de você') && aba.includes('Grátis para quem joga') && aba.includes('Patrocinado') && aba.includes('não reserva') && aba.includes('Compromissos'),
+  ok(await page.evaluate(() => location.pathname === '/sobre/site') && aba.includes('Perto de você') && aba.includes('Grátis para quem joga') && aba.includes('Patrocinado') && aba.includes('não reserva') && /compromissos/i.test(aba) && aba.includes('O que você vê no GuiaTennis é o que você encontra na quadra.') && aba.includes('Veracidade') && aba.includes('Autenticidade') && aba.includes('Realidade'),
     'aba "O site": o que faz, grátis para quem joga e compromissos, em /sobre/site');
   ok(await page.evaluate(() => document.title === 'O site · Sobre o GuiaTennis'), 'o título da aba — ' + await page.title());
   await page.click('.pag-sobre [data-menu="privacidade"]');

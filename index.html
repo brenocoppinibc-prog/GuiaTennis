@@ -3442,6 +3442,10 @@
   .sb-lista { margin: 0 0 12px; padding-left: 20px; }
   .sb-lista li { font-size: 16px; line-height: 1.65; margin-bottom: 10px; color: var(--text); }
   .sb-nota { font-size: 14px; color: var(--muted); margin: 0; }
+  .sb-comp { margin-top: 8px; padding-top: 32px; border-top: 1px solid var(--border); }
+  .sb-comp-titulo { margin: 0 0 10px; font-size: 26px; line-height: 1.2; color: var(--green); max-width: 760px; text-wrap: balance; }
+  .sb-comp-intro { margin: 0 0 26px; font-size: 17px; line-height: 1.55; color: var(--muted); max-width: 680px; }
+  .sb-comp-grade strong { color: var(--text); }
   .sb-nota .inline-link { font-size: inherit; color: var(--green); font-weight: 600; }
   .sb-numeros { background: var(--green); color: #fff; padding: 36px 0; }
   .sb-numeros-linha { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
@@ -7328,14 +7332,23 @@ function corpoSobre(parceiros) {
           </div>
           <div class="sb-gratis">
             <h3 class="display">Grátis para quem joga</h3>
-            <p>O GuiaTennis não reserva, não cobra taxa e não fica no meio da conversa: o horário, o valor e o pagamento são combinados direto com a academia. As academias podem escolher planos com mais recursos e divulgar promoções; a posição paga na busca aparece sempre como "Patrocinado", e as "Mais bem avaliadas" seguem só a nota dos jogadores.</p>
+            <p>O GuiaTennis não reserva, não cobra taxa e não fica no meio da conversa: o horário, o valor e o pagamento são combinados direto com a academia. As academias podem escolher planos com mais recursos e divulgar promoções.</p>
           </div>
-          <h3 class="sb-sub">Compromissos</h3>
-          <ul class="sb-lista">
-            <li>As avaliações são feitas no GuiaTennis, por quem tem conta, uma por academia. A academia responde, mas não apaga, e nenhuma nota vem de outro site.</li>
-            <li>O WhatsApp que a academia coloca na ficha passa por um código de confirmação, e quem joga pode informar um problema em qualquer ficha.</li>
-            <li>Das buscas, a estatística do GuiaTennis guarda só a região: o bairro, a cidade, os 5 primeiros números do CEP e um ponto arredondado em cerca de 1 km. Nunca a rua, o número, o que foi digitado nem o IP. Com a conta aberta, a última busca e as que você salvar ficam na sua conta, para você usar em qualquer aparelho.</li>
-          </ul>
+          <!-- Compromissos (26/11/2026: "compromisso com veracidade, com autenticidade, com realidade e com entregar
+               sempre o melhor ao cliente", dizendo o processo de verificação), como a página "Confiança e
+               segurança" do Airbnb e a de avaliações do Booking: cada promessa com o que o site faz de verdade. -->
+          <div class="sb-comp">
+            <p class="sb-rotulo">Compromissos</p>
+            <h3 class="sb-comp-titulo display">O que você vê no GuiaTennis é o que você encontra na quadra.</h3>
+            <p class="sb-comp-intro">Cada informação passa por conferência, para você escolher com segurança e sem surpresa.</p>
+            <div class="sb-tres sb-comp-grade">
+              <div><h3>Veracidade</h3><p><strong>Fichas conferidas, do cadastro ao contato.</strong> Quem administra a academia declara que a representa, e o WhatsApp da ficha só entra depois de um código de confirmação e da aprovação do GuiaTennis. A ficha conferida pela academia leva o selo de confirmada, e a academia que avisa que fechou sai do Guia na hora. Qualquer pessoa pode informar um problema em qualquer ficha: se duas contas avisam que o WhatsApp não é da academia, o botão sai até a correção.</p></div>
+              <div><h3>Autenticidade</h3><p><strong>Avaliações só de quem joga.</strong> Cada avaliação é feita no GuiaTennis, por uma conta com o e-mail confirmado, uma por academia. Quem administra a academia não pode avaliá-la; a academia responde, mas não apaga, e nenhuma nota é trazida de outro site.</p></div>
+              <div><h3>Realidade</h3><p><strong>Preço, distância e nota como são.</strong> O preço é o que a própria academia informa; sem ele, aparece “Sob consulta”, nunca um valor estimado. A distância é medida em linha reta do lugar que você buscou até a academia. As “Mais bem avaliadas” seguem só a nota dos jogadores, toda posição paga aparece como “Patrocinado”, e os números do site são contados pelo próprio GuiaTennis e arredondados para baixo.</p></div>
+              <div><h3>O melhor para você</h3><p><strong>Atendimento de verdade e um site que melhora com você.</strong> O chat de ajuda responde na hora e, se precisar, a equipe do GuiaTennis continua a conversa pelo WhatsApp. Cada sugestão e cada problema informado são lidos e usados para melhorar o site.</p></div>
+              <div><h3>Privacidade</h3><p><strong>Da sua busca, só a região.</strong> A estatística do GuiaTennis guarda o bairro, a cidade, os 5 primeiros números do CEP e um ponto arredondado em cerca de 1 km. Nunca a rua, o número, o que foi digitado nem o IP. Com a conta aberta, a última busca e as que você salvar ficam na sua conta, para você usar em qualquer aparelho.</p></div>
+            </div>
+          </div>
           <p class="sb-nota"><button type="button" class="inline-link" data-menu="privacidade">Política de Privacidade</button> · <button type="button" class="inline-link" data-menu="termos">Termos de Uso</button></p>
         </div>
       </section>

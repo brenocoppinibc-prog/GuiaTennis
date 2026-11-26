@@ -52,7 +52,7 @@ Regra: se um vídeo vai repetir o que um carrossel já disse, ele mostra um **ca
 | **Quinta, de manhã** | Trocar a bio e a categoria (abaixo). Conferir as fichas do bairro que você vai mostrar nos vídeos (preço e foto). | — |
 | **Quinta, 12h** | Carrossel "Pare de mandar mensagem para 10 academias" (passo a passo) + Stories com contagem regressiva e enquete | `carrossel-1-quinta-passo-a-passo-1` a `7`, `stories-1`, `stories-2` |
 | **Sexta, 18h** | Vídeo "Testei" num bairro, com academias e preços reais + Stories "Em que bairro você joga?" | `stories-3` |
-| **Sábado** | Stories respondendo aos bairros e repostando as academias que já estão no Guia (prova social) | — |
+| **Sábado, 12h** | As 5 Stories de "Dúvidas"; à tarde, as respostas aos bairros e os reposts das academias que já estão no Guia (prova social) | `duvidas-1` a `5` |
 | **Domingo, 18h** | Carrossel "Chegou" + vídeo com você falando (o anúncio) + Stories com o link. Fixar no perfil o carrossel de domingo e o de quinta | `carrossel-2-domingo-lancamento-1` a `7`, `stories-4` |
 | **Segunda, 12h** | Carrossel para academias + Stories + mensagem no WhatsApp para cada academia | `carrossel-3-segunda-academias-1` a `6`, `stories-5` |
 | **Semana que vem** | Carrossel "5 funções" (quarta), um vídeo "Testei" (terça, 18h) e o vídeo para donos de academia (quinta, 18h) | `carrossel-4-semana-que-vem-funcoes-1` a `7` |
@@ -73,7 +73,24 @@ por uma de esporte (em Editar perfil › Categoria, procure "esporte"). Os desta
 ## Destaques (as bolinhas embaixo da bio)
 
 A capa é a imagem `destaque-…png` (o Instagram mostra só o círculo do meio). Ao criar ou editar o destaque:
-"Editar capa" › escolher a imagem da galeria. Nesta ordem, porque no celular aparecem os 4 ou 5 primeiros:
+"Editar capa" › escolher a imagem da galeria.
+
+**Quando criar cada um.** Um destaque só existe com pelo menos um Stories dentro; o Stories some do perfil em
+24 horas, mas continua no arquivo e pode entrar no destaque depois. Por isso, cada destaque nasce no dia do
+Stories dele:
+
+| Dia | Stories do dia | Destaque |
+|---|---|---|
+| **Quinta (hoje)** | `stories-1` (contagem regressiva) e `stories-2` (enquete) | Trocar só a capa do **O Guia** (`destaque-6`). A contagem e a enquete não entram em destaque (perdem a graça depois de domingo) |
+| **Sexta** | Compartilhar o vídeo "Testei" nos Stories + `stories-3` (pergunta do bairro) | Criar **Como usar** com o "Testei" |
+| **Sábado, 12h** | As 5 de **Dúvidas** (`duvidas-1` a `5`), uma atrás da outra, cada uma com o link do site; à tarde, as respostas aos bairros, com o link de cada página | Criar **Dúvidas** e **Bairros** |
+| **Domingo, 18h** | `stories-4` (está no ar) + o vídeo do anúncio | Criar **Novidades** |
+| **Segunda, 12h** | `stories-5` (15 vagas) + o carrossel das academias compartilhado | Criar **Academias** |
+
+**A ordem.** O Instagram coloca na frente o destaque que recebeu Stories por último. Na segunda à noite, para
+ficar na ordem abaixo, adicione um Stories antigo (do arquivo) a cada um, de trás para a frente: Novidades,
+Academias, Dúvidas, Bairros e, por último, Como usar. Nesta ordem, porque no celular aparecem os 4 ou 5
+primeiros:
 
 | Nome | Capa | O que colocar |
 |---|---|---|

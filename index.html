@@ -3725,6 +3725,21 @@
   .fim-da-busca { margin: 18px 0 6px; padding: 16px 0 0; border-top: 1px solid var(--border); text-align: center; }
   .fim-da-busca p { margin: 0 0 4px; font-size: 14px; color: var(--muted); }
   .fim-da-busca-link { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 4px; border: 0; background: none; font: inherit; font-size: 15px; font-weight: 600; color: var(--green); cursor: pointer; }
+  /* Pré-lançamento (26/11/2026): a página "chega domingo" e o código de acesso das academias. */
+  .pre-lancamento { display: flex; flex-direction: column; align-items: center; gap: 14px; max-width: 460px; min-height: 100vh; margin: 0 auto; padding: 56px 16px 40px; text-align: center; box-sizing: border-box; }
+  .pre-lancamento-logo { display: block; width: 72px; height: 72px; }
+  .pre-lancamento .logo-nome { font-size: 30px; color: var(--green); }
+  .pre-lancamento h1 { margin: 10px 0 0; font-family: var(--fonte-titulo); font-size: 26px; line-height: 1.25; color: var(--text); }
+  .pre-lancamento-texto { margin: 0; font-size: 16px; line-height: 1.5; color: var(--muted); }
+  .pre-lancamento-botao { justify-content: center; width: 100%; margin-top: 8px; text-decoration: none; }
+  .pre-lancamento-codigo { width: 100%; margin-top: 18px; padding-top: 22px; border-top: 1px solid var(--border); text-align: left; }
+  .pre-lancamento-codigo label { display: block; margin: 0 0 8px; font-size: 15px; font-weight: 600; color: var(--text); }
+  .pre-lancamento-linha { display: flex; gap: 8px; }
+  .pre-lancamento-linha .form-field { flex: 1; min-width: 0; min-height: 48px; font-size: 16px; text-transform: uppercase; }
+  .pre-lancamento-linha .btn-primary { flex-shrink: 0; }
+  .pre-lancamento-erro { margin: 8px 0 0; font-size: 14px; color: var(--red); }
+  .pre-lancamento-academia { margin: 6px 0 0; font-size: 14px; line-height: 1.5; color: var(--muted); }
+  .pre-lancamento-academia a { font-weight: 600; color: var(--green); text-decoration: underline; text-underline-offset: 2px; }
 </style>
 </head>
 <body>
@@ -34364,6 +34379,75 @@ window.addEventListener("beforeunload", (e) => {
   e.returnValue = "";
 });
 
+// Pré-lançamento (26/11/2026: "deixar para os jogadores o link normal não funcionar, e algum código que eu
+// vou mandar para as academias, o site inteiro já estar funcionando"). Até domingo, 29/11/2026, às 18h
+// (Brasília), o site de verdade e a prévia mostram só "O novo GuiaTennis chega domingo…". O link com
+// ?acesso=<código> (ou o código digitado nessa página) libera o site inteiro naquele navegador; o admin
+// já logado entra direto. Na hora do lançamento, a página se abre sozinha, sem nova publicação.
+// O código não fica escrito aqui (só a conta dele, codigoDeAcessoConta).
+const LANCAMENTO_EM = Date.parse("2026-11-29T18:00:00-03:00");
+const ACESSO_ANTECIPADO_CONTA = "cihptd";
+const ACESSO_ANTECIPADO_CHAVE = "guiatennis_acesso_antecipado_v1";
+function codigoDeAcessoConta(codigo) {
+  let x = 0x811c9dc5;
+  for (const ch of String(codigo || "").toUpperCase().replace(/\s+/g, "")) { x ^= ch.codePointAt(0); x = Math.imul(x, 0x01000193) >>> 0; }
+  return x.toString(36);
+}
+function preLancamentoAtivo() {
+  const noAr = /(^|\.)guiatennis\.com\.br$|\.netlify\.app$/.test(location.hostname) || !!window.__preLancamento;
+  return noAr && Date.now() < (window.__lancamentoEm || LANCAMENTO_EM);
+}
+function liberarAcessoAntecipado() {
+  try { localStorage.setItem(ACESSO_ANTECIPADO_CHAVE, "1"); } catch (e) {}
+}
+// O código do link vale uma vez e sai do endereço; o navegador lembra.
+function acessoAntecipado(session) {
+  const q = new URLSearchParams(location.search);
+  const doLink = q.get("acesso");
+  if (doLink !== null) {
+    q.delete("acesso");
+    const resto = q.toString();
+    history.replaceState(history.state, "", location.pathname + (resto ? "?" + resto : "") + location.hash);
+    if (codigoDeAcessoConta(doLink) === ACESSO_ANTECIPADO_CONTA) { liberarAcessoAntecipado(); return true; }
+    preLancamentoCodigoErrado = doLink;
+  }
+  try { if (localStorage.getItem(ACESSO_ANTECIPADO_CHAVE) === "1") return true; } catch (e) {}
+  return !!(session && ((session.user && session.user.email) || "").toLowerCase() === EMAIL_ADMIN);
+}
+let preLancamentoCodigoErrado = null;
+function renderPreLancamento() {
+  document.title = "GuiaTennis · O novo GuiaTennis chega domingo, às 18h";
+  const errado = preLancamentoCodigoErrado;
+  document.getElementById("app").innerHTML = `
+    <main class="pre-lancamento">
+      <svg class="pre-lancamento-logo" viewBox="0 0 1080 1080" aria-hidden="true">${logoDesenho({ id: "logo-pre" })}</svg>
+      <span class="logo-nome">${nomeDoLogo()}</span>
+      <h1>O novo GuiaTennis chega domingo, 29 de novembro, às 18h.</h1>
+      <p class="pre-lancamento-texto">Aula e quadra de tênis perto de você. Compare preço, estrutura e avaliações e fale direto com a academia, sem taxa.</p>
+      <a class="btn-primary pre-lancamento-botao" href="https://instagram.com/guiatennis" target="_blank" rel="noopener">${icon("instagram", 18, "#fff")} Acompanhe no Instagram</a>
+      <form class="pre-lancamento-codigo" novalidate>
+        <label for="pre-codigo">Recebeu um convite? Informe o código de acesso.</label>
+        <div class="pre-lancamento-linha">
+          <input id="pre-codigo" class="form-field" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="go" value="${errado ? esc(errado) : ""}" ${errado !== null ? 'aria-invalid="true" aria-describedby="pre-erro"' : ""}>
+          <button class="btn-primary" type="submit">Entrar</button>
+        </div>
+        ${errado !== null ? `<p class="pre-lancamento-erro" id="pre-erro" role="alert">${errado ? "Código inválido. Confira o convite e tente de novo." : "Informe o código de acesso."}</p>` : ""}
+      </form>
+      <p class="pre-lancamento-academia">Tem uma academia de tênis? <a href="https://wa.me/${WHATSAPP_GUIA}" target="_blank" rel="noopener">Peça o seu convite pelo WhatsApp</a>.</p>
+    </main>`;
+  const campo = document.getElementById("pre-codigo");
+  if (errado !== null) { campo.focus(); campo.select(); }
+  document.querySelector(".pre-lancamento-codigo").addEventListener("submit", e => {
+    e.preventDefault();
+    if (codigoDeAcessoConta(campo.value) === ACESSO_ANTECIPADO_CONTA) { liberarAcessoAntecipado(); preLancamentoCodigoErrado = null; init(); return; }
+    preLancamentoCodigoErrado = campo.value.trim();
+    renderPreLancamento();
+  });
+  // Aberta na hora do lançamento: o site se abre sozinho às 18h.
+  const falta = (window.__lancamentoEm || LANCAMENTO_EM) - Date.now();
+  if (falta > 0 && falta < 864e5 && !renderPreLancamento.relogio) renderPreLancamento.relogio = setTimeout(() => location.reload(), falta + 1000);
+}
+
 async function init() {
   if (PARCEIROS_NO_ENDERECO_PROPRIO && noSiteDeVerdade() && /^\/parceiros(\/|$)/.test(location.pathname)) {
     location.replace(SITE_PARCEIROS + location.pathname.replace(/^\/parceiros/, "") + location.search + location.hash);
@@ -34373,6 +34457,7 @@ async function init() {
   // do admin, em Ferramentas, continua dizendo em qual banco o site está.
   app_showLoading();
   const { data: { session } } = await sb.auth.getSession();
+  if (preLancamentoAtivo() && !acessoAntecipado(session)) { renderPreLancamento(); return; }
   await carregarConta(session);
   state.pcAbrir = new URLSearchParams(location.search).get("abrir");
   await abrirAcademiaDoLink();

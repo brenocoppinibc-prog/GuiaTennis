@@ -78,6 +78,9 @@ async function abrir(opts = {}) {
     // O aviso de cookies (regra 218, Pixel ligado em 06/11) só aparece com
     // opts.cookies, para não cobrir os botões nos outros testes.
     if (!o.cookies) { try { localStorage.setItem('guiatennis_cookies_v1', JSON.stringify('recusou')); } catch (e) {} }
+    // O pré-lançamento (26/11/2026) só aparece com opts.preLancamento: nos testes com opts.host, o código
+    // já está liberado, como no navegador de quem recebeu o convite.
+    if (!o.preLancamento) { try { localStorage.setItem('guiatennis_acesso_antecipado_v1', '1'); } catch (e) {} }
   }, opts);
   // opts.host abre o site num endereço de verdade (o de teste do Netlify, por
   // exemplo) e opts.trocar mexe no index.html antes de servir.

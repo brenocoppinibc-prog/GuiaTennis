@@ -10,7 +10,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 26/11/2026 (regra 333, kit do Instagram com o "Guia do bairro", troca de chat)
+**Atualizado em:** 26/11/2026 (regra 334, pré-lançamento com código de acesso)
 
 | | |
 |---|---|
@@ -476,7 +476,12 @@ acompanhar o PR; o chat de 26/11 voltou a acompanhar.**
 
 **Lançamento no domingo, 29/11, e a nova fase (26/11):** o Breno quer "ativar o GuiaTennis no domingo para
 todos". O site está pronto; o foco passa a ser **divulgar e trazer academias** (fichas completas com preço e
-foto primeiro, como o Airbnb e o iFood). O Claude vira manutenção semanal (corrigir o que usuários e academias
+foto primeiro, como o Airbnb e o iFood). **Regra 334 (pré-lançamento):** até 29/11, 18h, o site no ar e a prévia
+mostram só "O novo GuiaTennis chega domingo…" (`renderPreLancamento`, `LANCAMENTO_EM`); o código de acesso (no
+link `?acesso=`, ou digitado na página; só a conta dele fica no código, `ACESSO_ANTECIPADO_CONTA`; o código
+está na conversa com o Breno) libera o site inteiro no navegador; admin logado entra direto; às 18h abre
+sozinho. O Breno convida as academias de quinta a sábado (roteiro, "Pré-lançamento"); depois de domingo, a
+regra pode sair do código. O Claude vira manutenção semanal (corrigir o que usuários e academias
 apontarem e ajustar pelas Metas do admin), sem detalhar o que só o Breno percebe. Antes de domingo: o "pode
 subir" do PR #5. Depois do merge: A1 no site de verdade e nota em Produção, Search Console, "Verificar domínio"
 na Meta. **Kit do Instagram** em `divulgacao/lancamento/` (`ROTEIRO.md`: estratégia "carrossel explica, Reels
@@ -654,6 +659,7 @@ mesmo histórico de 23/11 e nas descrições antigas do PR (`historico/PR5-descr
 - 331 (25/11) — a nota fiscal automática pela Prefeitura de São Paulo (certificado A1 no admin, teste e produção).
 - 332 (25/11) — "Sugerir uma quadra ou academia" com a cara do GuiaTennis ("não está em uma posição tão legal… muito básica e informal"): sai do topo do menu para o Suporte (antes do GuiaTennis Parceiros) e entra no rodapé, em Suporte, depois do Feedback (como o "Adicionar uma empresa" do Yelp); no fim da lista da busca, "Conhece uma quadra ou academia que não está nesta lista?" (`fimDaBusca`, como o "Adicionar um lugar" do Google Maps), que abre com o bairro e a cidade procurados; a tela com o tipo em cartões (Academia/Quadra pública), "Endereço" com "Usar minha localização" (`sugerirComMinhaLocalizacao`, pelo `enderecoDoPonto`; o ponto não é guardado), Enter avança, erro leva ao campo e texto formal. Sem SQL.
 - 333 (25/11) — a nota fiscal automática pela NFS-e Nacional (a Prefeitura respondeu "Erro 1647": CNPJ no CNC emite no ambiente nacional desde 17/11/2026): DPS 1.01 assinada, Sefin Nacional com TLS mútuo, produção restrita no Teste, cancelamento pelo evento 101101, código 172501 e série numérica; textos do admin, da ajuda, da Privacidade e dos e-mails do admin. SQL `20261125150000_nota_fiscal_nacional`.
+- 334 (26/11) — pré-lançamento: até domingo, 29/11, 18h, o link normal mostra "chega domingo" e o código de acesso das academias libera o site inteiro (`testes/pre-lancamento.js`, 16).
 
 ## 11. WhatsApp e mensagem para as academias
 

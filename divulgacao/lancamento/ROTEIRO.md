@@ -51,11 +51,12 @@ Regra: se um vídeo vai repetir o que um carrossel já disse, ele mostra um **ca
 |---|---|---|
 | **Quinta, de manhã** | Trocar a bio e a categoria (abaixo). Conferir as fichas do bairro que você vai mostrar nos vídeos (preço e foto). | — |
 | **Quinta, 12h** | Carrossel "Pare de mandar mensagem para 10 academias" (passo a passo) + Stories com contagem regressiva e enquete | `carrossel-1-quinta-passo-a-passo-1` a `7`, `stories-1`, `stories-2` |
-| **Sexta, 18h** | Reels "Guia do bairro": "Onde jogar tênis em Moema", com as academias marcadas + Stories "Em que bairro você joga?" | `stories-3` |
-| **Sábado, 12h** | As 5 Stories de "Dúvidas"; à tarde, as respostas aos bairros e os reposts das academias que já estão no Guia (prova social) | `duvidas-1` a `5` |
-| **Domingo, 18h** | Carrossel "Chegou" + vídeo com você falando (o anúncio) + Stories com o link. Fixar no perfil o carrossel de domingo e o de quinta | `carrossel-2-domingo-lancamento-1` a `7`, `stories-4` |
+| **De quinta a sábado** | O convite às academias, uma a uma (abaixo, "Pré-lançamento") | — |
+| **Sexta, 18h** | Reels com você falando, **sem mostrar o site** ("Domingo, 18h") + Stories "Em que bairro você joga?" | `stories-3` |
+| **Sábado, 12h** | As 5 Stories de "Dúvidas", sem link; à tarde, os reposts das academias que entraram (prova social) | `duvidas-1` a `5` |
+| **Domingo, 18h** | O site abre sozinho. Carrossel "Chegou" + vídeo com você falando (o anúncio) + Stories com o link; depois, as respostas aos bairros, com o link de cada página. Fixar no perfil o carrossel de domingo e o de quinta | `carrossel-2-domingo-lancamento-1` a `7`, `stories-4` |
 | **Segunda, 12h** | Carrossel para academias + Stories + mensagem no WhatsApp para cada academia | `carrossel-3-segunda-academias-1` a `6`, `stories-5` |
-| **Semana que vem** | Carrossel "5 funções" (quarta), um Reels "Guia do bairro" (terça, 18h) e o vídeo para donos de academia (quinta, 18h) | `carrossel-4-semana-que-vem-funcoes-1` a `7` |
+| **Semana que vem** | Carrossel "5 funções" (quarta), um Reels (terça, 18h: "Guia do bairro" se um bairro já tiver 3 fichas completas) e o vídeo para donos de academia (quinta, 18h) | `carrossel-4-semana-que-vem-funcoes-1` a `7` |
 
 O carrossel "5 funções" fala do botão "Sugerir uma quadra ou academia": poste-o só depois que as novidades do
 site estiverem no ar.
@@ -82,9 +83,9 @@ Stories dele:
 | Dia | Stories do dia | Destaque |
 |---|---|---|
 | **Quinta (hoje)** | `stories-1` (contagem regressiva) e `stories-2` (enquete) | Trocar só a capa do **O Guia** (`destaque-6`). A contagem e a enquete não entram em destaque (perdem a graça depois de domingo) |
-| **Sexta** | Compartilhar o Reels "Guia do bairro" nos Stories, com o link da página de Moema, + `stories-3` (pergunta do bairro) | Criar **Bairros** com o Reels |
-| **Sábado, 12h** | As 5 de **Dúvidas** (`duvidas-1` a `5`), uma atrás da outra, cada uma com o link do site; o carrossel de quinta compartilhado nos Stories; à tarde, as respostas aos bairros, com o link de cada página | Criar **Dúvidas** e **Como usar** (o carrossel de quinta); as respostas entram em **Bairros** |
-| **Domingo, 18h** | `stories-4` (está no ar) + o vídeo do anúncio | Criar **Novidades** |
+| **Sexta** | Compartilhar o Reels de sexta nos Stories + `stories-3` (pergunta do bairro) | — (o Reels entra em **Novidades** no domingo) |
+| **Sábado, 12h** | As 5 de **Dúvidas** (`duvidas-1` a `5`), uma atrás da outra; o carrossel de quinta compartilhado nos Stories | Criar **Dúvidas** e **Como usar** (o carrossel de quinta) |
+| **Domingo, 18h** | `stories-4` (está no ar) + o vídeo do anúncio; depois, as respostas aos bairros, com o link de cada página, e o link do site nas 5 de Dúvidas do destaque | Criar **Novidades** e **Bairros** |
 | **Segunda, 12h** | `stories-5` (15 vagas) + o carrossel das academias compartilhado | Criar **Academias** |
 
 **A ordem.** O Instagram coloca na frente o destaque que recebeu Stories por último. Na segunda à noite, para
@@ -185,15 +186,21 @@ Dois tipos, cada um com o seu papel (tabela da estratégia):
 Nos dois: a frase-gancho escrita na tela nos 3 primeiros segundos, legenda automática ligada, de 20 a 35
 segundos e **um pedido só** no fim.
 
-**Sexta — "Guia do bairro" (a prova do carrossel de quinta)**
-- Texto na tela: **"Onde jogar tênis em Moema"** (use o bairro com as fichas mais completas)
-- (página do bairro) "[N] academias de tênis em Moema no GuiaTennis." (uma ficha por vez, 4 a 5 segundos cada,
-  de 3 a 5 academias) "[Nome]: [quadra de saibro, coberta], aula a partir de [R$ X], nota [4,8]." (no fim, o
-  botão do WhatsApp) "Em cada uma, você vê as avaliações e chama direto no WhatsApp. Comente o seu bairro, e o
-  próximo guia é aí."
+**Sexta — você falando, sem mostrar o site (a curiosidade)**
+- Texto na tela: **"Domingo, 18h"**
+- "Quem joga tênis em São Paulo conhece isto: para saber o preço de uma aula, é preciso mandar mensagem para
+  várias academias e esperar. No domingo, às 18h, isso muda. Ative o lembrete nos Stories e acompanhe."
+- Por que sem o site: até domingo, 18h, o guiatennis.com.br mostra só "O novo GuiaTennis chega domingo"
+  (pré-lançamento); mostrar o site antes tira a surpresa e leva a uma página fechada.
+
+**Primeiro "Guia do bairro" (quando um bairro tiver 3 fichas completas; o Jardim Guedala deve ser o primeiro)**
+- Texto na tela: **"Onde jogar tênis no [bairro]"**
+- (página do bairro) "[N] academias de tênis no [bairro] no GuiaTennis." (uma ficha por vez, 4 a 5 segundos
+  cada) "[Nome]: [quadra de saibro, coberta], aula a partir de [R$ X], nota [4,8]." (no fim, o botão do
+  WhatsApp) "Em cada uma, você vê as avaliações e chama direto no WhatsApp. Comente o seu bairro, e o próximo
+  guia é aí."
 - Por que não repete o carrossel: o carrossel **explica** o passo a passo com o desenho dos botões; o vídeo
-  **mostra as academias de verdade**, com nomes, fotos e preços, e é isso que convence quem ainda não conhece
-  o site.
+  **mostra as academias de verdade**, com nomes, fotos e preços.
 
 **Domingo — você falando (o anúncio)**
 - Texto na tela: **"Chegou o novo GuiaTennis"**
@@ -204,7 +211,7 @@ segundos e **um pedido só** no fim.
 - Por que não repete o Reels de sexta: sexta é a **prova**; domingo é o **anúncio**, com você, que é o que
   cria vínculo.
 
-**Semana que vem — a série "Guia do bairro" (um por semana, o bairro mais pedido nos comentários)**
+**Depois — a série "Guia do bairro" (cada bairro que chegar a 3 fichas completas; entre eles, o mais pedido nos comentários)**
 - **"Onde jogar tênis em [bairro]"**: o mesmo formato de sexta, em outro bairro. Cada vídeo vai também para o
   destaque "Bairros".
 - **"Quadra coberta em [bairro]"**: de dezembro a março, a chuva de São Paulo. Pedido final: "Salve para o
@@ -222,7 +229,31 @@ segundos e **um pedido só** no fim.
 
 Legenda de todos: a frase do texto na tela, o pedido do fim do vídeo e "Link na bio: guiatennis.com.br".
 
-## Mensagem para as academias (WhatsApp, segunda)
+## Pré-lançamento: as academias entram antes (de quinta a sábado)
+
+Até domingo, 29/11, às 18h, o guiatennis.com.br mostra só "O novo GuiaTennis chega domingo, 29 de novembro, às
+18h", com "Acompanhe no Instagram" e "Peça o seu convite pelo WhatsApp". O site inteiro abre com o **código de
+acesso** (está na conversa com o Claude; não publicar): no link do convite,
+`guiatennis.com.br/parceiros?acesso=[código]`, ou digitado na própria página. O navegador lembra; às 18h de
+domingo, o site abre para todos sozinho.
+
+- Convide uma academia por vez, pelo WhatsApp ou pessoalmente, começando pelo Jardim Guedala. Ofereça
+  preencher a ficha junto (preço, horário e fotos): ficha completa é o que faz o lançamento vender.
+- Até as 18h de domingo, nada de link do site nas Stories e nos posts (ele leva à página fechada).
+
+> Olá, tudo bem? Sou o Breno, do GuiaTennis (guiatennis.com.br), o guia de quadras e academias de tênis de
+> São Paulo.
+>
+> No domingo, 29/11, lançamos o novo GuiaTennis para os jogadores. Antes disso, estou convidando algumas
+> academias da região para conhecerem o site e já entrarem no lançamento:
+> guiatennis.com.br/parceiros?acesso=[código]
+>
+> A ficha é grátis, e quem procura aula ou quadra chama direto no seu WhatsApp, sem comissão por aluno. Os 15
+> primeiros donos de academia a chegar ganham o selo "Fundadora do GuiaTennis" na ficha, para sempre.
+>
+> Se preferir, posso preencher a ficha com você, por aqui ou pessoalmente.
+
+## Mensagem para as academias (WhatsApp, segunda, para as que ainda não entraram)
 
 > Olá, tudo bem? Sou o Breno, do GuiaTennis (guiatennis.com.br), o guia de quadras e academias de tênis de
 > São Paulo.

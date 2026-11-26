@@ -19,10 +19,14 @@ público responder: comentário, enquete ou pergunta. Quem responde vê mais os 
 
 ## Bio
 
-> Aula e quadra de tênis perto de você
-> Compare preço, estrutura e avaliações
-> Fale direto com a academia, sem taxa
-> guiatennis.com.br
+> 🎾 Aula e quadra de tênis perto de você
+> 📍 Compare preço, estrutura e avaliações
+> 💬 Fale direto com a academia, sem taxa
+> 👇 Grátis, sem cadastro
+
+O link guiatennis.com.br fica no campo de link, logo abaixo. Um emoji no começo de cada linha, como
+marcador (como o Nubank e o Airbnb fazem): ajuda a ler rápido sem poluir. Categoria do perfil: troque
+"Health & wellness website" por uma de esporte (procure "esporte" na lista de categorias).
 
 Destaques fixos: **Como usar** (o Reels de domingo), **Academias** (o carrossel de segunda) e **Novidades**.
 

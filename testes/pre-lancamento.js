@@ -9,11 +9,21 @@ const texto = page => page.evaluate(() => document.body.innerText);
   let t = await texto(page);
   ok(t.includes('O novo GuiaTennis chega domingo, 29 de novembro, às 18h.'), 'visitante vê "chega domingo"');
   ok(await page.evaluate(() => !state.loaded), 'o site não carrega para o visitante');
-  ok(await page.$eval('.pre-lancamento-botao', a => a.href) === 'https://instagram.com/guiatennis', 'botão leva ao Instagram');
-  ok(t.includes('Peça o seu convite pelo WhatsApp'), 'academia sem código pede o convite');
+  ok(await page.$eval('.pre-botao', a => a.href) === 'https://instagram.com/guiatennis', 'botão leva ao Instagram');
+  ok(t.includes('Achar aula de tênis vai ficar muito mais fácil.'), 'o título que vende');
+  ok(/Faltam? \d+ (dia|hora|minuto)/.test(t), 'a contagem até domingo');
+  ok(await page.$$eval('.pre-novidades li', l => l.length) === 6 && t.includes('E tem mais. O resto, só no domingo.'), 'as 6 novidades e o "E tem mais"');
+  ok(await page.$eval('.pre-botao-sec', a => a.getAttribute('href')) === '/lancamento.ics', 'Lembrar no calendário');
+  ok(t.includes('A sua academia já no lançamento.') && t.includes('15 primeiros donos de academia'), 'a parte das academias com as Fundadoras');
+  ok(t.includes('Ainda sem convite? Peça o seu pelo WhatsApp.'), 'academia sem código pede o convite');
+  ok(await page.evaluate(() => [faltaParaOLancamento(2 * 864e5 + 5 * 36e5), faltaParaOLancamento(864e5 + 36e5), faltaParaOLancamento(3 * 36e5 + 6e5), faltaParaOLancamento(36e5), faltaParaOLancamento(30e3)].join('|'))
+    === 'Faltam 2 dias e 5 horas|Falta 1 dia e 1 hora|Faltam 3 horas e 10 minutos|Falta 1 hora|Falta 1 minuto', 'a contagem por extenso');
+  await page.setViewportSize({ width: 390, height: 2400 });
+  if (process.env.GT_FOTO) await page.screenshot({ path: process.env.GT_FOTO, fullPage: true });
+  await page.setViewportSize({ width: 420, height: 900 });
   ok(await page.evaluate(() => document.activeElement.id !== 'pre-codigo'), 'o teclado não abre sozinho');
   // 2. Vazio e errado: o aviso e o cursor no campo.
-  await page.click('.pre-lancamento-codigo button');
+  await page.click('.pre-codigo button');
   ok((await texto(page)).includes('Informe o código de acesso.'), 'vazio: "Informe o código de acesso."');
   await page.fill('#pre-codigo', 'TESTE');
   await page.press('#pre-codigo', 'Enter');
@@ -46,7 +56,7 @@ const texto = page => page.evaluate(() => document.body.innerText);
   // 7. Depois das 18h de domingo: o site para todos, sem código.
   ({ browser, page } = await abrir({ preLancamento: true, host: 'guiatennis.com.br', trocar: h => h.replace('Date.parse("2026-11-29T18:00:00-03:00")', '(Date.now() - 1000)') }));
   await page.waitForTimeout(500);
-  ok(await page.evaluate(() => state.loaded && !document.querySelector('.pre-lancamento')), 'depois do lançamento: o site para todos');
+  ok(await page.evaluate(() => state.loaded && !document.querySelector('.pre')), 'depois do lançamento: o site para todos');
   await browser.close();
   // 8. Nos testes locais (fora do ar), nada muda.
   ({ browser, page } = await abrir());

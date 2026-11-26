@@ -3725,21 +3725,53 @@
   .fim-da-busca { margin: 18px 0 6px; padding: 16px 0 0; border-top: 1px solid var(--border); text-align: center; }
   .fim-da-busca p { margin: 0 0 4px; font-size: 14px; color: var(--muted); }
   .fim-da-busca-link { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 4px; border: 0; background: none; font: inherit; font-size: 15px; font-weight: 600; color: var(--green); cursor: pointer; }
-  /* Pré-lançamento (26/11/2026): a página "chega domingo" e o código de acesso das academias. */
-  .pre-lancamento { display: flex; flex-direction: column; align-items: center; gap: 14px; max-width: 460px; min-height: 100vh; margin: 0 auto; padding: 56px 16px 40px; text-align: center; box-sizing: border-box; }
-  .pre-lancamento-logo { display: block; width: 72px; height: 72px; }
-  .pre-lancamento .logo-nome { font-size: 30px; color: var(--green); }
-  .pre-lancamento h1 { margin: 10px 0 0; font-family: var(--fonte-titulo); font-size: 26px; line-height: 1.25; color: var(--text); }
-  .pre-lancamento-texto { margin: 0; font-size: 16px; line-height: 1.5; color: var(--muted); }
-  .pre-lancamento-botao { justify-content: center; width: 100%; margin-top: 8px; text-decoration: none; }
-  .pre-lancamento-codigo { width: 100%; margin-top: 18px; padding-top: 22px; border-top: 1px solid var(--border); text-align: left; }
-  .pre-lancamento-codigo label { display: block; margin: 0 0 8px; font-size: 15px; font-weight: 600; color: var(--text); }
-  .pre-lancamento-linha { display: flex; gap: 8px; }
-  .pre-lancamento-linha .form-field { flex: 1; min-width: 0; min-height: 48px; font-size: 16px; text-transform: uppercase; }
-  .pre-lancamento-linha .btn-primary { flex-shrink: 0; }
-  .pre-lancamento-erro { margin: 8px 0 0; font-size: 14px; color: var(--red); }
-  .pre-lancamento-academia { margin: 6px 0 0; font-size: 14px; line-height: 1.5; color: var(--muted); }
-  .pre-lancamento-academia a { font-weight: 600; color: var(--green); text-decoration: underline; text-underline-offset: 2px; }
+  /* Pré-lançamento (26/11/2026, refeito: "vender o site para os jogadores, curiosos e surpresos, e as academias
+     olharem com boa cara, com spoilers do que o site tem de diferente"). */
+  .pre { min-height: 100vh; background: var(--bg); color: var(--text); }
+  .pre-centro { max-width: 560px; margin: 0 auto; padding: 0 16px; box-sizing: border-box; }
+  .pre-topo { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 28px 16px 0; }
+  .pre-logo { display: block; width: 40px; height: 40px; }
+  .pre-topo .logo-nome { font-size: 24px; color: var(--green); }
+  .pre-abre { padding: 44px 0 40px; text-align: center; }
+  .pre-sobre { margin: 0 0 10px; font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--gold); }
+  .pre h1, .pre h2, .pre-data { text-wrap: balance; }
+  .pre h1 { margin: 0; font-family: var(--fonte-titulo); font-size: 34px; line-height: 1.15; letter-spacing: -0.01em; color: var(--green); }
+  .pre-data { margin: 16px 0 0; font-size: 17px; line-height: 1.5; }
+  .pre-falta { margin: 6px 0 0; font-size: 15px; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .pre-acoes { display: flex; flex-direction: column; gap: 10px; max-width: 360px; margin: 28px auto 0; }
+  .pre-botao { justify-content: center; text-decoration: none; }
+  .pre-botao-sec { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 48px; padding: 0 20px; border: 1px solid var(--green); border-radius: 12px; background: transparent; color: var(--green); font-size: 15px; font-weight: 600; text-decoration: none; }
+  .pre-bloco > .pre-centro { padding-top: 36px; padding-bottom: 40px; }
+  .pre-novas > .pre-centro { border-top: 1px solid var(--border); }
+  .pre h2 { margin: 0 0 22px; font-family: var(--fonte-titulo); font-size: 24px; line-height: 1.25; color: var(--green); }
+  .pre-novidades { display: grid; gap: 20px; margin: 0; padding: 0; list-style: none; }
+  .pre-novidades li { display: flex; align-items: flex-start; gap: 14px; }
+  .pre-novidades li > svg { flex-shrink: 0; margin-top: 2px; }
+  .pre-novidades strong { display: block; font-size: 16px; }
+  .pre-novidades span { display: block; margin-top: 2px; font-size: 14.5px; line-height: 1.45; color: var(--muted); }
+  .pre-mais { margin: 26px 0 0; font-size: 16px; font-weight: 700; color: var(--green); }
+  .pre-academias { background: var(--green); color: #fff; }
+  .pre-academias .pre-sobre { color: var(--gold-light); }
+  .pre-academias h2 { margin-bottom: 12px; color: #fff; }
+  .pre-texto { margin: 0; font-size: 16px; line-height: 1.5; color: rgba(255,255,255,.88); }
+  .pre-checks { display: grid; gap: 10px; margin: 18px 0 0; padding: 0; list-style: none; }
+  .pre-checks li { display: flex; align-items: flex-start; gap: 10px; font-size: 15px; line-height: 1.45; }
+  .pre-checks svg { flex-shrink: 0; margin-top: 2px; }
+  .pre-codigo { margin-top: 28px; }
+  .pre-codigo label { display: block; margin: 0 0 8px; font-size: 15px; font-weight: 600; }
+  .pre-linha { display: flex; gap: 8px; }
+  .pre-linha .form-field { flex: 1; min-width: 0; min-height: 48px; font-size: 16px; text-transform: uppercase; background: #fff; color: var(--text); }
+  .pre-linha .btn-primary { flex-shrink: 0; background: var(--gold); color: #1B1606; }
+  .pre-erro { margin: 8px 0 0; font-size: 14px; color: #FFD9CF; }
+  .pre-convite { margin: 16px 0 0; font-size: 14px; line-height: 1.5; color: rgba(255,255,255,.85); }
+  .pre-convite a { font-weight: 600; color: #fff; text-decoration: underline; text-underline-offset: 2px; }
+  .pre-rodape { padding: 20px 16px 28px; font-size: 13px; text-align: center; color: var(--muted); }
+  @media (min-width: 720px) {
+    .pre-centro { max-width: 680px; }
+    .pre h1 { font-size: 44px; }
+    .pre-acoes { flex-direction: row; justify-content: center; max-width: none; }
+    .pre-novidades { grid-template-columns: 1fr 1fr; gap: 24px 32px; }
+  }
 </style>
 </head>
 <body>
@@ -34415,36 +34447,93 @@ function acessoAntecipado(session) {
   return !!(session && ((session.user && session.user.email) || "").toLowerCase() === EMAIL_ADMIN);
 }
 let preLancamentoCodigoErrado = null;
+// "Faltam 2 dias e 5 horas", "Faltam 3 horas e 10 minutos", "Falta 1 minuto" (atualiza a cada 30 segundos).
+function faltaParaOLancamento(ms) {
+  const min = Math.max(1, Math.ceil(ms / 6e4));
+  const d = Math.floor(min / 1440), h = Math.floor((min % 1440) / 60), m = min % 60;
+  const n = (x, um, varios) => x ? `${x} ${x === 1 ? um : varios}` : "";
+  const partes = (d ? [n(d, "dia", "dias"), n(h, "hora", "horas")] : h ? [n(h, "hora", "horas"), n(m, "minuto", "minutos")] : [n(m, "minuto", "minutos")]).filter(Boolean);
+  return `${(d || h || m) === 1 ? "Falta" : "Faltam"} ${partes.join(" e ")}`;
+}
+const PRE_NOVIDADES = [
+  ["tag", "O preço antes de chamar", "O valor da aula e da locação já na lista, quando a academia informa."],
+  ["comparar", "Academias lado a lado", "Preço, estrutura e avaliações, uma ao lado da outra, para escolher sem dúvida."],
+  ["home", "Quadra coberta para os dias de chuva", "Filtre por piso, cobertura e o que mais importa para você."],
+  ["bubble", "Avaliações de quem joga", "Uma por conta confirmada. A academia responde, mas não apaga."],
+  ["map", "Tênis também na viagem", "Encontre aula e quadra na cidade para onde você vai."],
+  ["whatsapp", "Direto no WhatsApp da academia", "Sem taxa, sem cadastro e sem intermediário."],
+];
 function renderPreLancamento() {
-  document.title = "GuiaTennis · O novo GuiaTennis chega domingo, às 18h";
+  document.title = "Novo GuiaTennis · Domingo, 29/11, às 18h";
   const errado = preLancamentoCodigoErrado;
+  const lancamento = window.__lancamentoEm || LANCAMENTO_EM;
+  const marca = (t) => `<li>${icon("check", 18, "var(--gold-light)")}<span>${t}</span></li>`;
   document.getElementById("app").innerHTML = `
-    <main class="pre-lancamento">
-      <svg class="pre-lancamento-logo" viewBox="0 0 1080 1080" aria-hidden="true">${logoDesenho({ id: "logo-pre" })}</svg>
-      <span class="logo-nome">${nomeDoLogo()}</span>
-      <h1>O novo GuiaTennis chega domingo, 29 de novembro, às 18h.</h1>
-      <p class="pre-lancamento-texto">Aula e quadra de tênis perto de você. Compare preço, estrutura e avaliações e fale direto com a academia, sem taxa.</p>
-      <a class="btn-primary pre-lancamento-botao" href="https://instagram.com/guiatennis" target="_blank" rel="noopener">${icon("instagram", 18, "#fff")} Acompanhe no Instagram</a>
-      <form class="pre-lancamento-codigo" novalidate>
-        <label for="pre-codigo">Recebeu um convite? Informe o código de acesso.</label>
-        <div class="pre-lancamento-linha">
-          <input id="pre-codigo" class="form-field" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="go" value="${errado ? esc(errado) : ""}" ${errado !== null ? 'aria-invalid="true" aria-describedby="pre-erro"' : ""}>
-          <button class="btn-primary" type="submit">Entrar</button>
+    <main class="pre">
+      <header class="pre-topo">
+        <svg class="pre-logo" viewBox="0 0 1080 1080" aria-hidden="true">${logoDesenho({ id: "logo-pre" })}</svg>
+        <span class="logo-nome">${nomeDoLogo()}</span>
+      </header>
+      <section class="pre-abre"><div class="pre-centro">
+        <p class="pre-sobre">Novo GuiaTennis</p>
+        <h1>Achar aula de tênis vai ficar muito mais fácil.</h1>
+        <p class="pre-data">O novo GuiaTennis chega domingo, 29 de novembro, às 18h.</p>
+        <p class="pre-falta" id="pre-falta">${faltaParaOLancamento(lancamento - Date.now())}</p>
+        <div class="pre-acoes">
+          <a class="btn-primary pre-botao" href="https://instagram.com/guiatennis" target="_blank" rel="noopener">${icon("instagram", 18, "#fff")} Acompanhe no Instagram</a>
+          <a class="pre-botao-sec" href="/lancamento.ics">${icon("calendario", 18, "var(--green)")} Lembrar no calendário</a>
         </div>
-        ${errado !== null ? `<p class="pre-lancamento-erro" id="pre-erro" role="alert">${errado ? "Código inválido. Confira o convite e tente de novo." : "Informe o código de acesso."}</p>` : ""}
-      </form>
-      <p class="pre-lancamento-academia">Tem uma academia de tênis? <a href="https://wa.me/${WHATSAPP_GUIA}" target="_blank" rel="noopener">Peça o seu convite pelo WhatsApp</a>.</p>
+      </div></section>
+      <section class="pre-bloco pre-novas"><div class="pre-centro">
+        <h2>Um pouco do que vem por aí</h2>
+        <ul class="pre-novidades">
+          ${PRE_NOVIDADES.map(([ic, titulo, texto]) => `<li>${icon(ic, 22, "var(--green)")}<div><strong>${titulo}</strong><span>${texto}</span></div></li>`).join("")}
+        </ul>
+        <p class="pre-mais">E tem mais. O resto, só no domingo.</p>
+      </div></section>
+      <section class="pre-bloco pre-academias"><div class="pre-centro">
+        <p class="pre-sobre">Para academias</p>
+        <h2>A sua academia já no lançamento.</h2>
+        <p class="pre-texto">Quem procura aula ou quadra perto de você chama direto no seu WhatsApp, sem comissão por aluno.</p>
+        <ul class="pre-checks">
+          ${marca("Ficha grátis, com preços, fotos e horários")}
+          ${marca("Resposta às avaliações, para mostrar como você atende")}
+          ${marca("Selo “Fundadora do GuiaTennis” na ficha, para sempre, para os 15 primeiros donos de academia")}
+        </ul>
+        <form class="pre-codigo" novalidate>
+          <label for="pre-codigo">Recebeu um convite? Informe o código de acesso.</label>
+          <div class="pre-linha">
+            <input id="pre-codigo" class="form-field" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="go" value="${errado ? esc(errado) : ""}" ${errado !== null ? 'aria-invalid="true" aria-describedby="pre-erro"' : ""}>
+            <button class="btn-primary" type="submit">Entrar</button>
+          </div>
+          ${errado !== null ? `<p class="pre-erro" id="pre-erro" role="alert">${errado ? "Código inválido. Confira o convite e tente de novo." : "Informe o código de acesso."}</p>` : ""}
+        </form>
+        <p class="pre-convite">Ainda sem convite? <a href="https://wa.me/${WHATSAPP_GUIA}" target="_blank" rel="noopener">Peça o seu pelo WhatsApp</a>.</p>
+      </div></section>
+      <p class="pre-rodape">GuiaTennis · Quadras e academias de tênis</p>
     </main>`;
   const campo = document.getElementById("pre-codigo");
   if (errado !== null) { campo.focus(); campo.select(); }
-  document.querySelector(".pre-lancamento-codigo").addEventListener("submit", e => {
+  document.querySelector(".pre-codigo").addEventListener("submit", e => {
     e.preventDefault();
-    if (codigoDeAcessoConta(campo.value) === ACESSO_ANTECIPADO_CONTA) { liberarAcessoAntecipado(); preLancamentoCodigoErrado = null; init(); return; }
+    if (codigoDeAcessoConta(campo.value) === ACESSO_ANTECIPADO_CONTA) {
+      liberarAcessoAntecipado();
+      preLancamentoCodigoErrado = null;
+      clearInterval(renderPreLancamento.contagem);
+      clearTimeout(renderPreLancamento.relogio);
+      init();
+      return;
+    }
     preLancamentoCodigoErrado = campo.value.trim();
     renderPreLancamento();
   });
-  // Aberta na hora do lançamento: o site se abre sozinho às 18h.
-  const falta = (window.__lancamentoEm || LANCAMENTO_EM) - Date.now();
+  // A contagem e, na hora do lançamento, o site que se abre sozinho às 18h.
+  clearInterval(renderPreLancamento.contagem);
+  renderPreLancamento.contagem = setInterval(() => {
+    const el = document.getElementById("pre-falta");
+    if (el) el.textContent = faltaParaOLancamento(lancamento - Date.now());
+  }, 3e4);
+  const falta = lancamento - Date.now();
   if (falta > 0 && falta < 864e5 && !renderPreLancamento.relogio) renderPreLancamento.relogio = setTimeout(() => location.reload(), falta + 1000);
 }
 

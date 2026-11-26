@@ -231,8 +231,11 @@ Legenda de todos: a frase do texto na tela, o pedido do fim do vídeo e "Link na
 
 ## Pré-lançamento: as academias entram antes (de quinta a sábado)
 
-Até domingo, 29/11, às 18h, o guiatennis.com.br mostra só "O novo GuiaTennis chega domingo, 29 de novembro, às
-18h", com "Acompanhe no Instagram" e "Peça o seu convite pelo WhatsApp". O site inteiro abre com o **código de
+Até domingo, 29/11, às 18h, o guiatennis.com.br mostra só a página do lançamento: "Achar aula de tênis vai ficar
+muito mais fácil.", a contagem até domingo, "Acompanhe no Instagram", "Lembrar no calendário" (o lembrete às 18h
+no celular), 6 novidades do site ("Um pouco do que vem por aí… E tem mais. O resto, só no domingo.") e a parte
+"Para academias", com as Fundadoras, o código e "Peça o seu pelo WhatsApp". Nas Stories de quinta a sábado, um
+print dessa página serve de teaser. O site inteiro abre com o **código de
 acesso** (está na conversa com o Claude; não publicar): no link do convite,
 `guiatennis.com.br/parceiros?acesso=[código]`, ou digitado na própria página. O navegador lembra; às 18h de
 domingo, o site abre para todos sozinho.

@@ -34507,7 +34507,7 @@ function faltaParaOLancamento(ms) {
 const PRE_TELAS = [
   ["filtros", "Busca", "Mais filtros para achar a academia certa", "Filtre por “Aberto agora”, comodidades (vestiário, estacionamento, empréstimo de raquete e outras), piso, cobertura, preço por hora, avaliação e distância.", "A tela de filtros do novo GuiaTennis, com Aberto agora e as comodidades"],
   ["ficha", "Ficha", "A nova ficha da academia", "Fotos em destaque, a estrutura em um toque e o preço sempre à vista, ao lado do botão do WhatsApp.", "A ficha de uma academia no novo GuiaTennis, com a foto, o endereço e o preço"],
-  ["ficha-opcoes", "Ficha", "Muito mais informação na ficha", "A aula e a locação em cartões, com o valor de cada uma, o horário com “Aberto agora” e, quando a academia informa, o cancelamento e como chegar.", "As opções para jogar, o contato e o horário na ficha de uma academia"],
+  ["ficha-opcoes", "Detalhes", "Muito mais informação na ficha", "A aula e a locação em cartões, com o valor de cada uma, o horário de funcionamento e, quando a academia informa, o cancelamento e como chegar.", "As opções para jogar, o contato e o horário na ficha de uma academia"],
   ["chat", "Ajuda", "Chat de ajuda e suporte", "Tire as suas dúvidas na hora, escolhendo um assunto ou escrevendo com as suas palavras. Se precisar, a equipe do GuiaTennis responde.", "O chat de ajuda do novo GuiaTennis"],
 ];
 // A altura de cada print (o corte na parte que importa), para a página não pular ao carregar.
@@ -34519,12 +34519,9 @@ const PRE_MAIS = [
   ["map", "Uma página para cada bairro", "As academias, os preços e as mais bem avaliadas do seu bairro."],
 ];
 const PRE_PERGUNTAS = [
-  ["O GuiaTennis é grátis?", "Sim. Para quem joga, buscar, comparar e chamar a academia é grátis e não pede cadastro."],
-  ["O GuiaTennis cobra alguma taxa?", "Não. Você fala direto com a academia pelo WhatsApp e combina tudo com ela. O GuiaTennis não faz reservas, não cobra e não fica no meio."],
+  ["O GuiaTennis cobra alguma coisa?", "Não. Para quem joga, buscar, comparar e chamar a academia é grátis. Você fala direto com a academia pelo WhatsApp e combina tudo com ela: o GuiaTennis não faz reservas e não fica no meio."],
   ["As avaliações são de verdade?", "Cada avaliação vem de uma conta com o e-mail confirmado, uma por academia. A academia pode responder, mas não pode apagar."],
-  ["Quando o site abre?", "Domingo, 29 de novembro, às 18h, para todos. Toque em “Lembrar no calendário” para receber o aviso no celular."],
-  ["Quanto custa para a academia?", "A ficha é grátis no plano Básico, sem comissão por aluno. Os planos Completo e Premium têm mais recursos, e o Premium tem o 1º mês grátis."],
-  ["Tenho uma academia. Como entro?", `Peça o seu convite <a href="https://wa.me/${WHATSAPP_GUIA}" target="_blank" rel="noopener">pelo WhatsApp</a>. Com ele, você cria a conta, completa a ficha e já aparece no lançamento. A ficha é grátis.`],
+  ["Precisa baixar aplicativo?", "Não. O GuiaTennis é um site: abre no navegador do celular ou do computador."],
 ];
 // Números de verdade para a página do lançamento (prova social): as academias publicadas e os bairros, arredondados
 // para baixo como no resto do site, e as vagas de Fundadora. Se o banco demorar, a página abre sem eles.
@@ -34572,7 +34569,7 @@ function renderPreLancamento() {
       <section class="pre-abre"><div class="pre-centro">
         <p class="pre-sobre">Lançamento · domingo, 29/11, às 18h</p>
         <h1>Achar aula de tênis vai ficar muito mais fácil.</h1>
-        <p class="pre-data">O novo GuiaTennis chega domingo, 29 de novembro, às 18h. Aula e quadra de tênis perto de você, com preço, estrutura e avaliações em um lugar só.</p>
+        <p class="pre-data">Aula e quadra de tênis perto de você, com preço, estrutura e avaliações em um lugar só.</p>
         <div class="pre-contagem" id="pre-contagem" role="timer" aria-label="${faltaParaOLancamento(lancamento - Date.now())} para o lançamento">${contagemDoLancamento(lancamento - Date.now())}</div>
         <div class="pre-acoes">
           <a class="btn-primary pre-botao" href="https://instagram.com/guiatennis" target="_blank" rel="noopener">${icon("instagram", 18, "#fff")} Acompanhe no Instagram</a>
@@ -34590,7 +34587,7 @@ function renderPreLancamento() {
           <figcaption><p class="pre-sobre">${sobre}</p><h3>${titulo}</h3><p>${texto}</p></figcaption>
           <img src="/lancamento/${arq}.jpg" width="390" height="${PRE_ALTURAS[arq]}" loading="lazy" decoding="async" alt="${alt}">
         </figure>`).join("")}
-        <h3 class="pre-mais-titulo">E mais</h3>
+        <h3 class="pre-mais-titulo">Outras novidades</h3>
         <ul class="pre-novidades">
           ${PRE_MAIS.map(([ic, titulo, texto]) => `<li>${icon(ic, 22, "var(--green)")}<div><strong>${titulo}</strong><span>${texto}</span></div></li>`).join("")}
         </ul>
@@ -34599,7 +34596,7 @@ function renderPreLancamento() {
       <section class="pre-bloco pre-academias" id="pre-academias"><div class="pre-centro">
         <p class="pre-sobre">Para academias</p>
         <h2>GuiaTennis Parceiros: um site só para a sua academia.</h2>
-        <p class="pre-texto">Quem procura aula ou quadra perto de você chama direto no seu WhatsApp, sem comissão por aluno. E, no Parceiros, você cuida de tudo pelo celular. Entre antes de domingo e esteja no ar quando os jogadores chegarem.</p>
+        <p class="pre-texto">Quem procura aula ou quadra perto de você chama direto no seu WhatsApp, sem comissão por aluno. E, no Parceiros, você administra a ficha e acompanha os resultados. Entre antes de domingo e esteja no ar quando os jogadores chegarem.</p>
         ${restam !== null && restam > 0 ? `<p class="pre-vagas">${restam === 1 ? "Resta 1 vaga" : `Restam ${restam} vagas`} de Fundadora</p>` : ""}
         <figure class="pre-tela pre-tela-parceiros">
           <img src="/lancamento/parceiros.jpg" width="390" height="780" loading="lazy" decoding="async" alt="A página do GuiaTennis Parceiros, o site das academias">
@@ -34615,9 +34612,9 @@ function renderPreLancamento() {
           ${marca("Promoções na ficha <span class='pre-plano'>Completo</span> e o destaque “Patrocinado” no topo da busca <span class='pre-plano'>Premium</span>")}
           ${marca("Imagem pronta para divulgar no Instagram as suas avaliações e promoções")}
           ${marca("Chat de suporte dentro do Parceiros")}
-          ${restam === null || restam > 0 ? marca(`Selo “Fundadora do GuiaTennis” na ficha, para sempre, para os ${FUNDADORAS} primeiros donos de academia`) : ""}
+          ${restam === null ? marca(`Selo “Fundadora do GuiaTennis” na ficha, para sempre, para os ${FUNDADORAS} primeiros donos de academia`) : restam > 0 ? marca("Selo “Fundadora do GuiaTennis” na ficha, para sempre") : ""}
         </ul>
-        <p class="pre-planos">Grátis no plano Básico, sem comissão. O Premium tem o 1º mês grátis.</p>
+        <p class="pre-planos">Plano Básico grátis. Premium com o 1º mês grátis.</p>
         <h3>Como entrar</h3>
         <ol class="pre-passos">
           ${passo("Abra o link do convite", "Ou informe o código logo abaixo.")}
@@ -34640,7 +34637,7 @@ function renderPreLancamento() {
       </div></section>
       <section class="pre-bloco pre-fim pre-linha-cima"><div class="pre-centro">
         <h2>Nos vemos domingo, às 18h.</h2>
-        <p>Siga o @guiatennis para ser um dos primeiros a usar o novo GuiaTennis.</p>
+        <p>Seja um dos primeiros a usar o novo GuiaTennis.</p>
         <a class="btn-primary pre-botao" href="https://instagram.com/guiatennis" target="_blank" rel="noopener">${icon("instagram", 18, "#fff")} Seguir o @guiatennis</a>
       </div></section>
       <footer class="pre-rodape">GuiaTennis · Quadras e academias de tênis<br><a href="mailto:contato@guiatennis.com.br">contato@guiatennis.com.br</a></footer>

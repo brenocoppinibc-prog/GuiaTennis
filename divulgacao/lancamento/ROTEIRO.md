@@ -12,6 +12,17 @@ Cada peça segue a mesma ordem (a dos grandes perfis de produto, como o Nubank e
 2. **Valor**: algo útil, que a pessoa salva ou manda para alguém.
 3. **Convite**: um único pedido claro (comentar, salvar, compartilhar ou tocar no link).
 
+### Cada formato faz uma coisa (nada se repete)
+
+| Formato | Papel | Quem vê |
+|---|---|---|
+| **Carrossel** | **Explica**: o passo a passo, as funções, a oferta para academias | Quem já segue; é o que se **salva** e se **manda** para alguém |
+| **Reels "Testei"** | **Prova**: uma busca de verdade, com academias e preços reais, que o carrossel não consegue mostrar | Quem **ainda não conhece** o perfil: o Instagram mostra Reels para fora |
+| **Reels com você falando** | **Conecta**: a pessoa por trás do GuiaTennis, o anúncio, o convite | Os dois públicos; foi o formato que mais rendeu no perfil |
+| **Stories** | **Conversa**: enquete, pergunta, resposta com o link | Quem já segue; é onde a conversa vira contato |
+
+Regra: se um vídeo vai repetir o que um carrossel já disse, ele mostra um **caso real** no lugar da explicação.
+
 ### Os gatilhos de venda, sempre verdadeiros
 
 | Gatilho | Onde usamos | Regra |
@@ -40,11 +51,11 @@ Cada peça segue a mesma ordem (a dos grandes perfis de produto, como o Nubank e
 |---|---|---|
 | **Quinta, de manhã** | Trocar a bio e a categoria (abaixo). Conferir as fichas do bairro que você vai mostrar nos vídeos (preço e foto). | — |
 | **Quinta, 12h** | Carrossel "Pare de mandar mensagem para 10 academias" (passo a passo) + Stories com contagem regressiva e enquete | `carrossel-1-quinta-passo-a-passo-1` a `7`, `stories-1`, `stories-2` |
-| **Sexta, 18h** | Reels 1, "Testei ao vivo" num bairro, com academias e preços reais + Stories "Em que bairro você joga?" | `stories-3` |
+| **Sexta, 18h** | Vídeo "Testei" num bairro, com academias e preços reais + Stories "Em que bairro você joga?" | `stories-3` |
 | **Sábado** | Stories respondendo aos bairros e repostando as academias que já estão no Guia (prova social) | — |
-| **Domingo, 18h** | Carrossel "Chegou" + Reels de tela + Stories com o link. Fixar no perfil o carrossel de domingo e o de quinta | `carrossel-2-domingo-lancamento-1` a `7`, `stories-4` |
+| **Domingo, 18h** | Carrossel "Chegou" + vídeo com você falando (o anúncio) + Stories com o link. Fixar no perfil o carrossel de domingo e o de quinta | `carrossel-2-domingo-lancamento-1` a `7`, `stories-4` |
 | **Segunda, 12h** | Carrossel para academias + Stories + mensagem no WhatsApp para cada academia | `carrossel-3-segunda-academias-1` a `6`, `stories-5` |
-| **Semana que vem** | Carrossel "5 funções" (quarta) e os Reels 2, 3, 4 e 5 (terça, quinta, sábado e domingo, 18h) | `carrossel-4-semana-que-vem-funcoes-1` a `7` |
+| **Semana que vem** | Carrossel "5 funções" (quarta), um vídeo "Testei" (terça, 18h) e o vídeo para donos de academia (quinta, 18h) | `carrossel-4-semana-que-vem-funcoes-1` a `7` |
 
 O carrossel "5 funções" fala do botão "Sugerir uma quadra ou academia": poste-o só depois que as novidades do
 site estiverem no ar.
@@ -66,11 +77,11 @@ A capa é a imagem `destaque-…png` (o Instagram mostra só o círculo do meio)
 
 | Nome | Capa | O que colocar |
 |---|---|---|
-| **Como usar** | `destaque-1-como-usar` (lupa) | O Reels 1, o Reels de tela de domingo e os prints do site (busca, filtros, ficha, WhatsApp). É o destaque que mais vende: quem chega ao perfil entende o site em 30 segundos |
+| **Como usar** | `destaque-1-como-usar` (lupa) | O "Testei" de sexta, o carrossel de quinta em Stories e os prints do site (busca, filtros, ficha, WhatsApp). É o destaque que mais vende: quem chega ao perfil entende o site em 30 segundos |
 | **Bairros** | `destaque-2-bairros` (pino) | Cada resposta a "Em que bairro você joga?", com a figurinha de link para a página do bairro (ex.: guiatennis.com.br/quadras/sao-paulo/moema). Cresce sozinho a cada semana |
 | **Dúvidas** | `destaque-3-duvidas` (interrogação) | As 5 Stories `duvidas-1` a `5` (é grátis? precisa de conta? tem taxa? as avaliações são de verdade? como entra a academia?), cada uma com a figurinha de link para o site. Responde antes de a pessoa perguntar (risco zero) |
-| **Academias** | `destaque-4-academias` (prédio) | O carrossel de segunda em Stories, o `stories-5` com as 15 vagas de Fundadora, o Reels 5 e o link para guiatennis.com.br/parceiros. Mais tarde, as academias que entrarem (prova social) |
-| **Novidades** | `destaque-5-novidades` (brilho) | O `stories-4` do lançamento e cada função nova do site (ex.: "Sugerir uma quadra ou academia") |
+| **Academias** | `destaque-4-academias` (prédio) | O carrossel de segunda em Stories, o `stories-5` com as 15 vagas de Fundadora, o vídeo para donos de academia e o link para guiatennis.com.br/parceiros. Mais tarde, as academias que entrarem (prova social) |
+| **Novidades** | `destaque-5-novidades` (brilho) | O vídeo do anúncio de domingo, o `stories-4` e cada função nova do site (ex.: "Sugerir uma quadra ou academia") |
 | **O Guia** | `destaque-6-o-guia` (o logo) | O que já está lá: a ideia do GuiaTennis. Pode ficar por último |
 
 Quando chegarem as primeiras avaliações e comentários de quem usou, crie o destaque **"Quem usa"** (prova
@@ -139,66 +150,55 @@ social real, com autorização).
    "Horário" e "Achar academia boa". O resultado vira assunto dos próximos posts.
 3. **Sexta — `stories-3`:** figurinha de **pergunta** ("Digite o seu bairro"). No sábado, responda com a
    figurinha "Responder" e o link da página do bairro.
-4. **Domingo — `stories-4`:** figurinha de **link** para guiatennis.com.br. Em seguida, a gravação da tela.
+4. **Domingo — `stories-4`:** figurinha de **link** para guiatennis.com.br. Em seguida, o vídeo do anúncio.
 5. **Segunda — `stories-5`:** figurinha de **link** para guiatennis.com.br/parceiros.
 
-## Reels com você falando (o formato que mais funciona no perfil)
+## Os vídeos
 
-Como os vídeos que mais deram certo: você olhando para a câmera, a frase-gancho escrita na tela nos 3
-primeiros segundos e a legenda automática ligada. Para mostrar o site atrás de você, use o efeito **"Tela
-verde"** do Instagram (Reels › Efeitos › Tela verde) com um print do site. De 20 a 35 segundos cada.
+Dois tipos, cada um com o seu papel (tabela da estratégia):
+- **"Testei"**: grave a tela do celular fazendo uma busca de verdade e narre o que aparece (ou apareça no
+  canto com o efeito **"Tela verde"**: Reels › Efeitos › Tela verde). Os números ditos são os que aparecem na
+  tela na hora, nunca estimados.
+- **Você falando**: olhando para a câmera, como os vídeos que mais renderam no perfil.
 
-**Reels 1 (sexta) — "Testei ao vivo" (a prova, não a explicação)**
+Nos dois: a frase-gancho escrita na tela nos 3 primeiros segundos, legenda automática ligada, de 20 a 35
+segundos e **um pedido só** no fim.
 
-O carrossel de quinta **explica** o passo a passo; o vídeo **mostra um caso real**, com academias e preços de
-verdade, o que o carrossel não consegue. Cada formato chega a um público diferente: o carrossel, a quem já
-segue e salva; o Reels, a quem ainda não conhece o perfil.
+**Sexta — "Testei" (a prova do carrossel de quinta)**
 - Texto na tela: **"Testei: aula de tênis em Moema em 1 minuto"** (use o bairro com as fichas mais completas)
 - "Quanto tempo leva para achar aula de tênis perto de casa? Vamos testar agora." (gravação da tela) "Digitei
-  Moema no GuiaTennis e apareceram [N] academias." (abra uma ficha de verdade) "Essa aqui tem [quadra de
-  saibro, coberta] e a aula a partir de [R$ X]. Dá para ver as avaliações e chamar direto no WhatsApp. Levou
-  menos de um minuto. Comente o seu bairro, e o próximo teste é aí."
-- Os números ditos no vídeo são os que aparecem na tela na hora da gravação, nunca estimados.
-- Vira uma **série**: a cada semana, "Testei em [bairro]" com o bairro mais pedido nos comentários. Cada
-  vídeo vai também para o destaque "Bairros".
+  Moema no GuiaTennis e apareceram [N] academias." (abra uma ficha de verdade) "Esta tem [quadra de saibro,
+  coberta] e aula a partir de [R$ X]. Dá para ver as avaliações e chamar direto no WhatsApp. Levou menos de um
+  minuto. Comente o seu bairro, e o próximo teste é aí."
+- Por que não repete o carrossel: o carrossel **explica** o passo a passo com o desenho dos botões; o vídeo
+  **mostra um resultado real**, com nomes e preços, e é isso que convence quem ainda não conhece o site.
 
-**Reels 2 — curiosidade + engajamento**
-- Texto na tela: **"Quanto custa aula de tênis em SP?"**
-- "Essa é uma das perguntas que mais recebemos. Depende do bairro e do tipo de aula: individual, em dupla ou
-  em grupo." (tela verde com a ordem "Menor preço") "No GuiaTennis, você ordena por menor preço e vê o valor
-  antes de chamar, nas academias que informam o preço. Comente o seu bairro, e eu respondo com as opções de
-  lá."
+**Domingo — você falando (o anúncio)**
+- Texto na tela: **"Chegou o novo GuiaTennis"**
+- "Hoje o novo GuiaTennis chega para todos. [Uma frase sua: por que você criou o GuiaTennis.] Agora você
+  encontra aula e quadra de tênis perto de você, compara preço, estrutura e avaliações e chama direto a
+  academia no WhatsApp, sem taxa e sem cadastro." (2 ou 3 segundos da tela do site, de passagem) "Comente o seu
+  bairro, e eu respondo com as academias de lá. O link está na bio."
+- Por que não repete o "Testei" de sexta: sexta é a **prova**; domingo é o **anúncio**, com você, que é o que
+  cria vínculo.
 
-**Reels 3 — pais**
-- Texto na tela: **"Aula de tênis para crianças perto de você"**
-- "Seu filho quer jogar tênis? No GuiaTennis, busque pelo seu bairro e abra a ficha das academias." (print
-  da ficha) "No cartão 'Aulas para crianças', aparecem as turmas por idade e o preço. Mande este vídeo para
-  quem está procurando aula para o filho."
+**Semana que vem — a série "Testei" (um por semana, o bairro mais pedido nos comentários)**
+- **"Testei em [bairro]"**: o mesmo formato de sexta, em outro bairro. Cada vídeo vai também para o destaque
+  "Bairros".
+- **"Testei: quanto custa aula de tênis em [bairro]"**: ordenar por "Menor preço" e mostrar os valores reais
+  das academias que informam o preço.
+- **"Testei: aula para crianças em [bairro]"**: abrir as fichas e mostrar o cartão "Aulas para crianças", com
+  as turmas por idade e o preço. Pedido final: "Mande para quem está procurando aula para o filho."
+- **"Testei: quadra em [cidade de viagem]"**: pelo "Vou viajar", uma cidade real de férias. O carrossel "5
+  funções" explica a função; o vídeo mostra o resultado.
 
-**Reels 4 — viagem (curiosidade)**
-- Texto na tela: **"Vai viajar? Leve a raquete"**
-- "Vai viajar e quer jogar tênis lá? No menu do GuiaTennis, toque em 'Vou viajar', informe a cidade e onde
-  você vai ficar, e aparecem as quadras mais perto. Salve para a próxima viagem."
-
-**Reels 5 — academias (escassez real)**
+**Para donos de academia — você falando**
 - Texto na tela: **"Dono de academia de tênis, isto é para você"**
 - "Se você tem uma academia de tênis em São Paulo, a sua ficha no GuiaTennis é grátis, e o jogador chama
-  direto no seu WhatsApp, sem comissão. E os 15 primeiros donos a chegar ganham o selo 'Fundadora do
+  direto no seu WhatsApp, sem comissão. Os 15 primeiros donos a chegar ganham o selo 'Fundadora do
   GuiaTennis' para sempre. Entre em guiatennis.com.br/parceiros e garanta a vaga."
 
-Legenda de todos: a frase do texto na tela, um pedido só (comentar, salvar ou compartilhar) e "Link na bio:
-guiatennis.com.br".
-
-## Reels de domingo: o site na prática (15 segundos)
-
-Grave a tela do celular no site (gravação de tela do próprio celular):
-1. Abrir guiatennis.com.br.
-2. Digitar um bairro com fichas completas (ex.: Moema) e buscar.
-3. Rolar a lista devagar e abrir uma ficha com preço e foto.
-4. Mostrar o preço e a estrutura e tocar em "Falar no WhatsApp" (pare antes de enviar).
-
-Texto na tela: "Aula de tênis perto de você." · "Compare preço e estrutura." · "Fale direto no WhatsApp."
-Música em alta do Instagram, baixa.
+Legenda de todos: a frase do texto na tela, o pedido do fim do vídeo e "Link na bio: guiatennis.com.br".
 
 ## Mensagem para as academias (WhatsApp, segunda)
 

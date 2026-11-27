@@ -130,8 +130,7 @@ social real, com autorização).
 >
 > Eu vou ajudar você: no domingo, 29/11, às 18h, lanço a solução para acabar com esse problema. 👀
 >
-> 🔔 Ative o lembrete nos nossos Stories para não perder.
-> 💬 Comente o seu bairro: no domingo, respondemos com as academias de lá.
+> Gostou da ideia? Siga o @guiatennis e ative o lembrete nos Stories para não perder. 🔔
 >
 > #tenis #tenissp #aulasdetenis #quadradetenis #saopaulo
 

@@ -81,6 +81,14 @@ for arquivo in supabase/migrations/*.sql; do
   echo "aplicada: $nome"
 done
 
+# O pagamento de teste (gateway fingido, regra 118) liga só no banco de
+# teste; no de verdade, desliga a cada rodada.
+if [ "$(sql -At -c "select to_regclass('public.pagamento_de_teste') is not null")" = t ]; then
+  if [ "$destino" = teste ]; then ligado=true; else ligado=false; fi
+  sql -c "update public.pagamento_de_teste set ligado = $ligado where ligado <> $ligado"
+  echo "pagamento de teste: $([ "$ligado" = true ] && echo ligado || echo desligado)"
+fi
+
 # O banco de teste nasce com as academias de exemplo; depois disso, não
 # mexe mais nelas (quem testa pode ter cadastrado outras).
 if [ "$destino" = teste ] && [ "$(sql -At -c "select count(*) from public.academias")" = 0 ]; then

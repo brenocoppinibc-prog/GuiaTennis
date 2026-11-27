@@ -1,26 +1,304 @@
-// Finge o Supabase para os testes: tabelas em memória (window.__db), e a função
-// de estatísticas. Chaves: __admin, __semDetalhe, __semCep, __colunasFechadas,
-// __semPlano, __semConfirmada. O que o site grava em cliques fica em __cliques, e o banco
-// que o site abriu fica em __banco.
+// Finge o Supabase para os testes: tabelas em memória (window.__db), e as
+// funções do banco. Chaves: __admin, __semDetalhe, __semCep, __semTempo, __colunasFechadas,
+// __semPlano, __semConfirmada, __semDataDaFicha, __semCatalogo, __a1AtualizadaEm, __a1CriadaEm,
+// __academia (id da academia logada),
+// __semAcesso (banco sem o SQL do acesso das academias). O que o site grava
+// em cliques fica em __cliques, o banco que o site abriu fica em __banco, as
+// funções chamadas em __rpcs e a última senha trocada em __senhaNova.
 (function(){
   const agora = new Date().toISOString();
+  // Os dados para a nota de uma academia (regra 231): os salvos, ou os de exemplo.
+  const notaDe = (id) => (window.__notasSalvas || {})[id]
+    || (window.__semDadosParaNota || window.__semNotaNoBanco ? null : { documento: "11222333000181", nome: "Academia Teste Ltda", email: "financeiro@academiateste.com.br" });
   const db = window.__db = {
     academias: [
-      { id:"a1", name:"Só Aula Tennis", address:"Rua A", numero:"1", bairro:"Pinheiros", cidade:"São Paulo", endereco:"Rua A, 1 - Pinheiros, São Paulo", lat:-23.56, lng:-46.68, phone:"11999990001", instagram:"", site:"", price_aula:"", price_locacao:"", amenities:["raquete","estacionamento_gratuito"], modalidades:["aulas_proprias"], quadras:{saibro_coberta:2}, pisos:["saibro"], cobertura:["coberta"], photos:[], status:"published", created_at:agora,
+      { id:"a1", name:"Só Aula Tennis", address:"Rua A", numero:"1", bairro:"Pinheiros", cidade:"São Paulo", endereco:"Rua A, 1 - Pinheiros, São Paulo", lat:-23.56, lng:-46.68, phone:"11999990001", instagram:"", site:"", price_aula:"", price_locacao:"", amenities:["raquete","estacionamento_gratuito"], modalidades:["aulas_proprias"], quadras:{saibro_coberta:2}, pisos:["saibro"], cobertura:["coberta"], photos:[], status:"published", created_at: window.__a1CriadaEm || agora, dados_atualizados_em: window.__a1AtualizadaEm || null,
         politica:{ modo:"separado", aula:{reposicao:"24", foraDoPrazo:"Perde a aula."}, locacao:{reposicao:"12", foraDoPrazo:"Cobra metade."} },
         acesso:{ fachada:"Portão preto", entrada:"Avise na portaria", estacionar:"Rua de trás" },
         horario:{ modo:"igual", semana:{de:"06:00",ate:"22:00",fechado:false}, sabado:{de:"08:00",ate:"14:00",fechado:false}, domingo:{de:"",ate:"",fechado:true}, nota:"" } },
       { id:"a2", name:"Quadra Locação", address:"Rua B", numero:"2", bairro:"Moema", cidade:"São Paulo", endereco:"Rua B, 2 - Moema, São Paulo", lat:-23.60, lng:-46.66, phone:"11999990002", price_aula:"", price_locacao:"100-120", amenities:[], modalidades:["locacao"], quadras:{rapida_descoberta:1}, pisos:["rapida"], cobertura:["descoberta"], photos:[], status:"published", created_at:agora, confirmada:false,
         politica:{ modo:"igual", reposicao:"48", foraDoPrazo:"" }, acesso:{}, horario:{} },
     ],
-    avaliacoes: [], cliques: [],
+    avaliacoes: JSON.parse(JSON.stringify(window.__avaliacoesIniciais || [])), cliques: [],
+    nomes_suspensos: JSON.parse(JSON.stringify(window.__nomesSuspensosIniciais || [])),
+    // Login de cada academia (a senha fica em __senhas, pelo e-mail do login).
+    academia_acessos: [],
+    // Uma conta, várias academias (SQL 20261003120000): quem administra
+    // qual academia, com o papel de cada uma. academia_id da conta é a
+    // academia aberta no painel.
+    academia_vinculos: [],
+    pedidos_para_sair: [],
+    // Pedidos de plano (SQL 20261003130000): um por academia.
+    pedidos_de_plano: [],
+    pedidos_de_acesso: [],
+    passos_das_visitas: [],
+    respostas: JSON.parse(JSON.stringify(window.__respostasIniciais || [])),
+    // Conta do jogador (SQL 20261002130000). window.__jogador abre o site
+    // já logado como "Ana Jogadora".
+    jogadores: [],
+    // Buscas salvas na conta (SQL 20261005150000). window.__semBuscasSalvas
+    // finge o banco sem a tabela.
+    buscas_salvas: [],
+    // Fila dos avisos por e-mail (SQL 20261005160000), vista pelo painel do admin.
+    emails_a_enviar: [],
+    // Acompanhamento depois de chamar a academia (regra 193). window.__acompanhamento
+    // liga o SQL; pode ser uma lista com os acompanhamentos iniciais.
+    acompanhamentos: Array.isArray(window.__acompanhamento) ? JSON.parse(JSON.stringify(window.__acompanhamento)) : [],
+    // Contas excluídas pelo admin (SQL 20261006150000): o e-mail fica bloqueado.
+    contas_excluidas: [],
+    // Promoções das academias Premium (SQL 20261008140000). window.__semPromocoes
+    // finge o banco sem a tabela; window.__promoAviso diz o que o e-mail fez.
+    promocoes: JSON.parse(JSON.stringify(window.__promocoesIniciais || [])),
+    // Pedidos para tirar a academia do guia (SQL 20261008150000).
+    // Conversas do chat de ajuda guardadas na conta (SQL 20261009120000).
+    // window.__conversasIniciais começa com algumas; window.__semConversas
+    // finge o banco sem a tabela.
+    conversas_de_ajuda: JSON.parse(JSON.stringify(window.__conversasIniciais || [])),
+    // O chat com o GuiaTennis (regra 251, SQL 20261112120000): os relatos e as
+    // respostas do admin. window.__semChatComOGuia finge o banco sem o SQL.
+    relatos_do_chat: JSON.parse(JSON.stringify(window.__relatosIniciais || [])),
+    respostas_no_chat: JSON.parse(JSON.stringify(window.__respostasNoChatIniciais || [])),
+    // Falhas do site (SQL 20261011120000). window.__falhasIniciais começa com
+    // algumas; window.__semFalhas finge o banco sem a tabela.
+    falhas_do_site: JSON.parse(JSON.stringify(window.__falhasIniciais || [])),
+    // Veracidade (SQL 20261026120000): o que os jogadores informaram nas
+    // fichas e as denúncias de avaliação. O código do WhatsApp da ficha fica
+    // em window.__codigosDoWhatsapp[academia].
+    problemas_na_ficha: [],
+    denuncias_de_avaliacao: [],
   };
+  // window.__premium: ids das academias que começam no Premium.
+  (window.__premium || []).forEach(id => { const ac = db.academias.find(y => y.id === id); if (ac) ac.plano = "premium"; });
+  // window.__completo: ids das academias no Completo; window.__envios: {id: saldo} (SQL 20261015120000).
+  (window.__completo || []).forEach(id => { const ac = db.academias.find(y => y.id === id); if (ac) ac.plano = "completo"; });
+  Object.entries(window.__envios || {}).forEach(([id, n]) => { const ac = db.academias.find(y => y.id === id); if (ac) ac.envios_de_aviso = n; });
+  db.avisos = window.__db.avisos = [];
+  db.lances = window.__db.lances = [];
+  db.leilaoConfig = window.__db.leilaoConfig = { lance_minimo: 10, desconto_premium: 0.15, raio_km: 4, preco_promocao_semana: window.__precoPromocao || 0, dia_fechamento: 0, hora_fechamento: 20 };
+  const promocoesLiberadas = (ac) => !!ac && ["completo", "premium"].includes(ac.plano);
+  // O preço da semana da promoção na ficha (SQL 20261022120000): o Premium paga 15% menos (regra 317).
+  const precoDaPromocao = (ac) => { const b = db.leilaoConfig.preco_promocao_semana || 0; return !b ? 0 : ac && ac.plano === "premium" ? Math.max(1, Math.floor(b * (1 - db.leilaoConfig.desconto_premium))) : b; };
+  const ADMIN = "guiatennis1@gmail.com";
+  const DOMINIO = "@acesso.guiatennis.com.br";
+  window.__senhas = {};
+  window.__rpcs = [];
+  // Academia logada de saída (window.__academia): acesso já completo, a não
+  // ser que window.__acessoNovo diga que é o primeiro acesso.
+  if (window.__academia) {
+    const novo = !!window.__acessoNovo;
+    db.academia_acessos.push({ user_id: "u-" + window.__academia, academia_id: window.__academia, usuario: "quadra." + window.__academia,
+      nome_responsavel: novo ? null : "Maria Teste", cargo: novo ? null : "Gerente", email: novo ? null : "maria@teste.com", whatsapp: novo ? null : "11900000001", cnpj: null,
+      recebe_relatorio: false, termos_aceitos_em: novo ? null : agora, dados_completos_em: novo ? null : agora, senha_trocada_em: novo ? null : agora,
+      avisos_por_email: true, token_avisos: "tok-u-" + window.__academia,
+      ...(window.__semAvisosUmPorUm ? {} : { avisos_desligados: [] }) });
+    window.__senhas["quadra." + window.__academia + DOMINIO] = "provisoria1";
+    db.academia_vinculos.push({ user_id: "u-" + window.__academia, academia_id: window.__academia, papel: "principal", created_at: agora });
+    // window.__outrasAcademias: a mesma conta administra também essas.
+    (window.__outrasAcademias || []).forEach(id => db.academia_vinculos.push({ user_id: "u-" + window.__academia, academia_id: id, papel: "principal", created_at: agora }));
+    // window.__equipe: a conta é da equipe, com essas funções (regra 180), e
+    // a academia tem outro responsável principal.
+    if (window.__equipe) {
+      Object.assign(db.academia_acessos[db.academia_acessos.length - 1], { papel: "equipe" });
+      Object.assign(db.academia_vinculos.find(v => v.user_id === "u-" + window.__academia && v.academia_id === window.__academia), { papel: "equipe", funcoes: window.__equipe });
+      db.academia_acessos.push({ user_id: "u-dono", academia_id: window.__academia, usuario: "dono@quadra.com", nome_responsavel: "Dono da Quadra", email: "dono@quadra.com", papel: "principal", dados_completos_em: agora, email_confirmado_em: agora });
+      db.academia_vinculos.push({ user_id: "u-dono", academia_id: window.__academia, papel: "principal", created_at: agora });
+    }
+  }
+  if (window.__jogador) {
+    db.jogadores.push({ user_id: "j-ana", nome: "Ana Jogadora", email: "ana@exemplo.com", cidade: "São Paulo", avisos_academias: false, promocoes: false, novidades: false, termos_aceitos_em: agora, created_at: agora, token_avisos: "tok-j-ana" });
+    // Banco com o lembrete de volta (SQL 20261009140000): a coluna existe e começa ligada.
+    if (window.__lembreteDeVolta) Object.assign(db.jogadores[db.jogadores.length - 1], { lembrete_de_volta: true, visto_em: null });
+    // Banco com o acompanhamento (regra 193): começa ligado, sem WhatsApp.
+    if (window.__acompanhamento) Object.assign(db.jogadores[db.jogadores.length - 1], { acompanhamento: true, whatsapp: null, whatsapp_aceite_em: null });
+    // window.__jogadorConfirmado: com o e-mail confirmado (avaliar pede isso desde 26/10/2026).
+    if (window.__jogadorConfirmado) db.jogadores[db.jogadores.length - 1].email_confirmado_em = agora;
+    window.__senhas["ana@exemplo.com"] = "senhadaana";
+  }
+  let sessao = window.__admin ? { user: { id: "admin", email: ADMIN }, access_token: "token-do-admin" }
+    : window.__jogador ? { user: { id: "j-ana", email: "ana@exemplo.com" } }
+    : window.__academia ? { user: { id: "u-" + window.__academia, email: "quadra." + window.__academia + DOMINIO } } : null;
+  // Para os testes trocarem de conta sem passar pelo login.
+  window.__trocarSessao = (nova) => { const antes = sessao; sessao = nova; return antes; };
+  const souAdmin = () => !!(sessao && sessao.user.email === ADMIN);
+  const meuAcesso = () => sessao && db.academia_acessos.find(a => a.user_id === sessao.user.id);
+  const euJogador = () => sessao && db.jogadores.find(j => j.user_id === sessao.user.id);
+  // Conta do GuiaTennis Parceiros (SQL 20260930160000): e-mail de entrar,
+  // telefone só com números e o limite de pessoas do plano.
+  // Depois do primeiro acesso, quem tinha usuário entra pelo e-mail (SQL 20261004120000).
+  const loginDe = (x) => x.loginEmail || (x.usuario.includes("@") ? x.usuario : x.usuario + DOMINIO);
+  const tel = (t) => { const d = String(t || "").replace(/\D/g, ""); return (d.length === 12 || d.length === 13) && d.startsWith("55") ? d.slice(2) : d; };
+  const planoDe = (id) => window.__plano || (db.academias.find(y => y.id === id) || {}).plano || "basico";
+  const limite = (plano) => ({ premium: 10, completo: 5 }[plano] || 1);
+  const ordem = (plano) => ({ premium: 3, completo: 2 }[plano] || 1);
+  const vinculosDe = (userId) => db.academia_vinculos.filter(v => v.user_id === userId);
+  // Vários pedidos por conta (SQL 20261005120000): o pedido que um teste pôs
+  // nas colunas antigas de academia_acessos vira uma linha, como a migração faz.
+  const migrarPedidos = () => db.academia_acessos.forEach(x => {
+    if (!x.pedido_academia_id) return;
+    if (!db.pedidos_de_acesso.some(p => p.user_id === x.user_id && p.academia_id === x.pedido_academia_id))
+      db.pedidos_de_acesso.push({ user_id: x.user_id, academia_id: x.pedido_academia_id, nome: x.pedido_nome || null, destino: x.pedido_destino || null, pedido_em: x.pedido_em || new Date().toISOString() });
+    Object.assign(x, { pedido_academia_id: null, pedido_nome: null, pedido_em: null, pedido_destino: null });
+  });
+  const pedidosDe = (userId) => { migrarPedidos(); return db.pedidos_de_acesso.filter(p => p.user_id === userId).sort((p, q) => String(p.pedido_em).localeCompare(String(q.pedido_em))); };
+  const pedidosPara = (academiaId) => { migrarPedidos(); return db.pedidos_de_acesso.filter(p => p.academia_id === academiaId); };
+  const fecharPedido = (userId, academiaId) => {
+    db.pedidos_de_acesso = db.pedidos_de_acesso.filter(p => !(p.user_id === userId && p.academia_id === academiaId));
+    window.__db.pedidos_de_acesso = db.pedidos_de_acesso;
+    const c = (window.__codigos || {})[userId];
+    if (c && c.academia === academiaId) delete window.__codigos[userId];
+  };
+  // O pedido do admin: o da academia dita ou o único da conta.
+  const pedidoDaConta = (userId, academiaId) => {
+    const lista = pedidosDe(userId);
+    if (academiaId) return lista.find(p => p.academia_id === academiaId) || null;
+    return lista.length === 1 ? lista[0] : null;
+  };
+  const vinculo = (userId, academiaId) => db.academia_vinculos.find(v => v.user_id === userId && v.academia_id === academiaId);
+  // As funções da equipe (SQL 20261029190000): quem entra começa com ficha,
+  // avaliações e promoções; o principal pode tudo. window.__semFuncoes finge
+  // o banco sem o SQL.
+  const FUNCOES = ["ficha", "avaliacoes", "promocoes", "pagamentos"];
+  const funcoesDe = (v) => Array.isArray(v.funcoes) ? v.funcoes : ["ficha", "avaliacoes", "promocoes"];
+  const possoNa = (userId, academiaId, funcao) => {
+    const v = vinculo(userId, academiaId);
+    // Conta de cenário só com o acesso (no banco, o gatilho vinculo_do_acesso cria o vínculo com o mesmo papel).
+    if (!v) { const x = db.academia_acessos.find(z => z.user_id === userId); return !!x && x.academia_id === academiaId && (x.papel || "principal") === "principal"; }
+    return window.__semFuncoes || v.papel === "principal" || funcoesDe(v).includes(funcao);
+  };
+  const funcaoNegada = (funcao) => erro(`Na sua conta, "${{ ficha: "Editar a ficha", avaliacoes: "Responder avaliações", promocoes: "Promoções e leilão", pagamentos: "Pagamentos" }[funcao]}" não está liberado. Fale com o responsável principal da academia.`, "42501");
+  // O e-mail de entrar da conta (o que o banco guarda em fechada_emails).
+  const emailDeEntrar = (x) => !x ? "" : String(x.loginEmail || x.usuario ? loginDe(x) : x.email || "").toLowerCase();
+  // A academia que fechou fica guardada (SQL 20261026200000).
+  const guardarFechada = (ac) => {
+    const equipe = db.academia_vinculos.filter(v => v.academia_id === ac.id);
+    const emails = equipe.map(v => emailDeEntrar(db.academia_acessos.find(x => x.user_id === v.user_id))).filter(Boolean);
+    db.academia_vinculos = window.__db.academia_vinculos = db.academia_vinculos.filter(v => v.academia_id !== ac.id);
+    db.academia_acessos.filter(x => x.academia_id === ac.id).forEach(x => { const outra = db.academia_vinculos.find(v => v.user_id === x.user_id); x.academia_id = outra ? outra.academia_id : null; });
+    Object.assign(ac, { status: "fechada", fechada_em: new Date().toISOString(), fechada_emails: [...new Set([...(ac.fechada_emails || []), ...emails])], plano: "basico",
+      pausada: false, pausada_ate: null, pausada_pela_academia: false, avisou_que_fechou_em: null, revisar_desde: null, whatsapp_a_confirmar: null });
+  };
+  const voltaAoGuia = (ac, userId, revisar) => {
+    Object.assign(ac, { status: "published", fechada_em: null, fechada_emails: null, reaberta_em: new Date().toISOString(), revisar_desde: revisar ? new Date().toISOString() : null });
+    if (userId && db.academia_acessos.some(x => x.user_id === userId)) {
+      if (!vinculo(userId, ac.id)) db.academia_vinculos.push({ user_id: userId, academia_id: ac.id, papel: db.academia_vinculos.some(v => v.academia_id === ac.id && v.papel === "principal") ? "equipe" : "principal", created_at: new Date().toISOString() });
+      db.academia_acessos.filter(x => x.user_id === userId && !x.academia_id).forEach(x => { x.academia_id = ac.id; });
+    }
+    (db.pedidos_de_reabertura || []).filter(p => p.academia_id === ac.id && !p.resolvido_em && p.user_id !== userId).forEach(p => Object.assign(p, { resolvido_em: new Date().toISOString(), resolucao: "cancelado" }));
+  };
+  // O aviso de que fechou acabou sem tirar a academia: a pausa de antes volta.
+  const voltaAPausa = (ac, p) => {
+    if (!ac || !p || !p.pausa_antes) return;
+    Object.assign(ac, { pausada: !!p.pausa_antes.pausada, pausada_ate: p.pausa_antes.ate || null, pausada_pela_academia: !!p.pausa_antes.pela_academia });
+  };
+  // O WhatsApp da ficha confirmado por código (SQL 20261026120000).
+  const numeroValido = (t) => { const d = tel(t); return d.length >= 10 && d.length <= 11 && d[0] !== "0"; };
+  const mesmoNumero = (x, y) => (numeroValido(x) && numeroValido(y) && tel(x) === tel(y)) || String(x || "").trim() === String(y || "").trim();
+  const codigoDoWhatsapp = (ac, origem) => {
+    window.__codigosDoWhatsapp = window.__codigosDoWhatsapp || {};
+    const c = { codigo: "654321", numero: ac.whatsapp_a_confirmar, criado_em: new Date().toISOString(), tentativas: 0, origem };
+    window.__codigosDoWhatsapp[ac.id] = c;
+    return c;
+  };
+  const whatsappNovoPedido = (ac, numero, antes) => {
+    Object.assign(ac, { whatsapp_a_confirmar: numero, whatsapp_antes: antes || null, whatsapp_pedido_em: new Date().toISOString(),
+      whatsapp_pedido_por: sessao && sessao.user.id, whatsapp_codigo_ok_em: null });
+    if (window.__codigosDoWhatsapp) delete window.__codigosDoWhatsapp[ac.id];
+    if (window.__whatsappLigado) {
+      codigoDoWhatsapp(ac, "automatico");
+      window.__whatsapps = window.__whatsapps || [];
+      window.__whatsapps.push({ academia_id: ac.id, para: "55" + tel(numero), codigo: "654321", origem: "automatico", tipo: "whatsapp_da_ficha", criado_em: new Date().toISOString() });
+    } else db.emails_a_enviar.push({ id: "e-whats-" + ac.id + "-" + tel(numero), tipo: "whatsapp_para_confirmar", para: ADMIN, assunto: "WhatsApp para confirmar: " + ac.name, criado_em: new Date().toISOString(), enviado_em: null, tentativas: 0, erro: null });
+      };
+  const whatsappEntra = (ac) => {
+    Object.assign(ac, { phone: ac.whatsapp_a_confirmar, whatsapp_a_confirmar: null, whatsapp_antes: null, whatsapp_pedido_em: null, whatsapp_pedido_por: null,
+      whatsapp_codigo_ok_em: null, whatsapp_em_confirmacao: false, whatsapp_confirmado_em: new Date().toISOString(), whatsapp_em_revisao_desde: null, whatsapp_em_revisao_numero: null,
+      dados_atualizados_em: new Date().toISOString() });
+    if (window.__codigosDoWhatsapp) delete window.__codigosDoWhatsapp[ac.id];
+    db.problemas_na_ficha.filter(p => p.academia_id === ac.id && p.motivo === "whatsapp" && !p.resolvido_em).forEach(p => { p.resolvido_em = new Date().toISOString(); p.resolucao = "whatsapp_novo"; });
+      };
+  // ligar_conta_a_academia: abrir = a academia passa a ser a aberta (pedido
+  // da própria pessoa); sem ele, só abre se a conta não tinha nenhuma.
+  const ligar = (x, academiaId, abrir = true) => {
+    if (!vinculo(x.user_id, academiaId)) {
+      const temPrincipal = db.academia_vinculos.some(v => v.academia_id === academiaId && v.papel === "principal");
+      db.academia_vinculos.push({ user_id: x.user_id, academia_id: academiaId, papel: temPrincipal ? "equipe" : "principal", created_at: new Date().toISOString() });
+    }
+    if (abrir || !x.academia_id) Object.assign(x, { academia_id: academiaId, papel: vinculo(x.user_id, academiaId).papel });
+    fecharPedido(x.user_id, academiaId);
+  };
+  // SQL 20261007130000: academia do guia sem responsável, assumida sem
+  // código; e quem vence a disputa vira o responsável (os outros saem).
+  const assumir = (x, academiaId) => {
+    const ac = db.academias.find(y => y.id === academiaId);
+    const t = new Date().toISOString();
+    ac.revisar_desde = t;
+    ligar(x, academiaId, true);
+    Object.assign(vinculo(x.user_id, academiaId), { declarou_em: t, telefone_da_ficha: ac.phone || null });
+    db.pedidos_de_acesso.filter(p => p.academia_id === academiaId && p.destino === "guiatennis").forEach(p => { p.destino = "responsavel"; });
+    db.emails_a_enviar.push({ id: "e-assumida-" + academiaId + x.user_id, tipo: "academia_assumida", para: ADMIN, assunto: "Academia assumida: " + ac.name, criado_em: t, enviado_em: null, tentativas: 0, erro: null });
+  };
+  const vencerDisputa = (x, academiaId) => {
+    db.academia_vinculos.filter(v => v.academia_id === academiaId && v.user_id !== x.user_id).forEach(v => desligar(v.user_id, academiaId));
+    ligar(x, academiaId, true);
+    vinculo(x.user_id, academiaId).papel = "principal";
+    x.papel = "principal";
+  };
+  // O código da disputa pelo WhatsApp (SQL 20261007140000), como o banco:
+  // vai para o WhatsApp de antes (na disputa) ou o da ficha; a conta pede
+  // um por hora, até 3. O código fica em window.__codigos, como o do admin.
+  const codigoPeloWhatsapp = (x, academiaId, origem) => {
+    if (!window.__whatsappLigado) return "desligado";
+    const ac = db.academias.find(y => y.id === academiaId) || {};
+    const disputa = db.pedidos_de_acesso.some(p => p.user_id === x.user_id && p.academia_id === academiaId && p.destino === "disputa");
+    const contestado = disputa && (db.pedidos_de_acesso.find(p => p.user_id === x.user_id && p.academia_id === academiaId) || {}).numero_contestado;
+    const antes = disputa && (contestado || (db.academia_vinculos.find(v => v.academia_id === academiaId && v.papel === "principal" && v.telefone_da_ficha) || {}).telefone_da_ficha);
+    const para = tel(antes || ac.phone || "");
+    if (para.length < 10) return "sem_whatsapp";
+    const codigo = String(100000 + Math.floor(Math.random() * 900000));
+    const em = new Date().toISOString();
+    const c = { codigo, academia: academiaId, tentativas: 0, em };
+    window.__codigos = window.__codigos || {};
+    window.__codigos[x.user_id + "|" + academiaId] = c;
+    window.__codigos[x.user_id] = c;
+    window.__whatsapps = window.__whatsapps || [];
+    window.__whatsapps.push({ user_id: x.user_id, academia_id: academiaId, para: "55" + para, codigo, origem, criado_em: em, enviado_em: em, erro: null });
+    return "mandado";
+  };
+  const codigoDaDisputaPelaConta = (x, academiaId) => {
+    if (!db.pedidos_de_acesso.some(p => p.user_id === x.user_id && p.academia_id === academiaId && p.destino === "disputa")) return "sem_disputa";
+    if (!x.email_confirmado_em) return "confirme_email";
+    if (!window.__whatsappLigado) return "desligado";
+    const meus = (window.__whatsapps || []).filter(w => w.user_id === x.user_id && w.academia_id === academiaId && w.origem !== "admin");
+    if (meus.some(w => Date.now() - new Date(w.criado_em).getTime() < 3600e3)) return "espere";
+    if (meus.length >= 3) return "limite";
+    return codigoPeloWhatsapp(x, academiaId, "conta");
+  };
+  // Vínculo removido: se era a academia aberta, abre outra (ou nenhuma).
+  const desligar = (userId, academiaId) => {
+    const i = db.academia_vinculos.findIndex(v => v.user_id === userId && v.academia_id === academiaId);
+    if (i >= 0) db.academia_vinculos.splice(i, 1);
+    const x = db.academia_acessos.find(y => y.user_id === userId);
+    if (x && (!x.academia_id || x.academia_id === academiaId)) {
+      const outro = vinculosDe(userId)[0];
+      Object.assign(x, { academia_id: outro ? outro.academia_id : null, papel: outro ? outro.papel : x.papel });
+    }
+  };
+  const apagarConta = (userId) => {
+    const i = db.academia_acessos.findIndex(y => y.user_id === userId);
+    if (i >= 0) db.academia_acessos.splice(i, 1);
+    db.academia_vinculos = db.academia_vinculos.filter(v => v.user_id !== userId);
+    db.pedidos_de_acesso = db.pedidos_de_acesso.filter(p => p.user_id !== userId);
+    window.__db.pedidos_de_acesso = db.pedidos_de_acesso;
+  };
+  let seq = 0;
+  const novoLogin = (email, senha) => { window.__senhas[email] = senha; return "u-conta-" + (++seq); };
   window.__cliques = db.cliques;
   function builder(table) {
     let colunas = "*", rows = null, op = "select", payload = null, filtros = [], single = false;
     const q = {
       select(c){ if (c) colunas = c; return q; }, order(){ return q; }, limit(){ return q; },
       eq(k,v){ filtros.push([k,v]); return q; },
+      gte(k,v){ filtros.push([k,v,"gte"]); return q; },
       single(){ single = true; return q; },
       insert(p){ op="insert"; payload=p; return q; },
       update(p){ op="update"; payload=p; return q; },
@@ -28,24 +306,204 @@
       then(res, rej){ return Promise.resolve(run()).then(res, rej); },
     };
     function run(){
+      if (table === "buscas_salvas" && window.__semBuscasSalvas) return { data:null, error:{ message:'relation "public.buscas_salvas" does not exist' } };
+      if (table === "promocoes" && window.__semPromocoes) return { data:null, error:{ message:'relation "public.promocoes" does not exist' } };
+      // Política promocoes_valendo: só as valendo, de academia Premium no ar.
+      if (table === "promocoes" && op === "select") {
+        const hoje = new Date().toLocaleDateString("sv-SE", { timeZone: "America/Sao_Paulo" });
+        const visiveis = db.promocoes.filter(x => { const ac = db.academias.find(y => y.id === x.academia_id); return ac && promocoesLiberadas(ac) && ac.status === "published" && String(x.valida_ate) >= hoje; })
+          .map(x => ({ id: x.id, academia_id: x.academia_id, titulo: x.titulo, detalhes: x.detalhes, valida_ate: x.valida_ate }));
+        return { data: visiveis, error:null };
+      }
       const t = db[table];
-      if (!t) return { data:null, error:{ message:"relation does not exist" } };
-      const pass = r => filtros.every(([k,v]) => r[k] === v);
+      if (!t || (window.__semAcesso && (table === "academia_acessos" || table === "respostas"))) return { data:null, error:{ message:"relation does not exist" } };
+      const pass = r => filtros.every(([k,v,op]) => op === "gte" ? String(r[k]) >= String(v) : r[k] === v);
+      // Conversas do chat: só a própria conta lê e apaga; gravar é pela função.
+      if (table === "conversas_de_ajuda") {
+        if (window.__semConversas) return { data:null, error:{ message:'relation "public.conversas_de_ajuda" does not exist' } };
+        const eu = sessao && sessao.user.id;
+        const minhas = t.filter(r => r.user_id === eu).filter(pass);
+        if (op === "select") return { data: JSON.parse(JSON.stringify(minhas)).sort((x, y) => String(y.atualizada_em).localeCompare(String(x.atualizada_em))), error:null };
+        if (op === "delete") { minhas.forEach(r => t.splice(t.indexOf(r), 1)); return { data:null, error:null }; }
+        return { data:null, error:{ message:"permission denied for table conversas_de_ajuda", code:"42501" } };
+      }
+      // Relatos e respostas do chat (regra 251): só os da conta.
+      if (table === "relatos_do_chat" || table === "respostas_no_chat") {
+        if (window.__semChatComOGuia) return { data:null, error:{ message:`relation "public.${table}" does not exist` } };
+        if (op !== "select") return { data:null, error:{ message:"permission denied for table " + table, code:"42501" } };
+        const eu = sessao && sessao.user.id;
+        return { data: JSON.parse(JSON.stringify(t.filter(r => r.user_id === eu).filter(pass)
+          .sort((x, y) => table === "relatos_do_chat" ? String(y.criado_em).localeCompare(String(x.criado_em)) : String(x.criada_em).localeCompare(String(y.criada_em)))
+          .map(({ user_id, ...r }) => r))), error:null };
+      }
+      // Acompanhamentos (regra 193): só os da conta; sem o SQL, a tabela não existe.
+      if (table === "acompanhamentos") {
+        if (!window.__acompanhamento) return { data:null, error:{ message:'relation "public.acompanhamentos" does not exist' } };
+        if (op !== "select") return { data:null, error:{ message:"permission denied for table acompanhamentos", code:"42501" } };
+        const eu = sessao && sessao.user.id;
+        return { data: JSON.parse(JSON.stringify(t.filter(r => r.user_id === eu).filter(pass).map(({ instrucoes, user_id, ...r }) => r))), error:null };
+      }
+      // Banco sem a tabela do percurso (SQL 20261005140000).
+      if (table === "passos_das_visitas" && window.__semPercurso) return { data:null, error:{ message:'relation "public.passos_das_visitas" does not exist' } };
       if (op === "insert") {
+        if (table === "respostas" && sessao && !souAdmin()) {
+          const av = db.avaliacoes.find(x => x.id === payload.avaliacao_id);
+          if (av && !possoNa(sessao.user.id, av.academia_id, "avaliacoes")) return { data:null, error:{ message:'new row violates row-level security policy for table "respostas"', code:"42501" } };
+        }
         if (table === "cliques" && window.__semDetalhe && "detalhe" in payload) return { data:null, error:{ message:"column detalhe does not exist" } };
         if (table === "cliques" && window.__semCep && "cep" in payload) return { data:null, error:{ message:"column cep does not exist" } };
+        if (table === "cliques" && window.__semTempo && ("segundos" in payload || "segundos_ficha" in payload)) return { data:null, error:{ message:"column segundos does not exist" } };
+        if (table === "academias" && window.__semReserva && "reserva_link" in payload) return { data:null, error:{ message:"Could not find the 'reserva_link' column of 'academias' in the schema cache" } };
         if (table === "academias" && window.__semConfirmada && "confirmada" in payload) return { data:null, error:{ message:"column academias.confirmada does not exist" } };
+        if (table === "academias" && window.__semCatalogo && "catalogo" in payload) return { data:null, error:{ message:"Could not find the 'catalogo' column of 'academias' in the schema cache" } };
+        if (table === "avaliacoes" && !souAdmin()) {
+          // Gatilho avaliacao_de_parceiro (SQL 20261005170000): quem
+          // administra a academia não avalia ela; as outras, avalia.
+          if (sessao && vinculo(sessao.user.id, payload.academia_id))
+            return { data:null, error:{ message:"Você administra essa academia: responda às avaliações pelo painel do GuiaTennis Parceiros.", code:"42501" } };
+          const c = String(payload.contato_autor || "").trim().toLowerCase(), n = tel(payload.contato_autor);
+          const daAcademia = db.academia_vinculos.filter(v => v.academia_id === payload.academia_id).map(v => db.academia_acessos.find(x => x.user_id === v.user_id)).filter(Boolean);
+          const deAcademia = c && (daAcademia.some(x => (x.email || "").toLowerCase() === c || loginDe(x) === c || (n.length >= 10 && tel(x.whatsapp) === n))
+            || (n.length >= 10 && db.academias.some(y => y.id === payload.academia_id && tel(y.phone) === n)));
+          if (deAcademia) return { data:null, error:{ message:"Esse contato é da própria academia: quem administra a academia não avalia ela.", code:"42501" } };
+          // Gatilho avaliacao_do_jogador: só com conta, uma por academia, com o nome dela.
+          const j = euJogador();
+          if (!j) return { data:null, error:{ message:"Entre na sua conta para avaliar.", code:"42501" } };
+          if (!j.email_confirmado_em) return { data:null, error:{ message:"Confirme o seu e-mail para avaliar.", code:"42501" } };
+          if (t.some(r => r.academia_id === payload.academia_id && r.user_id === j.user_id)) return { data:null, error:{ message:"Você já avaliou essa academia.", code:"23505" } };
+          if (suspensaoAtiva(j.user_id)) return { data:null, error:{ message:"O seu nome está suspenso: troque o nome em Minha conta para avaliar.", code:"42501" } };
+          Object.assign(payload, { user_id: j.user_id, nome_autor: j.nome, contato_autor: j.email });
+        }
+        // Gatilho arrumar_busca_salva e regras da tabela (SQL 20261005150000).
+        if (table === "buscas_salvas") {
+          const j = euJogador();
+          if (!j || payload.user_id !== j.user_id) return { data:null, error:{ message:'new row violates row-level security policy for table "buscas_salvas"', code:"42501" } };
+          if (!/^\/(busca|quadras\/[a-z0-9-]+(\/[a-z0-9-]+)?)(\?[^#\s]*)?$/.test(payload.link || "")) return { data:null, error:{ message:"Busca inválida.", code:"22023" } };
+          if (t.filter(b => b.user_id === j.user_id).length >= 20) return { data:null, error:{ message:"Você já tem 20 buscas salvas. Apague uma para salvar outra.", code:"22023" } };
+          if (t.some(b => b.user_id === j.user_id && b.link === payload.link)) return { data:null, error:{ message:"duplicate key value violates unique constraint", code:"23505" } };
+          const arred = v => typeof v === "number" ? Math.round(v * 1000) / 1000 : null;
+          payload = { ...payload, lat: arred(payload.lat), lng: arred(payload.lng), avisar: !!payload.avisar };
+        }
         const r = { id: "n" + (t.length+1) + Math.random().toString(36).slice(2,5), created_at: new Date().toISOString(), ...payload };
-        t.push(r); return { data: single ? r : [r], error:null };
+        // Gatilho marcar_dados_atualizados (SQL 20261007120000).
+        if (table === "academias") r.dados_atualizados_em = r.created_at;
+        // Gatilho whatsapp_da_academia_nova (SQL 20261026120000): o número da
+        // conta do Parceiros espera o código, fora da ficha.
+        if (table === "academias" && sessao && !souAdmin() && meuAcesso() && String(r.phone || "").trim()) {
+          if (!numeroValido(r.phone)) return { data:null, error:{ message:"Confira o WhatsApp da academia: DDD e número.", code:"22023" } };
+          const numero = String(r.phone).trim();
+          r.phone = null;
+          whatsappNovoPedido(r, numero, null);
+        }
+        t.push(r);
+        // Gatilho pedido_da_academia_nova (SQL 20261006140000 e
+        // 20261007130000): conta com o e-mail confirmado → no ar na hora e a
+        // conta administra; senão, vira o pedido da conta.
+        if (table === "academias" && sessao && !souAdmin() && meuAcesso()) {
+          const x = meuAcesso();
+          // Sem o limite de 3 em 24 horas (SQL 20261007130000).
+          if (r.status === "pending" && x.email_confirmado_em && x.dados_completos_em) {
+            const agora3 = new Date().toISOString();
+            Object.assign(r, { status: "published", confirmada: true, revisar_desde: agora3, publicada_em: agora3 });
+            ligar(x, r.id, true);
+            vinculo(x.user_id, r.id).declarou_em = agora3;
+            db.emails_a_enviar.push({ id: "e-no-ar-" + r.id, tipo: "academia_no_ar", para: ADMIN, assunto: "Academia nova no ar: " + r.name, criado_em: agora3, enviado_em: null, tentativas: 0, erro: null });
+          } else {
+            fecharPedido(x.user_id, r.id);
+            db.pedidos_de_acesso.push({ user_id: x.user_id, academia_id: r.id, nome: r.name, destino: "guiatennis", pedido_em: new Date().toISOString(), declarou_em: new Date().toISOString() });
+          }
+        }
+        return { data: single ? r : [r], error:null };
       }
-      if (op === "update") { t.filter(pass).forEach(r => Object.assign(r, JSON.parse(JSON.stringify(payload)))); window.__ultimoUpdate = JSON.parse(JSON.stringify(payload)); return { data:null, error:null }; }
-      if (op === "delete") { return { data:null, error:null }; }
+      if (op === "update") {
+        window.__ultimoUpdate = JSON.parse(JSON.stringify(payload));
+        // Regra da ficha (SQL 20261029190000): sem "Editar a ficha", nada muda.
+        if (table === "academias" && sessao && !souAdmin() && t.filter(pass).some(r => vinculo(sessao.user.id, r.id) && !possoNa(sessao.user.id, r.id, "ficha"))) return { data:null, error:null };
+        if (table === "respostas" && sessao && !souAdmin() && t.filter(pass).some(r => { const av = db.avaliacoes.find(x => x.id === r.avaliacao_id); return av && !possoNa(sessao.user.id, av.academia_id, "avaliacoes"); }))
+          return { data:null, error:{ message:'new row violates row-level security policy for table "respostas"', code:"42501" } };
+        if (table === "academias" && window.__semCatalogo && "catalogo" in payload) return { data:null, error:{ message:"Could not find the 'catalogo' column of 'academias' in the schema cache" } };
+        if (table === "academias" && window.__semReserva && "reserva_link" in payload) return { data:null, error:{ message:"Could not find the 'reserva_link' column of 'academias' in the schema cache" } };
+        if (table === "jogadores" && !(euJogador() && filtros.every(([k, v]) => k === "user_id" && v === euJogador().user_id))) return { data:null, error:{ message:"permission denied" } };
+        if (table === "buscas_salvas") {
+          const j = euJogador();
+          if (!j || Object.keys(payload).some(k => k !== "avisar")) return { data:null, error:{ message:"permission denied" } };
+          t.filter(pass).filter(r => r.user_id === j.user_id).forEach(r => { r.avisar = !!payload.avisar; });
+          return { data:null, error:null };
+        }
+        // Gatilho resposta_editada (SQL 20261028120000): "editada" só quando o texto muda.
+        if (table === "respostas") {
+          t.filter(pass).forEach(r => {
+            const agora = new Date().toISOString();
+            if ("texto" in payload && String(payload.texto).trim() !== String(r.texto).trim()) r.editada_em = agora;
+            if ("texto" in payload) r.texto = payload.texto;
+            r.updated_at = agora;
+          });
+          return { data:null, error:null };
+        }
+        const mudanca = JSON.parse(JSON.stringify(payload));
+        // Gatilho marcar_dados_atualizados (SQL 20261007120000): só o banco
+        // escreve a data; muda quando a informação muda ou a academia salva.
+        const FORA_DA_FICHA = ["status", "pago", "plano", "pausada", "pausada_ate", "pausada_pela_academia", "source", "nome_solicitante", "contato_solicitante", "revisar_desde", "publicada_em", "confirmada", "lat", "lng"];
+        if (table === "academias") delete mudanca.dados_atualizados_em;
+        const atualizou = (r) => table === "academias" && ((sessao && !souAdmin() && vinculo(sessao.user.id, r.id))
+          || Object.keys(mudanca).some(k => !FORA_DA_FICHA.includes(k) && JSON.stringify(r[k] ?? null) !== JSON.stringify(mudanca[k] ?? null)));
+        // O que o gatilho do banco faz quando quem salva é a academia.
+        const COLUNAS_DO_WHATSAPP = ["whatsapp_a_confirmar", "whatsapp_antes", "whatsapp_pedido_em", "whatsapp_pedido_por", "whatsapp_codigo_ok_em", "whatsapp_confirmado_em", "whatsapp_em_revisao_desde", "whatsapp_em_revisao_numero", "avisou_que_fechou_em"];
+        if (table === "academias" && sessao && !souAdmin()) {
+          ["status", "pago", "plano", "pausada", "pausada_ate", "source", "nome_solicitante", "contato_solicitante", ...COLUNAS_DO_WHATSAPP].forEach(k => delete mudanca[k]);
+          mudanca.confirmada = true;
+        }
+        if (table === "academias" && sessao && !souAdmin() && "phone" in mudanca) {
+          const txt = String(mudanca.phone || "").trim();
+          const alvo = t.filter(pass)[0];
+          if (alvo && txt && !mesmoNumero(txt, alvo.phone) && !mesmoNumero(txt, alvo.whatsapp_a_confirmar) && !numeroValido(txt))
+            return { data:null, error:{ message:"Confira o WhatsApp da academia: DDD e número.", code:"22023" } };
+        }
+        t.filter(pass).forEach(r => {
+          const antes = r.status;
+          if (table === "academias" && sessao && !souAdmin() && "phone" in mudanca) {
+            const txt = String(mudanca.phone || "").trim();
+            delete mudanca.phone;
+            if (!txt) { if (r.phone || r.whatsapp_a_confirmar) Object.assign(r, { phone: null, whatsapp_a_confirmar: null, whatsapp_antes: null, whatsapp_codigo_ok_em: null, whatsapp_confirmado_em: null }); }
+            else if (!mesmoNumero(txt, r.phone) && !mesmoNumero(txt, r.whatsapp_a_confirmar)) whatsappNovoPedido(r, txt, r.phone || r.whatsapp_em_revisao_numero);
+          }
+          if (table === "academias" && souAdmin() && "phone" in mudanca && !mesmoNumero(mudanca.phone, r.phone)) Object.assign(r, { whatsapp_a_confirmar: null, whatsapp_antes: null, whatsapp_codigo_ok_em: null });
+          if (table === "academias" && sessao && !souAdmin() && vinculo(sessao.user.id, r.id))
+            db.problemas_na_ficha.filter(p => p.academia_id === r.id && !p.resolvido_em && p.motivo !== "whatsapp").forEach(p => { p.resolvido_em = new Date().toISOString(); p.resolucao = "academia_salvou"; });
+          if (atualizou(r)) r.dados_atualizados_em = new Date().toISOString();
+          const nomeAntes = r.nome;
+          Object.assign(r, mudanca);
+          if (table === "jogadores" && "nome" in mudanca && mudanca.nome !== nomeAntes) nomeDaContaMudou(r.user_id, mudanca.nome, true);
+          // Gatilho pedido_de_plano_atendido.
+          if (table === "academias" && "plano" in mudanca)
+            db.pedidos_de_plano.filter(x => x.academia_id === r.id && ordem(x.plano) <= ordem(r.plano)).forEach(x => db.pedidos_de_plano.splice(db.pedidos_de_plano.indexOf(x), 1));
+          // Gatilho liberar_pedidos_da_academia.
+          if (table === "academias" && r.status === "published" && antes !== "published")
+            pedidosPara(r.id).map(p => db.academia_acessos.find(x => x.user_id === p.user_id)).filter(Boolean).forEach(x => ligar(x, r.id));
+        });
+        return { data:null, error:null };
+      }
+      if (op === "delete") {
+        if (table === "respostas") { const fora = t.filter(pass); fora.forEach(r => t.splice(t.indexOf(r), 1)); window.__apagadas = (window.__apagadas || 0) + fora.length; }
+        if (table === "pedidos_de_plano") { if (!souAdmin()) return { data:null, error:{ message:"permission denied" } }; t.filter(pass).forEach(r => t.splice(t.indexOf(r), 1)); }
+        if (table === "buscas_salvas") { const j = euJogador(); t.filter(pass).filter(r => j && r.user_id === j.user_id).forEach(r => t.splice(t.indexOf(r), 1)); }
+        // Avaliação: só o admin apaga (painel do admin e ficha).
+        if (table === "avaliacoes") { if (!souAdmin()) return { data:null, error:{ message:"permission denied" } }; t.filter(pass).forEach(r => t.splice(t.indexOf(r), 1)); }
+        return { data:null, error:null };
+      }
+      // Banco antes do SQL 20261028120000 (a avaliação editada).
+      if (window.__semAvaliacaoEditada && (table === "avaliacoes" || table === "respostas") && colunas.includes("editada_em")) return { data:null, error:{ message:`column ${table}.editada_em does not exist` } };
       // Depois do SQL-SEGURANCA.sql, o visitante não lê a linha inteira.
       if (window.__colunasFechadas && !window.__admin && colunas === "*" && (table === "academias" || table === "avaliacoes")) return { data:null, error:{ message:"permission denied for table " + table } };
       // Antes do SQL, pode faltar coluna nova.
       if (window.__semPlano && table === "academias" && colunas.includes("plano")) return { data:null, error:{ message:"column academias.plano does not exist" } };
       // Banco sem a coluna da ficha básica: a lista com ela falha, e o "*" não traz o campo.
       if (window.__semConfirmada && table === "academias" && colunas.includes("confirmada")) return { data:null, error:{ message:"column academias.confirmada does not exist" } };
+      if (window.__semCatalogo && table === "academias" && colunas.includes("catalogo")) return { data:null, error:{ message:"column academias.catalogo does not exist" } };
+      if (window.__semReserva && table === "academias" && colunas.includes("reserva_link")) return { data:null, error:{ message:"column academias.reserva_link does not exist" } };
+      // Banco antes do SQL 20261007120000 (a data da ficha).
+      if (window.__semDataDaFicha && table === "academias" && colunas.includes("dados_atualizados_em")) return { data:null, error:{ message:"column academias.dados_atualizados_em does not exist" } };
+      if (window.__semDataDaFicha && table === "academias") { const out = JSON.parse(JSON.stringify(t.filter(pass))).map(r => { delete r.dados_atualizados_em; return r; }); return { data: single ? out[0] : out, error:null }; }
       if (window.__semConfirmada && table === "academias") { const out = JSON.parse(JSON.stringify(t.filter(pass))).map(r => { delete r.confirmada; return r; }); return { data: single ? out[0] : out, error:null }; }
       if (table === "cliques" && window.__semCep && colunas.includes("cep")) return { data:null, error:{ message:"column cliques.cep does not exist" } };
       const out = JSON.parse(JSON.stringify(t.filter(pass)));
@@ -53,13 +511,1921 @@
     }
     return q;
   }
+  const semFuncao = { data:null, error:{ message:"Could not find the function", code:"PGRST202" } };
+  const erro = (message, code) => ({ data:null, error:{ message, code } });
+  // Nome suspenso e "Usuário do GuiaTennis" (regra 165, SQL 20261027120000):
+  // os gatilhos ocultar_autor_sem_conta e nome_da_conta_mudou.
+  const mesmoNomeM = (x, y) => String(x || "").trim().replace(/\s+/g, " ").toLowerCase() === String(y || "").trim().replace(/\s+/g, " ").toLowerCase();
+  function suspensaoAtiva(uid) { return (db.nomes_suspensos || []).find(n => n.user_id === uid && !n.resolvido_em); }
+  function ondeEstaONome(uid, nm) {
+    const j = db.jogadores.find(y => y.user_id === uid), x = db.academia_acessos.find(y => y.user_id === uid);
+    return [j && mesmoNomeM(j.nome, nm) ? "minha_conta" : null, x && mesmoNomeM(x.nome_responsavel, nm) ? "parceiros" : null].filter(Boolean);
+  }
+  function ocultarAutor(uid) {
+    db.avaliacoes.filter(r => r.user_id === uid).forEach(r => Object.assign(r, { user_id: null, autor_oculto: true, nome_autor: null, contato_autor: null }));
+  }
+  function mostrarNomeNasAvaliacoes(uid) {
+    const j = db.jogadores.find(y => y.user_id === uid);
+    db.avaliacoes.filter(r => r.user_id === uid && r.autor_oculto).forEach(r => Object.assign(r, { nome_autor: j ? j.nome : r.nome_autor, autor_oculto: false }));
+  }
+  function nomeDaContaMudou(uid, novo, deJogador) {
+    if (deJogador) db.avaliacoes.filter(r => r.user_id === uid && !r.autor_oculto).forEach(r => { r.nome_autor = novo; });
+    const n = suspensaoAtiva(uid);
+    if (!n) return;
+    // O mesmo login: a troca num lugar troca o nome suspenso no outro.
+    const j = db.jogadores.find(y => y.user_id === uid), x = db.academia_acessos.find(y => y.user_id === uid);
+    if (deJogador && x && mesmoNomeM(x.nome_responsavel, n.nome)) x.nome_responsavel = String(novo).trim();
+    if (!deJogador && j && mesmoNomeM(j.nome, n.nome)) { j.nome = String(novo).trim(); db.avaliacoes.filter(r => r.user_id === uid && !r.autor_oculto).forEach(r => { r.nome_autor = j.nome; }); }
+    if (ondeEstaONome(uid, n.nome).length) return;
+    Object.assign(n, { resolvido_em: new Date().toISOString(), resolucao: "trocou", nome_novo: String(novo).trim() });
+    mostrarNomeNasAvaliacoes(uid);
+    db.emails_a_enviar.push({ id: "e-nome-trocado-" + n.id, tipo: "nome_trocado", para: n.email, assunto: "O seu nome voltou a aparecer no GuiaTennis", criado_em: new Date().toISOString(), enviado_em: null, tentativas: 0, erro: null });
+    db.emails_a_enviar.push({ id: "e-nome-conferir-" + n.id, tipo: "nome_para_conferir", para: ADMIN, assunto: "Nome trocado: de " + n.nome + " para " + n.nome_novo, criado_em: new Date().toISOString(), enviado_em: null, tentativas: 0, erro: null });
+  }
+  let seqConversa = 0;
+  function rodarRpc(nome, a){
+    window.__rpcs.push({ nome, args: JSON.parse(JSON.stringify(a || {})) });
+    // Chat de ajuda guardado na conta (SQL 20261009120000).
+    if (nome === "guardar_conversa_de_ajuda") {
+      if (window.__semConversas) return semFuncao;
+      if (!sessao) return erro("Entre na sua conta para guardar a conversa.", "42501");
+      const eu = sessao.user.id, m = a.p_mensagens;
+      if (!["parceiros", "jogadores"].includes(a.p_site)) return erro("Chat inválido.", "22023");
+      if (!Array.isArray(m) || !m.length || m.length > 120 || m.some(x => !x || !(window.__semChatComOGuia ? ["eu", "gt"] : ["eu", "gt", "equipe"]).includes(x.de) || typeof x.texto !== "string" || x.texto.length > 2000 || (x.de === "eu" && x.texto.length > 300)))
+        return erro("Conversa inválida.", "22023");
+      const titulo = String(a.p_titulo || "").trim().slice(0, 80) || String((m.find(x => x.de === "eu") || {}).texto || "").trim().slice(0, 80);
+      if (!titulo) return erro("Escreva a sua dúvida antes.", "22023");
+      // As respostas do GuiaTennis só ficam se existirem nesta conversa, com o texto do banco (regra 251).
+      a = { ...a, p_mensagens: m.flatMap(x => {
+        if (x.de !== "equipe") return [x];
+        const rr = db.respostas_no_chat.find(y => y.id === x.id && y.conversa_id === a.p_id && y.user_id === eu);
+        return rr ? [{ de: "equipe", id: rr.id, texto: rr.texto, em: rr.criada_em }] : [];
+      }) };
+      const quando = new Date(Date.now() + (++seqConversa)).toISOString();
+      let c = a.p_id && db.conversas_de_ajuda.find(x => x.id === a.p_id && x.user_id === eu);
+      const res = a.p_resolvida === undefined || a.p_resolvida === null ? {} : { resolvida: !!a.p_resolvida };
+      if (c) Object.assign(c, { mensagens: JSON.parse(JSON.stringify(a.p_mensagens)), titulo, atualizada_em: quando, ...res });
+      else {
+        c = { id: "conv-" + seqConversa, user_id: eu, site: a.p_site, titulo, mensagens: JSON.parse(JSON.stringify(a.p_mensagens.filter(x => x.de !== "equipe"))), criada_em: quando, atualizada_em: quando, resolvida: !!a.p_resolvida };
+        db.conversas_de_ajuda.push(c);
+        db.conversas_de_ajuda.filter(x => x.user_id === eu).sort((x, y) => String(y.atualizada_em).localeCompare(String(x.atualizada_em)))
+          .slice(50).forEach(x => db.conversas_de_ajuda.splice(db.conversas_de_ajuda.indexOf(x), 1));
+      }
+      return { data: c.id, error:null };
+    }
+    // O chat com o GuiaTennis (regra 251, SQL 20261112120000).
+    const rpcsDoChat = ["enviar_relato_do_chat", "marcar_respostas_lidas", "conversas_do_chat_admin", "conversa_do_chat_admin", "responder_no_chat", "relatos_do_chat_admin", "mudar_situacao_do_relato"];
+    if (rpcsDoChat.includes(nome)) {
+      if (window.__semChatComOGuia) return semFuncao;
+      const eu = sessao && sessao.user.id;
+      const agora = () => new Date(Date.now() + (++seqConversa)).toISOString();
+      const nomeDe = (uid) => ((db.jogadores || []).find(j => j.user_id === uid) || {}).nome || ((db.academia_acessos || []).find(x => x.user_id === uid) || {}).nome_responsavel || "Sem nome";
+      const emailDe = (uid) => ((db.jogadores || []).find(j => j.user_id === uid) || {}).email || ((db.academia_acessos || []).find(x => x.user_id === uid) || {}).email || null;
+      const semUser = ({ user_id, ...x }) => x;
+      if (nome === "enviar_relato_do_chat") {
+        if (!eu) return erro("Entre na sua conta para acompanhar o que você mandou.", "42501");
+        const texto = String(a.p_texto || "").trim().slice(0, 1000);
+        if (texto.length < 5) return erro("Conte um pouco mais, em uma ou duas frases.", "22023");
+        if (db.relatos_do_chat.filter(x => x.user_id === eu).length >= 10) return erro("Você já mandou muitos relatos hoje. Tente de novo amanhã.", "54000");
+        const r = { id: "rel-" + (++seqConversa), user_id: eu, site: a.p_site, conversa_id: db.conversas_de_ajuda.some(c => c.id === a.p_conversa && c.user_id === eu) ? a.p_conversa : null,
+          tipo: a.p_tipo, texto, pagina: a.p_pagina || null, situacao: "recebido", criado_em: agora(), situacao_em: agora() };
+        db.relatos_do_chat.push(r);
+        db.emails_a_enviar.push({ id: "e-relato-" + r.id, tipo: "relato_do_chat", para: ADMIN, assunto: a.p_tipo === "erro" ? "Erro informado no chat" : "Sugestão no chat", criado_em: agora(), enviado_em: null });
+        return { data: semUser(r), error:null };
+      }
+      if (nome === "marcar_respostas_lidas") {
+        db.respostas_no_chat.filter(x => x.conversa_id === a.p_conversa && x.user_id === eu && !x.lida_em).forEach(x => { x.lida_em = agora(); });
+        return { data:null, error:null };
+      }
+      if (!souAdmin()) return erro("Só o admin.", "42501");
+      if (nome === "conversas_do_chat_admin") return { data: db.conversas_de_ajuda.slice().sort((x, y) => String(y.atualizada_em).localeCompare(String(x.atualizada_em))).map(c => ({
+          id: c.id, site: c.site, titulo: c.titulo, resolvida: !!c.resolvida, atualizada_em: c.atualizada_em, criada_em: c.criada_em, mensagens: (c.mensagens || []).length,
+          nome: nomeDe(c.user_id), email: emailDe(c.user_id), respostas: db.respostas_no_chat.filter(r => r.conversa_id === c.id).length, relatos: db.relatos_do_chat.filter(r => r.conversa_id === c.id).length })), error:null };
+      if (nome === "conversa_do_chat_admin") {
+        const c = db.conversas_de_ajuda.find(x => x.id === a.p_id);
+        if (!c) return erro("Conversa não encontrada.", "22023");
+        return { data: { id: c.id, site: c.site, titulo: c.titulo, resolvida: !!c.resolvida, atualizada_em: c.atualizada_em, nome: nomeDe(c.user_id), email: emailDe(c.user_id),
+          mensagens: JSON.parse(JSON.stringify(c.mensagens || [])), respostas: db.respostas_no_chat.filter(r => r.conversa_id === c.id).map(r => ({ id: r.id, texto: r.texto, em: r.criada_em, lida_em: r.lida_em || null })) }, error:null };
+      }
+      if (nome === "responder_no_chat") {
+        const c = db.conversas_de_ajuda.find(x => x.id === a.p_conversa);
+        const texto = String(a.p_texto || "").trim();
+        if (!texto || texto.length > 1000) return erro("Escreva a mensagem (até 1000 letras).", "22023");
+        if (!c) return erro("Conversa não encontrada.", "22023");
+        const r = { id: "resp-" + (++seqConversa), conversa_id: c.id, user_id: c.user_id, texto, criada_em: agora(), lida_em: null };
+        db.respostas_no_chat.push(r);
+        Object.assign(c, { resolvida: false, atualizada_em: agora() });
+        db.emails_a_enviar.push({ id: "e-resp-chat-" + r.id, tipo: "resposta_no_chat", para: emailDe(c.user_id), assunto: "O GuiaTennis respondeu no chat", criado_em: agora(), enviado_em: null });
+        return { data: { id: r.id, texto, em: r.criada_em, lida_em: null }, error:null };
+      }
+      if (nome === "relatos_do_chat_admin") return { data: db.relatos_do_chat.slice().sort((x, y) => (["concluido", "nao_sera_feito"].includes(x.situacao) - ["concluido", "nao_sera_feito"].includes(y.situacao)) || String(y.criado_em).localeCompare(String(x.criado_em)))
+          .map(x => ({ ...semUser(x), nome: nomeDe(x.user_id), email: emailDe(x.user_id) })), error:null };
+      if (nome === "mudar_situacao_do_relato") {
+        const x = db.relatos_do_chat.find(y => y.id === a.p_id);
+        if (!x) return erro("Relato não encontrado.", "22023");
+        if (!["recebido", "em_andamento", "concluido", "nao_sera_feito"].includes(a.p_situacao)) return erro("Situação inválida.", "22023");
+        if (x.situacao !== a.p_situacao) {
+          Object.assign(x, { situacao: a.p_situacao, situacao_em: agora() });
+          db.emails_a_enviar.push({ id: "e-relato-sit-" + x.id + a.p_situacao, tipo: "relato_situacao", para: emailDe(x.user_id), assunto: "Situação: " + a.p_situacao, criado_em: agora(), enviado_em: null });
+        }
+        return { data: semUser(x), error:null };
+      }
+    }
+    if (nome === "estatisticas_publicas") return { data:{ acessos_total:1234, buscas_total:567, fichas_total:89, contatos_total:12 }, error:null };
+    if (window.__semAcesso) return semFuncao;
+    if (nome === "contatos_privados") {
+      if (!souAdmin()) return { data:[], error:null };
+      return { data: [
+        ...db.academias.filter(x => x.nome_solicitante || x.contato_solicitante).map(x => ({ tabela:"academias", id:x.id, nome:x.nome_solicitante, contato:x.contato_solicitante })),
+        ...db.avaliacoes.filter(x => x.contato_autor).map(x => ({ tabela:"avaliacoes", id:x.id, nome:null, contato:x.contato_autor })),
+      ], error:null };
+    }
+    // Uma linha por academia de cada conta, e uma para a conta sem nenhuma.
+    if (nome === "acessos_das_academias") {
+      if (!souAdmin()) return { data:[], error:null };
+      const linhas = [];
+      db.academia_acessos.forEach(x => {
+        const vs = vinculosDe(x.user_id);
+        const p = pedidosDe(x.user_id).slice(-1)[0];
+        const ped = p ? { pedido_academia_id: p.academia_id, pedido_nome: p.nome, pedido_em: p.pedido_em, pedido_destino: p.destino } : {};
+        if (!vs.length) linhas.push({ ...x, ...ped, academia_id: null });
+        vs.forEach(v => linhas.push({ ...x, ...ped, academia_id: v.academia_id, papel: v.papel }));
+      });
+      return { data: JSON.parse(JSON.stringify(linhas)), error:null };
+    }
+    // Os pedidos da conta e a lista do admin (SQL 20261005120000).
+    if (nome === "meus_pedidos_de_acesso") {
+      if (window.__semVariosPedidos) return semFuncao;
+      const x = meuAcesso();
+      if (!x) return { data:[], error:null };
+      return { data: pedidosDe(x.user_id).map(p => {
+        const ac = db.academias.find(y => y.id === p.academia_id) || {};
+        const c = (window.__codigos || {})[x.user_id + "|" + p.academia_id] || ((window.__codigos || {})[x.user_id] || {}).academia === p.academia_id && (window.__codigos || {})[x.user_id];
+        return { academia_id: p.academia_id, nome: ac.name || p.nome, destino: p.destino, pedido_em: p.pedido_em, status: ac.status || null, codigo_em: c ? (c.em || p.pedido_em) : null, codigo_ok_em: p.codigo_ok_em || null, numero_contestado: p.numero_contestado || null };
+      }), error:null };
+    }
+    if (nome === "pedidos_de_acesso_admin") {
+      if (window.__semVariosPedidos) return semFuncao;
+      if (!souAdmin()) return { data:[], error:null };
+      migrarPedidos();
+      return { data: db.pedidos_de_acesso.map(p => {
+        const x = db.academia_acessos.find(y => y.user_id === p.user_id) || {};
+        const ac = db.academias.find(y => y.id === p.academia_id) || {};
+        const c = (window.__codigos || {})[p.user_id + "|" + p.academia_id];
+        return { user_id: p.user_id, academia_id: p.academia_id, nome: ac.name || p.nome, destino: p.destino, pedido_em: p.pedido_em, codigo_em: c ? c.em : null, codigo_ok_em: p.codigo_ok_em || null, numero_contestado: p.numero_contestado || null,
+          responsavel_codigo_em: p.destino === "disputa" && (window.__codigosResp || {})[p.academia_id] ? window.__codigosResp[p.academia_id].em : null,
+          responsavel_codigo_ok_em: p.responsavel_codigo_ok_em || null, responsavel_numero: p.responsavel_numero || null,
+          nome_responsavel: x.nome_responsavel || null, tratamento: x.tratamento || null, cargo: x.cargo || null, email: x.email || null, usuario: x.usuario, whatsapp: x.whatsapp || null,
+          telefone_antes: (db.academia_vinculos.find(v => v.academia_id === p.academia_id && v.papel === "principal" && v.telefone_da_ficha) || {}).telefone_da_ficha || null,
+          ...(() => {
+            const w = (window.__whatsapps || []).filter(z => z.user_id === p.user_id && z.academia_id === p.academia_id).slice(-1)[0];
+            return w ? { whatsapp_em: w.criado_em, whatsapp_enviado_em: w.enviado_em, whatsapp_origem: w.origem, whatsapp_erro: w.erro } : {};
+          })() };
+      }), error:null };
+    }
+    // Pedido de acesso ao responsável (SQL 20261003140000).
+    if (nome === "pedidos_para_minha_academia") {
+      const x = meuAcesso();
+      if (!x || !x.academia_id || (vinculo(x.user_id, x.academia_id) || {}).papel !== "principal") return { data:[], error:null };
+      return { data: pedidosPara(x.academia_id).filter(p => p.user_id !== x.user_id && p.destino !== "disputa")
+        .map(p => { const y = db.academia_acessos.find(z => z.user_id === p.user_id) || {};
+          return { user_id: p.user_id, nome: y.nome_responsavel || null, email: y.email || y.usuario, cargo: y.cargo || null, pedido_em: p.pedido_em || null }; }), error:null };
+    }
+    if (nome === "responder_pedido_de_acesso") {
+      const x = meuAcesso();
+      if (!x || !x.academia_id || (vinculo(x.user_id, x.academia_id) || {}).papel !== "principal") return erro("Só o responsável principal responde aos pedidos.", "42501");
+      const ele = pedidosPara(x.academia_id).some(p => p.user_id === a.p_user && p.destino !== "disputa") && db.academia_acessos.find(y => y.user_id === a.p_user);
+      if (!ele) return erro("Pedido não encontrado.", "22023");
+      if (!a.p_aceitar) { fecharPedido(a.p_user, x.academia_id); return { data:null, error:null }; }
+      const lim = limite(planoDe(x.academia_id));
+      if (db.academia_vinculos.filter(v => v.academia_id === x.academia_id).length >= lim) return erro(`O seu plano permite até ${lim} ${lim === 1 ? "pessoa" : "pessoas"}. Aprimore o plano para aceitar mais gente.`, "22023");
+      ligar(ele, x.academia_id, true);
+      return { data:null, error:null };
+    }
+    // Plano e créditos pelo site (SQL 20261019130000). window.__compras guarda
+    // as compras; o pagamento é fingido em testes/plano-e-creditos.js.
+    // Regra 319 (SQL 20261123140000): os números para divulgar e as metas do
+    // admin. window.__divulgar troca os números; window.__metas guarda as metas.
+    if (nome === "numeros_para_divulgar") {
+      const x = meuAcesso();
+      if (!x || !vinculo(x.user_id, a.p_academia)) return erro("Entre na conta da academia.", "42501");
+      // Regra 320: o período escolhido (p_dias; 0 = desde o início).
+      const pl = planoDe(a.p_academia), dias = a.p_dias === undefined ? 30 : Number(a.p_dias || 0);
+      const n = window.__divulgar || { acessos: 137, acessos_total: 612, contatos: 23, avaliacoes: 2 };
+      const f = dias ? dias / 30 : n.acessos_total / n.acessos;
+      return { data: { plano: pl, dias, inicio: "2026-03-10T12:00:00Z", acessos_total: n.acessos_total, acessos: Math.round(n.acessos * f),
+        contatos: pl === "basico" ? null : Math.round(n.contatos * f), avaliacoes: Math.round(n.avaliacoes * f) }, error:null };
+    }
+    if (nome === "metas_da_semana" || nome === "salvar_metas") {
+      if (!window.__admin) return erro("Só o GuiaTennis vê as metas.", "42501");
+      const metas = window.__metas || (window.__metas = { contatos: 50, conversao: 5, visitas: 500, avaliacoes: 10, parceiros: 3, com_preco: 70, com_foto: 80, fundadoras: 15, pagantes: 5, receita: 250 });
+      if (nome === "salvar_metas") { Object.assign(metas, a.p_metas); return { data:null, error:null }; }
+      const h = new Date(), d0 = new Date(Date.UTC(h.getUTCFullYear(), h.getUTCMonth(), h.getUTCDate()));
+      d0.setUTCDate(d0.getUTCDate() - ((d0.getUTCDay() + 6) % 7));
+      const seg = (i) => { const d = new Date(d0); d.setUTCDate(d.getUTCDate() - 7 * i); return d.toISOString().slice(0, 10); };
+      const semanas = [0, 1, 2, 3, 4, 5, 6, 7].map(i => ({ semana: seg(i), visitas: 400 - i * 10, buscas: 300, fichas_abertas: 200, contatos: i === 1 ? 60 : 40,
+        avaliacoes: i === 1 ? 6 : 4, parceiros: 1, receita: i === 1 ? 98 : 49, retrato: i <= 1 ? { fichas: 20, com_preco: i ? 10 : 12, com_foto: 18, fundadoras: 4, pagantes: 2 } : null }));
+      return { data: { metas: { ...metas }, agora: semanas[0].retrato, semanas }, error:null };
+    }
+    // A assinatura (regra 310, SQL 20261121120000). window.__assinaturas guarda
+    // uma por academia; window.__semAssinatura finge o banco sem o SQL.
+    if (["minha_assinatura", "comecar_mes_gratis", "cancelar_assinatura", "continuar_assinatura", "vistas_do_mes", "academias_fundadoras"].includes(nome)) {
+      if (window.__semAssinatura) return semFuncao;
+      const todas = window.__assinaturas || (window.__assinaturas = {});
+      if (nome === "academias_fundadoras") return { data: window.__fundadoras || [], error:null };
+      const x = meuAcesso();
+      const v = x && vinculo(x.user_id, a.p_academia);
+      if (!v) return erro("Entre na conta da academia.", "42501");
+      if (nome === "vistas_do_mes") return { data: window.__vistasDoMes === undefined ? 7 : window.__vistasDoMes, error:null };
+      const s1 = todas[a.p_academia];
+      const ac = db.academias.find(y => y.id === a.p_academia);
+      if (nome === "minha_assinatura") return { data: s1 ? { ativa: !s1.encerrada, plano: s1.plano, ate: s1.ate, depois: s1.depois, teste: !!s1.teste, teste_usado: !!s1.testeUsado, cancelada: !!s1.cancelada, automatica: s1.automatica || null } : { ativa: false, teste_usado: false, automatica: null }, error:null };
+      if (v.papel !== "principal") return erro("Só o responsável principal muda o plano da academia.", "42501");
+      if (nome === "comecar_mes_gratis") {
+        if (s1 && s1.testeUsado) return erro("O mês grátis do Premium já foi usado por esta academia.", "22023");
+        if (ac.plano === "premium") return erro("A academia já está no Premium.", "22023");
+        const ate = new Date(Date.now() + 30 * 864e5).toISOString();
+        todas[a.p_academia] = { plano: "premium", ate, depois: "completo", teste: true, testeUsado: true, cancelada: false, encerrada: false };
+        ac.plano = "premium";
+        return { data: ate, error:null };
+      }
+      if (!s1 || s1.encerrada) return erro("A academia não tem assinatura ativa.", "22023");
+      if (nome === "cancelar_assinatura") {
+        if (!["basico", "completo"].includes(a.p_depois)) return erro("Escolha o Completo ou o Básico.", "22023");
+        s1.cancelada = true; s1.depois = a.p_depois;
+      } else { s1.cancelada = false; s1.depois = "completo"; }
+      return { data: s1.ate, error:null };
+    }
+    if (nome === "escolher_plano") {
+      const x = meuAcesso();
+      if (!["basico", "completo", "premium"].includes(a.p_plano)) return erro("Plano inválido.", "22023");
+      const v = x && vinculo(x.user_id, a.p_academia);
+      if (!v || v.papel !== "principal") return erro("Só o responsável principal muda o plano da academia.", "42501");
+      const ac = db.academias.find(y => y.id === a.p_academia);
+      if (!ac) return erro("Academia não encontrada.", "22023");
+      if (a.p_plano === "premium" && ac.plano !== "premium" && !window.__semAssinatura) return erro("O Premium começa pelo mês grátis ou pelo pagamento, em Plano.", "22023");
+      const s2 = (window.__assinaturas || {})[a.p_academia];
+      if (s2 && a.p_plano !== ac.plano) s2.encerrada = true;
+      ac.plano = a.p_plano;
+      const i = db.pedidos_de_plano.findIndex(y => y.academia_id === a.p_academia);
+      if (i >= 0) db.pedidos_de_plano.splice(i, 1);
+      return { data: a.p_plano, error:null };
+    }
+    // Dados para a nota fiscal (regra 231, SQL 20261110120000). Toda academia
+    // começa com dados de exemplo; window.__semDadosParaNota começa sem eles e
+    // window.__semNotaNoBanco finge o banco sem o SQL.
+    if (["dados_para_nota_da_academia", "salvar_dados_para_nota", "marcar_nota_emitida"].includes(nome) && window.__semNotaNoBanco)
+      return { data:null, error:{ code:"PGRST202", message:"Could not find the function public." + nome + " in the schema cache" } };
+    if (nome === "dados_para_nota_da_academia") {
+      const x = meuAcesso();
+      if (!x || !possoNa(x.user_id, a.p_academia, "pagamentos")) return { data:null, error:null };
+      return { data: notaDe(a.p_academia), error:null };
+    }
+    if (nome === "salvar_dados_para_nota") {
+      const x = meuAcesso();
+      if (!x || !vinculo(x.user_id, a.p_academia)) return erro("A sua conta não administra essa academia.", "42501");
+      if (!possoNa(x.user_id, a.p_academia, "pagamentos")) return funcaoNegada("pagamentos");
+      const doc = String(a.p_documento || "").toUpperCase().replace(/[^0-9A-Z]/g, "");
+      if (!(doc.length === 11 || doc.length === 14) || /^(.)\1+$/.test(doc)) return erro("Confira o CNPJ ou o CPF.", "22023");
+      const nomeNota = String(a.p_nome || "").replace(/\s+/g, " ").trim();
+      if (nomeNota.length < 2) return erro("Escreva a razão social ou o nome.", "22023");
+      const email = String(a.p_email || "").trim().toLowerCase();
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return erro("Confira o e-mail que recebe a nota.", "22023");
+      const d = { documento: doc, nome: nomeNota, email };
+      (window.__notasSalvas = window.__notasSalvas || {})[a.p_academia] = d;
+      return { data: d, error:null };
+    }
+    // A nota do GuiaTennis (regra 234). window.__notaDoGuia é a nota pública;
+    // as avaliações ficam em window.__avaliacoesDoGuia; window.__semNotaDoGuia
+    // finge o banco sem o SQL.
+    if (["avaliar_o_guia", "minha_avaliacao_do_guia", "nota_do_guia", "avaliacoes_do_guia_admin", "responder_avaliacao_do_guia"].includes(nome) && window.__semNotaDoGuia)
+      return { data:null, error:{ code:"PGRST202", message:"Could not find the function public." + nome + " in the schema cache" } };
+    if (nome === "nota_do_guia") {
+      const vazio = { media: null, total: 0, comentarios: [] };
+      return { data: window.__notaDoGuia || { jogador: vazio, parceiro: vazio }, error:null };
+    }
+    if (nome === "avaliar_o_guia" || nome === "minha_avaliacao_do_guia") {
+      if (!sessao) return erro("Entre na sua conta para avaliar o GuiaTennis.", "42501");
+      const lista = window.__avaliacoesDoGuia || (window.__avaliacoesDoGuia = []);
+      const minha = lista.find(y => y.user_id === sessao.user.id && y.publico === a.p_publico);
+      if (nome === "minha_avaliacao_do_guia") return { data: minha ? { ...minha, user_id: undefined } : null, error:null };
+      if (souAdmin()) return erro("O admin não avalia o GuiaTennis.", "42501");
+      if (!(a.p_nota >= 1 && a.p_nota <= 5)) return erro("Escolha de 1 a 5 estrelas.", "22023");
+      let nomePublico;
+      if (a.p_publico === "parceiro") {
+        const x = meuAcesso();
+        if (!x || !(vinculo(x.user_id, a.p_academia) || x.academia_id === a.p_academia)) return erro("A sua conta não administra essa academia.", "42501");
+        nomePublico = (db.academias.find(y => y.id === a.p_academia) || {}).name;
+      } else {
+        const j = euJogador();
+        if (!j) return erro("Entre na sua conta para avaliar o GuiaTennis.", "42501");
+        if (!j.email_confirmado_em) return erro("Confirme o seu e-mail para avaliar o GuiaTennis.", "42501");
+        const partes = String(j.nome || "").trim().split(/\s+/);
+        nomePublico = partes[0] + (partes[1] ? " " + partes[1][0] + "." : "");
+      }
+      const linha = Object.assign(minha || { id: "g" + (lista.length + 1), user_id: sessao.user.id, publico: a.p_publico, created_at: new Date().toISOString() }, {
+        nota: a.p_nota, pontos: [...new Set(a.p_pontos || [])], comentario: String(a.p_comentario || "").replace(/\s+/g, " ").trim() || null,
+        pode_mostrar: !!a.p_pode_mostrar, quer_contato: !!a.p_quer_contato && a.p_nota <= 3, momento: a.p_momento, nome_publico: nomePublico,
+        academia_id: a.p_academia || null, updated_at: new Date().toISOString() });
+      if (!minha) lista.push(linha);
+      return { data: { ...linha, user_id: undefined }, error:null };
+    }
+    if (nome === "avaliacoes_do_guia_admin") {
+      if (!souAdmin()) return erro("Só o admin vê as avaliações do GuiaTennis.", "42501");
+      return { data: (window.__avaliacoesDoGuia || []).map(y => ({ ...y, email: y.email || "pessoa@exemplo.com" })), error:null };
+    }
+    if (nome === "responder_avaliacao_do_guia") {
+      if (!souAdmin()) return erro("Só o admin responde.", "42501");
+      const y = (window.__avaliacoesDoGuia || []).find(z => z.id === a.p_id);
+      if (!y) return erro("Avaliação não encontrada.", "22023");
+      if (a.p_resposta && a.p_resposta.trim()) { y.resposta = a.p_resposta.trim(); y.respondida_em = new Date().toISOString(); }
+      if (a.p_feito && a.p_feito.trim() && !y.feito_em) { y.feito_texto = a.p_feito.trim(); y.feito_em = new Date().toISOString(); }
+      if (a.p_oculta !== null && a.p_oculta !== undefined) y.oculta = a.p_oculta;
+      return { data: { ...y }, error:null };
+    }
+    // Regra 333: a nota da NFS-e Nacional tem a chave de acesso (50 números) e a consulta pública.
+    function linkDaNotaMock(n) { return !n || n.situacao !== "emitida" ? null : /^[0-9]{50}$/.test(n.codigo_verificacao || "") ? `https://www.nfse.gov.br/ConsultaPublica/?tpc=1&chave=${n.codigo_verificacao}` : n.numero_nfe ? `https://nfe.prefeitura.sp.gov.br/contribuinte/notaprint.aspx?ccm=05930642&nf=${n.numero_nfe}&cod=${n.codigo_verificacao}` : null; }
+    if (nome === "marcar_nota_emitida") {
+      if (!souAdmin()) return erro("Só o admin marca a nota.", "42501");
+      const k = (window.__compras || []).find(y => y.id === a.p_compra && y.situacao === "paga");
+      if (!k) return erro("Compra paga não encontrada.", "22023");
+      k.nota_emitida_em = a.p_emitida ? (k.nota_emitida_em || new Date().toISOString()) : null;
+      return { data: k.nota_emitida_em, error:null };
+    }
+    if (nome === "criar_compra_de_creditos") {
+      const x = meuAcesso();
+      if (!x || !vinculo(x.user_id, a.p_academia)) return erro("A sua conta não administra essa academia.", "42501");
+      if (!possoNa(x.user_id, a.p_academia, "pagamentos")) return funcaoNegada("pagamentos");
+      const ac = db.academias.find(y => y.id === a.p_academia);
+      if (!ac || !["completo", "premium"].includes(ac.plano)) return erro("Os créditos são do leilão do Completo e do Premium.", "42501");
+      if (!(a.p_valor >= 20 && a.p_valor <= 5000)) return erro("Escolha um valor de R$ 20 a R$ 5.000.", "22023");
+      const nota = notaDe(a.p_academia);
+      if (!nota && !window.__semNotaNoBanco) return erro("Informe os dados para a nota fiscal.", "22023");
+      const compras = window.__compras || (window.__compras = []);
+      const id = "00000000-0000-4000-8000-" + String(compras.length + 1).padStart(12, "0");
+      compras.push({ id, academia_id: a.p_academia, valor: a.p_valor, forma: a.p_forma, situacao: "aberta", created_at: new Date().toISOString(), user_id: x.user_id,
+        ...(nota ? { nota_documento: nota.documento, nota_nome: nota.nome, nota_email: nota.email } : {}) });
+      return { data: id, error:null };
+    }
+    // Pagamento de teste (SQL 20261020120000): window.__pagamentoDeTeste liga.
+    if (nome === "pagamento_de_teste") {
+      return { data: { ligado: !!window.__pagamentoDeTeste, precos: { completo_mensal: 49, completo_anual: 490, premium_mensal: 49, premium_anual: 490 },
+        normais: { completo_mensal: 49, completo_anual: 490, premium_mensal: 89, premium_anual: 890 } }, error:null };
+    }
+    // A renovação automática (regra 314): window.__automaticas guarda as criadas.
+    if (nome === "criar_cobranca_automatica") {
+      const x = meuAcesso();
+      const v = x && vinculo(x.user_id, a.p_academia);
+      if (!v || v.papel !== "principal") return erro("Só o responsável principal muda o plano da academia.", "42501");
+      if (!["pix", "cartao"].includes(a.p_forma)) return erro("Escolha cartão ou Pix Automático.", "22023");
+      const lista = window.__automaticas || (window.__automaticas = []);
+      const id = "cccccccc-0000-4000-8000-" + String(lista.length + 1).padStart(12, "0");
+      lista.push({ id, ...a });
+      return { data: id, error:null };
+    }
+    if (nome === "criar_compra_de_plano") {
+      const x = meuAcesso();
+      const v = x && vinculo(x.user_id, a.p_academia);
+      if (!v || v.papel !== "principal") return erro("Só o responsável principal muda o plano da academia.", "42501");
+      const ac = db.academias.find(y => y.id === a.p_academia);
+      const ass = (window.__assinaturas || {})[a.p_academia];
+      if (ac && ac.plano === a.p_plano && !(ass && !ass.encerrada && ass.plano === a.p_plano)) return erro("A academia já está nesse plano.", "22023");
+      const valor = { completo_mensal: 49, completo_anual: 490, premium_mensal: 49, premium_anual: 490 }[a.p_plano + "_" + a.p_periodo];
+      if (!valor) return erro("Plano inválido.", "22023");
+      const nota = notaDe(a.p_academia);
+      if (!nota && !window.__semNotaNoBanco) return erro("Informe os dados para a nota fiscal.", "22023");
+      const compras = window.__compras || (window.__compras = []);
+      const id = "00000000-0000-4000-8000-" + String(compras.length + 1).padStart(12, "0");
+      compras.push({ id, academia_id: a.p_academia, valor, forma: a.p_forma, situacao: "aberta", tipo: "plano", plano: a.p_plano, periodo: a.p_periodo, created_at: new Date().toISOString(),
+        ...(nota ? { nota_documento: nota.documento, nota_nome: nota.nome, nota_email: nota.email } : {}) });
+      return { data: id, error:null };
+    }
+    if (nome === "simular_pagamento") {
+      if (!window.__pagamentoDeTeste) return erro("O pagamento de teste só funciona no banco de teste.", "42501");
+      const k = (window.__compras || []).find(y => y.id === a.p_compra);
+      if (!k) return erro("Compra não encontrada.", "22023");
+      if (k.situacao !== "aberta") return { data: k.situacao, error:null };
+      k.de_teste = true;
+      if (a.p_resultado !== "aprovado") { k.situacao = "recusada"; return { data: "recusada", error:null }; }
+      k.situacao = "paga"; k.paga_em = new Date().toISOString();
+      const ac = db.academias.find(y => y.id === k.academia_id);
+      if (k.tipo === "plano") {
+        ac.plano = k.plano;
+        // Regra 310: o plano pago vale um mês (ou um ano) a partir do prazo de agora.
+        const todas = window.__assinaturas || (window.__assinaturas = {});
+        const s0 = todas[k.academia_id], dias = k.periodo === "anual" ? 365 : 30;
+        const base = s0 && !s0.encerrada && s0.plano === k.plano && new Date(s0.ate) > new Date() ? new Date(s0.ate).getTime() : Date.now();
+        todas[k.academia_id] = { ...(s0 || {}), plano: k.plano, ate: new Date(base + dias * 864e5).toISOString(), depois: k.plano === "premium" ? "completo" : "basico", teste: false, cancelada: false, encerrada: false };
+      }
+      else ac.envios_de_aviso = Number(ac.envios_de_aviso || 0) + k.valor;
+      return { data: "paga", error:null };
+    }
+    if (nome === "minhas_compras") {
+      const x = meuAcesso();
+      if (!x || !possoNa(x.user_id, a.p_academia, "pagamentos")) return { data:null, error:null };
+      const quem = (uid) => { const y = db.academia_acessos.find(z => z.user_id === uid); return y ? (y.nome_responsavel || y.email) : null; };
+      return { data: (window.__compras || []).filter(y => y.academia_id === a.p_academia).slice().reverse()
+        .map(y => window.__semFuncoes ? y : { ...y, quem: y.quem || quem(y.user_id), nota_link: linkDaNotaMock((window.__notas || {})[y.id]) }), error:null };
+    }
+    // Reembolso e estorno (regra 316). window.__pedidosReembolso guarda os pedidos.
+    if (nome === "estorno_sugerido") {
+      const c = (window.__compras || []).find(y => y.id === a.p_compra);
+      if (!c) return erro("Compra não encontrada.", "22023");
+      const recebidos = c.tipo === "plano" ? 0 : c.valor + (c.forma === "pix" ? Math.ceil(c.valor * 5 / 100) : 0);
+      const saldo = (db.academias.find(z => z.id === c.academia_id) || {}).envios_de_aviso || 0;
+      const nao = Math.max(0, Math.min(saldo, recebidos));
+      return { data: { tipo: c.tipo || "creditos", valor_pago: c.valor, creditos_recebidos: recebidos, creditos_nao_usados: nao,
+        sugerido: recebidos ? Math.floor(c.valor * nao / recebidos * 100) / 100 : c.valor,
+        regra: nao >= recebidos ? "Nenhum crédito desta compra foi usado: a devolução é integral." : `Devolução dos créditos ainda não usados (R$ ${nao} de R$ ${recebidos}). Créditos usados não são devolvidos.` }, error:null };
+    }
+    if (nome === "pedir_reembolso") {
+      const c = (window.__compras || []).find(y => y.id === a.p_compra);
+      if (!c || c.situacao !== "paga") return erro("Só uma compra paga pode ter reembolso.", "22023");
+      if ((a.p_motivo || "").trim().length < 5) return erro("Conte o motivo do pedido.", "22023");
+      if (c.reembolso && c.reembolso.situacao === "aberto") return erro("Já existe um pedido de reembolso desta compra em análise.", "22023");
+      c.reembolso = { id: "rr-" + c.id, situacao: "aberto", motivo: a.p_motivo, created_at: new Date().toISOString(), quem: "Ana Dona" };
+      return { data: c.reembolso.id, error:null };
+    }
+    if (nome === "recusar_reembolso") {
+      if (!souAdmin()) return erro("Só o admin responde aos pedidos.", "42501");
+      const c = (window.__compras || []).find(y => y.reembolso && y.reembolso.id === a.p_pedido);
+      if (!c) return erro("Pedido em análise não encontrado.", "22023");
+      c.reembolso = { ...c.reembolso, situacao: "recusado", resposta: a.p_resposta };
+      return { data:null, error:null };
+    }
+    if (nome === "pedir_estorno") {
+      if (!souAdmin()) return erro("Só o admin estorna.", "42501");
+      const c = (window.__compras || []).find(y => y.id === a.p_compra);
+      if (!c || c.situacao !== "paga") return erro("Compra paga não encontrada.", "22023");
+      if (!(a.p_valor > 0) || a.p_valor > c.valor) return erro(`Valor inválido: no máximo R$ ${c.valor}.`, "22023");
+      window.__estornoPedido = { compra: c.id, valor: a.p_valor, motivo: a.p_motivo };
+      if (c.de_teste) { c.valor_estornado = a.p_valor; c.estornada_em = new Date().toISOString(); if (a.p_valor >= c.valor) c.situacao = "estornada"; if (c.reembolso) c.reembolso.situacao = "reembolsado"; return { data: "estornada", error:null }; }
+      return { data: "mercadopago", error:null };
+    }
+    // Nota fiscal automática (regra 331): window.__notaCfg e window.__notas
+    // (por compra); window.__semNotaAutomatica finge o banco sem o SQL novo.
+    if (["nota_configuracao_do_admin", "notas_fiscais_do_admin", "salvar_nota_configuracao", "pedir_nota"].includes(nome)) {
+      if (window.__semNotaAutomatica) return erro(`Could not find the function public.${nome}`, "PGRST202");
+      if (!souAdmin()) return erro("Só o GuiaTennis.", "42501");
+      window.__notas = window.__notas || {};
+      const cfg = window.__notaCfg = { ligada: false, ambiente: "teste", ccm: "05930642", codigo_servico: "172501", aliquota: 0.0201, serie: "1", proximo_rps: 1,
+        descricao: "Prestação de serviços de disponibilização de espaço publicitário, veiculação de anúncios e assinatura de planos na plataforma GuiaTennis.",
+        certificado_cnpj: null, certificado_titular: null, certificado_valido_ate: null, ultimo_teste_em: null, ultimo_teste: null, ...(window.__notaCfg || {}) };
+      const comContagem = () => { const n = Object.values(window.__notas); return { ...cfg, pendentes: n.filter(x => ["pendente", "processando", "cancelar"].includes(x.situacao)).length, com_erro: n.filter(x => x.situacao === "erro").length }; };
+      if (nome === "nota_configuracao_do_admin") return { data: comContagem(), error:null };
+      if (nome === "notas_fiscais_do_admin") return { data: Object.values(window.__notas).map(n => ({ ...n, link: linkDaNotaMock(n) })), error:null };
+      if (nome === "salvar_nota_configuracao") {
+        if (!["teste", "producao"].includes(a.p_ambiente)) return erro("Escolha Teste ou Produção.", "22023");
+        if (!/^[0-9]{6}$/.test(String(a.p_codigo || "").replace(/\D/g, ""))) return erro("O código de tributação nacional tem 6 números (ex.: 172501, o item 17.25).", "22023");
+        const serie = Number(String(a.p_serie || "").replace(/\D/g, ""));
+        if (!(serie >= 1 && serie <= 49999)) return erro("A série da DPS é um número de 1 a 49999.", "22023");
+        if (!(a.p_aliquota >= 0 && a.p_aliquota <= 0.05)) return erro("A alíquota do ISS vai de 0% a 5%.", "22023");
+        Object.assign(cfg, { ligada: !!a.p_ligada, ambiente: a.p_ambiente, codigo_servico: String(a.p_codigo).replace(/\D/g, ""), aliquota: Math.round(a.p_aliquota * 10000) / 10000, serie: String(serie), descricao: a.p_descricao });
+        return { data: comContagem(), error:null };
+      }
+      const k = (window.__compras || []).find(y => y.id === a.p_compra);
+      if (!k || k.situacao !== "paga") return erro("Só compra paga tem nota.", "22023");
+      if (window.__notas[k.id] && window.__notas[k.id].situacao === "emitida") return { data: "ja_emitida", error:null };
+      window.__notas[k.id] = { compra_id: k.id, situacao: "pendente", tentativas: 0, mensagem: null, atualizada_em: new Date().toISOString() };
+      return { data: "pendente", error:null };
+    }
+    if (nome === "compras_do_admin") {
+      if (!souAdmin()) return erro("Só o admin vê as compras.", "42501");
+      return { data: (window.__compras || []).map(y => ({ ...y, academia: (db.academias.find(z => z.id === y.academia_id) || {}).name })), error:null };
+    }
+    if (nome === "pedir_plano") {
+      const x = meuAcesso();
+      if (!x) return erro("Entre na sua conta do GuiaTennis Parceiros.", "42501");
+      if (!["completo", "premium"].includes(a.p_plano)) return erro("Plano inválido.", "22023");
+      if (!vinculo(x.user_id, a.p_academia) && !pedidosDe(x.user_id).some(p => p.academia_id === a.p_academia)) return erro("A sua conta não administra essa academia.", "42501");
+      const ac = db.academias.find(y => y.id === a.p_academia);
+      if (!ac) return erro("Academia não encontrada.", "22023");
+      if (ordem(ac.plano || "basico") >= ordem(a.p_plano)) return { data:null, error:null };
+      const i = db.pedidos_de_plano.findIndex(y => y.academia_id === a.p_academia);
+      if (i >= 0) db.pedidos_de_plano.splice(i, 1);
+      db.pedidos_de_plano.push({ academia_id: a.p_academia, plano: a.p_plano, user_id: x.user_id, onde: a.p_onde || null, created_at: new Date().toISOString() });
+      return { data:null, error:null };
+    }
+    if (nome === "pedidos_de_plano_admin") {
+      if (!souAdmin()) return { data:[], error:null };
+      return { data: db.pedidos_de_plano.map(p => {
+        const ac = db.academias.find(y => y.id === p.academia_id) || {};
+        const x = db.academia_acessos.find(y => y.user_id === p.user_id) || {};
+        return { academia_id: p.academia_id, nome: ac.name, status: ac.status, plano_atual: ac.plano || "basico", plano: p.plano, onde: p.onde, created_at: p.created_at, pessoa: x.nome_responsavel || null, email: x.email || x.usuario || null, whatsapp: x.whatsapp || null };
+      }), error:null };
+    }
+    // A academia pausa a própria ficha (SQL 20261005130000).
+    if (nome === "pausar_minha_academia") {
+      const x = meuAcesso();
+      if (!x || !vinculo(x.user_id, a.p_academia)) return erro("A sua conta não administra essa academia.", "42501");
+      const ac = db.academias.find(y => y.id === a.p_academia);
+      if (!ac) return erro("Academia não encontrada.", "22023");
+      if (ac.status !== "published") return erro("A academia ainda está em análise: ela só aparece no site depois que o GuiaTennis publicar.", "22023");
+      if (ac.avisou_que_fechou_em && !window.__semForaDoAr) return erro("Vocês avisaram que a academia fechou: ela fica fora do site até o GuiaTennis conferir. Para ela voltar, cancele o aviso em Suas academias.", "22023");
+      if (a.p_pausar && a.p_ate && new Date(a.p_ate) <= new Date()) return erro("Escolha uma data depois de hoje.", "22023");
+      if (!a.p_pausar && ac.pausada && !ac.pausada_pela_academia && (!ac.pausada_ate || new Date(ac.pausada_ate) > new Date())) return erro("Essa academia foi pausada pelo GuiaTennis. Fale com a gente para ela voltar a aparecer.", "42501");
+      Object.assign(ac, { pausada: !!a.p_pausar, pausada_ate: a.p_pausar ? (a.p_ate || null) : null, pausada_pela_academia: !!a.p_pausar });
+      return { data:null, error:null };
+    }
+    // A academia que fechou as portas sai do Guia (SQL 20261020170000): o
+    // responsável principal avisa e o admin confere (ou tira direto).
+    if (nome === "pedir_para_sair_do_guia") {
+      const x = meuAcesso();
+      const v = x && vinculo(x.user_id, a.p_academia);
+      if (!v || v.papel !== "principal") return erro("Quem avisa que a academia fechou é o responsável principal.", "42501");
+      if (a.p_motivo !== "fechou") return erro("Só a academia que fechou as portas sai do Guia. Se for por um tempo, use Pausar no site.", "22023");
+      if (db.pedidos_para_sair.some(p => p.academia_id === a.p_academia && !p.resolvido_em)) return erro("Já existe um aviso de que esta academia fechou.", "22023");
+      const ac = db.academias.find(y => y.id === a.p_academia) || {};
+      const p = { id: "saida-" + (db.pedidos_para_sair.length + 1), academia_id: a.p_academia, academia_nome: ac.name, user_id: x.user_id, motivo: "fechou", detalhes: String(a.p_detalhes || "").trim() || null, pedido_em: new Date().toISOString(), resolvido_em: null };
+      db.pedidos_para_sair.push(p);
+      ac.avisou_que_fechou_em = p.pedido_em;
+      // Fora do site na hora; a pausa de antes fica no aviso (SQL 20261026180000).
+      if (!window.__semForaDoAr) {
+        p.pausa_antes = { pausada: !!ac.pausada, ate: ac.pausada_ate || null, pela_academia: !!ac.pausada_pela_academia };
+        Object.assign(ac, { pausada: true, pausada_ate: null, pausada_pela_academia: false });
+      }
+      return { data: p.id, error:null };
+    }
+    if (nome === "cancelar_pedido_para_sair") {
+      const x = meuAcesso();
+      if (!x || !vinculo(x.user_id, a.p_academia)) return erro("A sua conta não administra essa academia.", "42501");
+      const acSaida = db.academias.find(y => y.id === a.p_academia);
+      db.pedidos_para_sair.filter(p => p.academia_id === a.p_academia && !p.resolvido_em).forEach(p => { p.resolvido_em = new Date().toISOString(); p.resolucao = "cancelado"; voltaAPausa(acSaida, p); });
+      if (acSaida) acSaida.avisou_que_fechou_em = null;
+      return { data:null, error:null };
+    }
+    if (nome === "meus_pedidos_para_sair") {
+      const x = meuAcesso();
+      if (!x) return { data:[], error:null };
+      return { data: db.pedidos_para_sair.filter(p => !p.resolvido_em && vinculo(x.user_id, p.academia_id)).map(p => ({ academia_id: p.academia_id, motivo: p.motivo, pedido_em: p.pedido_em })), error:null };
+    }
+    if (nome === "pedidos_para_sair_admin") {
+      if (!souAdmin()) return { data:[], error:null };
+      return { data: db.pedidos_para_sair.filter(p => !p.resolvido_em).map(p => {
+        const ac = db.academias.find(y => y.id === p.academia_id) || {};
+        const x = db.academia_acessos.find(y => y.user_id === p.user_id) || {};
+        return { id: p.id, academia_id: p.academia_id, nome: p.academia_nome, bairro: ac.bairro, cidade: ac.cidade, motivo: p.motivo, detalhes: p.detalhes, pedido_em: p.pedido_em, pessoa: x.nome_responsavel, email: x.email, whatsapp: x.whatsapp };
+      }), error:null };
+    }
+    if (nome === "resolver_pedido_para_sair" || nome === "tirar_academia_que_fechou") {
+      if (!souAdmin()) return erro("Só o GuiaTennis tira uma academia do Guia.", "42501");
+      let p;
+      if (nome === "tirar_academia_que_fechou") {
+        const ac = db.academias.find(y => y.id === a.p_academia);
+        if (!ac) return erro("Academia não encontrada.", "22023");
+        p = { id: "saida-" + (db.pedidos_para_sair.length + 1), academia_id: ac.id, academia_nome: ac.name, user_id: null, motivo: "fechou", detalhes: a.p_detalhes || null, pedido_em: new Date().toISOString() };
+        db.pedidos_para_sair.push(p);
+      } else {
+        p = db.pedidos_para_sair.find(y => y.id === a.p_id && !y.resolvido_em);
+        if (!p) return erro("Aviso não encontrado ou já resolvido.", "22023");
+      }
+      const remover = nome === "tirar_academia_que_fechou" || a.p_remover;
+      Object.assign(p, { resolvido_em: new Date().toISOString(), resolucao: remover ? "removida" : "mantida", resposta: a.p_resposta || null });
+      const acResolvida = db.academias.find(y => y.id === p.academia_id);
+      voltaAPausa(acResolvida, p);
+      if (acResolvida) acResolvida.avisou_que_fechou_em = null;
+      // Regra 158 (SQL 20261026200000): o cadastro fica guardado como fechado.
+      if (remover && window.__semFechadaGuardada) { db.academias = window.__db.academias = db.academias.filter(y => y.id !== p.academia_id); }
+      else if (remover && acResolvida) guardarFechada(acResolvida);
+      return { data:null, error:null };
+    }
+    // A conta sai, a academia fica (SQL 20261020130000; o pedido para tirar
+    // do guia saiu do site): com outro acesso, o mais antigo vira o
+    // responsável principal; sem outro, a academia volta ao Básico.
+    if (nome === "excluir_minha_conta_parceiros") {
+      const x = meuAcesso();
+      if (!x) return erro("Essa conta não é do GuiaTennis Parceiros.", "42501");
+      db.academia_vinculos.filter(v => v.user_id === x.user_id && v.papel === "principal").forEach(v => {
+        const outros = db.academia_vinculos.filter(o => o.academia_id === v.academia_id && o.user_id !== x.user_id);
+        if (outros.some(o => o.papel === "principal")) return;
+        if (outros.length) outros[0].papel = "principal";
+        else { const ac = db.academias.find(y => y.id === v.academia_id); if (ac) ac.plano = "basico"; }
+      });
+      for (let k = db.academia_vinculos.length - 1; k >= 0; k--) if (db.academia_vinculos[k].user_id === x.user_id) db.academia_vinculos.splice(k, 1);
+      ocultarAutor(x.user_id);
+      db.academia_acessos.splice(db.academia_acessos.indexOf(x), 1);
+      window.__contaExcluida = x.user_id;
+      return { data:null, error:null };
+    }
+    // Promoções (SQL 20261008140000; paga por semana desde 20261022120000).
+    // Promover (regra 317): as semanas pela salvar_promocao e o alcance dos créditos.
+    if (nome === "promover") {
+      if (window.__semPromover) return semFuncao;
+      const ac = db.academias.find(y => y.id === a.p_academia);
+      if ((a.p_alcance || 0) && ((a.p_alcance < 10) || (a.p_alcance > 5000))) return erro("O alcance vai de R$ 10 a R$ 5.000 (ou nenhum).", "22023");
+      const r = rodarRpc("salvar_promocao", { p_academia: a.p_academia, p_id: a.p_id, p_titulo: a.p_titulo, p_detalhes: a.p_detalhes, p_semanas: a.p_semanas });
+      if (r.error) return r;
+      if (a.p_alcance) {
+        if ((ac.envios_de_aviso || 0) < a.p_alcance) return erro(`A academia tem R$ ${ac.envios_de_aviso || 0} de créditos. Compre créditos ou escolha um alcance menor.`, "22023");
+        ac.envios_de_aviso -= a.p_alcance;
+        (window.__alcances = window.__alcances || {})[r.data.id] = { id: r.data.id, alcance: a.p_alcance, gasto: 0, exibicoes: 0, toques: 0, avisados: 0 };
+      }
+      return { data: { ...r.data, alcance: a.p_alcance || 0, pago: (r.data.pago || 0) + (a.p_alcance || 0) }, error:null };
+    }
+    if (nome === "estimativa_de_alcance") {
+      return { data: window.__estimativa || { bairro: "Pinheiros, São Paulo", exibicoes_dia: 120, preco_mil: 30, dias: 7 * (a.p_semanas || 1), exibicoes_min: Math.floor((a.p_alcance || 0) / 0.03 * 0.8), exibicoes_max: Math.ceil((a.p_alcance || 0) / 0.03 * 1.2), parte: 0.5, sugerido: 25, concorrentes: 1 }, error:null };
+    }
+    if (nome === "alcance_das_promocoes") return { data: Object.values(window.__alcances || {}), error:null };
+    if (nome === "faixa_patrocinada") {
+      window.__faixaPedida = (window.__faixaPedida || 0) + 1;
+      return { data: window.__faixa || null, error:null };
+    }
+    if (nome === "tocar_na_faixa") { window.__toques = (window.__toques || 0) + 1; return { data:null, error:null }; }
+    if (nome === "promocoes_do_admin") {
+      if (!souAdmin()) return erro("Só o admin vê as promoções.", "42501");
+      return { data: window.__promocoesDoAdmin || [], error:null };
+    }
+    if (nome === "salvar_promocao") {
+      const x = meuAcesso();
+      if (!x || !vinculo(x.user_id, a.p_academia)) return erro("A sua conta não administra essa academia.", "42501");
+      if (!possoNa(x.user_id, a.p_academia, "promocoes")) return funcaoNegada("promocoes");
+      const ac = db.academias.find(y => y.id === a.p_academia);
+      if (!promocoesLiberadas(ac)) return erro("As promoções na ficha são dos planos Completo e Premium.", "42501");
+      const dia = (n) => new Date(Date.now() + n * 86400000).toLocaleDateString("sv-SE", { timeZone: "America/Sao_Paulo" });
+      const mais = (iso, n) => { const d = new Date(iso + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
+      const hoje = dia(0);
+      const titulo = String(a.p_titulo || "").trim();
+      // O título em até 30 letras e os detalhes em até 150 (SQL 20261029170000).
+      if (titulo.length < 3 || titulo.length > 30) return erro('Escreva a promoção em até 30 letras (por exemplo, "Primeira aula grátis").', "22023");
+      if (String(a.p_detalhes || "").trim().length > 150) return erro("Os detalhes cabem em até 150 letras.", "22023");
+      const semanas = Number(a.p_semanas || 0);
+      if (!(semanas >= 0 && semanas <= 12)) return erro("Escolha de 1 a 12 semanas.", "22023");
+      const p = a.p_id ? db.promocoes.find(y => y.id === a.p_id && y.academia_id === a.p_academia) : null;
+      if (a.p_id && !p) return erro("Promoção não encontrada.", "22023");
+      const nova = !p || p.valida_ate < hoje;
+      if (nova && semanas < 1) return erro("Escolha de 1 a 12 semanas.", "22023");
+      if (nova && db.promocoes.some(y => y.academia_id === a.p_academia && y.valida_ate >= hoje && (!p || y.id !== p.id))) return erro("A academia já tem uma promoção valendo. Altere ou encerre a de agora para publicar outra.", "22023");
+      const ate = !semanas ? p.valida_ate : nova ? mais(hoje, 7 * semanas - 1) : mais(p.valida_ate, 7 * semanas);
+      if (semanas && ate > dia(83)) return erro("A promoção vale no máximo 12 semanas à frente.", "22023");
+      const preco = precoDaPromocao(ac) * semanas;
+      if (preco > (ac.envios_de_aviso || 0)) return erro(`A academia tem R$ ${ac.envios_de_aviso || 0} de créditos. Compre créditos ou escolha menos semanas.`, "22023");
+      ac.envios_de_aviso = (ac.envios_de_aviso || 0) - preco;
+      window.__ultimaPromocao = { semanas, preco };
+      const detalhes = String(a.p_detalhes || "").trim() || null;
+      if (!p) {
+        const n = { id: "promo-" + (db.promocoes.length + 1), academia_id: a.p_academia, titulo, detalhes, valida_ate: ate, avisados: 0, avisada_em: null,
+          created_at: new Date().toISOString(), semanas, pago: preco };
+        db.promocoes.push(n);
+        return { data: { id: n.id, valida_ate: ate, pago: preco, creditos: ac.envios_de_aviso }, error:null };
+      }
+      if (nova) Object.assign(p, { titulo, detalhes, valida_ate: ate, semanas, pago: preco, created_at: new Date().toISOString() });
+      else Object.assign(p, { titulo, detalhes, valida_ate: ate, semanas: (p.semanas || 0) + semanas, pago: (p.pago || 0) + preco });
+      return { data: { id: p.id, valida_ate: ate, pago: preco, creditos: ac.envios_de_aviso }, error:null };
+    }
+    if (nome === "avisar_minha_promocao") {
+      const p = db.promocoes.find(y => y.id === a.p_id);
+      if (!p) return erro("Promoção não encontrada.", "22023");
+      const x = meuAcesso();
+      if (!(x && vinculo(x.user_id, p.academia_id))) return erro("A sua conta não administra essa academia.", "42501");
+      if (p.avisada_em) return erro("Essa promoção já foi avisada por e-mail.", "22023");
+      const acp = db.academias.find(y => y.id === p.academia_id);
+      if (!(acp.envios_de_aviso > 0)) return erro("A academia não tem envios de aviso. Compre um pacote de envios para avisar os jogadores.", "22023");
+      const aviso = window.__promoAviso || { aviso: "ninguem", avisados: 0 };
+      if (aviso.avisados > 0) { Object.assign(p, { avisados: aviso.avisados, avisada_em: new Date().toISOString() }); acp.envios_de_aviso -= 1; }
+      return { data: { aviso: aviso.aviso, avisados: aviso.avisados, saldo: acp.envios_de_aviso }, error:null };
+    }
+    // Leilão das promoções por e-mail (SQL 20261019120000). window.__alcance
+    // diz quantos jogadores o bairro alcança; window.__fechaEm, quando fecha.
+    const fechaDoLeilao = () => window.__fechaEm || (() => { const d = new Date(); d.setUTCDate(d.getUTCDate() + ((7 - d.getUTCDay()) % 7 || 7)); d.setUTCHours(23, 0, 0, 0); return d.toISOString(); })();
+    const regiaoDe = (ac) => ac && ac.bairro && ac.cidade ? { regiao: (ac.cidade + "/" + ac.bairro).toLowerCase(), nome: ac.bairro + ", " + ac.cidade } : null;
+    if (nome === "meu_leilao") {
+      const x = meuAcesso();
+      if (!x || !vinculo(x.user_id, a.p_academia)) return { data:null, error:null };
+      const ac = db.academias.find(y => y.id === a.p_academia) || {};
+      const r = regiaoDe(ac);
+      const fecha = fechaDoLeilao();
+      const envio = (h) => new Date(new Date(fecha).getTime() + h * 3600000).toISOString();
+      return { data: { regiao: r && r.regiao, regiao_nome: r && r.nome, fecha_em: fecha, envios: [envio(38), envio(110)],
+        lance_minimo: db.leilaoConfig.lance_minimo, desconto_premium: db.leilaoConfig.desconto_premium, creditos: ac.envios_de_aviso || 0,
+        preco_promocao_semana: db.leilaoConfig.preco_promocao_semana || 0, preco_promocao: precoDaPromocao(ac),
+        alcance: r ? (window.__alcance ?? 0) : 0,
+        lance: db.lances.find(l => l.academia_id === a.p_academia && l.situacao === "aberto") || null,
+        historico: db.lances.filter(l => l.academia_id === a.p_academia && l.situacao !== "aberto") }, error:null };
+    }
+    if (nome === "dar_lance") {
+      const x = meuAcesso();
+      if (!x || !vinculo(x.user_id, a.p_academia)) return erro("A sua conta não administra essa academia.", "42501");
+      if (!possoNa(x.user_id, a.p_academia, "promocoes")) return funcaoNegada("promocoes");
+      const ac = db.academias.find(y => y.id === a.p_academia);
+      if (!ac || ac.plano !== "premium") return erro("O leilão de promoções é do plano Premium.", "42501");
+      const r = regiaoDe(ac);
+      if (!r) return erro("Para entrar no leilão, a ficha precisa do bairro e da cidade.", "22023");
+      // O título em até 30 letras e a mensagem de 10 a 300 (SQL 20261029170000).
+      const tituloDoLance = String(a.p_titulo || "").trim(), mensagemDoLance = String(a.p_mensagem || "").trim();
+      if (tituloDoLance.length < 3 || tituloDoLance.length > 30) return erro('Escreva a promoção em até 30 letras (por exemplo, "Primeira aula grátis").', "22023");
+      if (mensagemDoLance.length < 10 || mensagemDoLance.length > 300) return erro("A mensagem precisa ter de 10 a 300 letras.", "22023");
+      if (!(a.p_valor >= db.leilaoConfig.lance_minimo)) return erro(`O lance mínimo é de R$ ${db.leilaoConfig.lance_minimo}.`, "22023");
+      if (a.p_valor > (ac.envios_de_aviso || 0)) return erro(`A academia tem R$ ${ac.envios_de_aviso || 0} de créditos. Compre créditos ou dê um lance menor.`, "22023");
+      let l = db.lances.find(y => y.academia_id === a.p_academia && y.situacao === "aberto");
+      if (!l) { l = { id: "lance-" + (db.lances.length + 1), academia_id: a.p_academia, situacao: "aberto", created_at: new Date().toISOString(), avisados: 0 }; db.lances.push(l); }
+      Object.assign(l, { regiao: r.regiao, regiao_nome: r.nome, fecha_em: fechaDoLeilao(), titulo: a.p_titulo, mensagem: a.p_mensagem, valor: a.p_valor });
+      return { data: l, error:null };
+    }
+    if (nome === "cancelar_lance") {
+      const x = meuAcesso();
+      if (!x || !vinculo(x.user_id, a.p_academia)) return erro("A sua conta não administra essa academia.", "42501");
+      const antes = db.lances.length;
+      db.lances = window.__db.lances = db.lances.filter(l => !(l.academia_id === a.p_academia && l.situacao === "aberto"));
+      return { data: db.lances.length < antes, error:null };
+    }
+    if (nome === "leiloes_do_admin") {
+      if (!souAdmin()) return erro("Só o admin vê os leilões.", "42501");
+      return { data: { config: db.leilaoConfig, fecha_em: fechaDoLeilao(), lances: db.lances.map(l => ({ ...l, academia: (db.academias.find(y => y.id === l.academia_id) || {}).name, qualidade: l.qualidade || 0.8 })) }, error:null };
+    }
+    if (nome === "cancelar_envio_do_lance") {
+      if (!souAdmin()) return erro("Só o admin cancela o envio.", "42501");
+      const l = db.lances.find(y => y.id === a.p_lance && ["ganhou", "aberto"].includes(y.situacao));
+      if (!l) return { data: false, error:null };
+      if (l.situacao === "ganhou") { const ac = db.academias.find(y => y.id === l.academia_id); ac.envios_de_aviso = (ac.envios_de_aviso || 0) + (l.preco || 0); }
+      Object.assign(l, { situacao: "cancelado", preco: 0 });
+      return { data: true, error:null };
+    }
+    // Regra 284: o dia e a hora do fechamento do leilão.
+    if (nome === "mudar_fechamento_do_leilao") {
+      if (!souAdmin()) return erro("Só o admin muda o fechamento do leilão.", "42501");
+      if (!(a.p_dia >= 0 && a.p_dia <= 6)) return erro("Escolha um dia da semana.", "22023");
+      if (!(a.p_hora >= 0 && a.p_hora <= 23)) return erro("Escolha uma hora de 0 a 23.", "22023");
+      Object.assign(db.leilaoConfig, { dia_fechamento: a.p_dia, hora_fechamento: a.p_hora });
+      window.__fechamentoMudado = [a.p_dia, a.p_hora];
+      return { data: fechaDoLeilao(), error:null };
+    }
+    if (nome === "mudar_lance_minimo") {
+      if (!souAdmin()) return erro("Só o admin muda o lance mínimo.", "42501");
+      if (!(a.p_valor >= 1 && a.p_valor <= 10000)) return erro("O lance mínimo vai de R$ 1 a R$ 10.000.", "22023");
+      db.leilaoConfig.lance_minimo = a.p_valor;
+      return { data: a.p_valor, error:null };
+    }
+    if (nome === "mudar_preco_da_promocao") {
+      if (!souAdmin()) return erro("Só o admin muda o preço da promoção.", "42501");
+      if (!(a.p_valor >= 0 && a.p_valor <= 10000)) return erro("O preço da semana vai de R$ 0 a R$ 10.000.", "22023");
+      db.leilaoConfig.preco_promocao_semana = a.p_valor;
+      return { data: a.p_valor, error:null };
+    }
+    // Avisos por e-mail (SQL 20261015120000).
+    if (nome === "avisos_da_minha_academia") {
+      const x = meuAcesso();
+      if (!souAdmin() && !(x && vinculo(x.user_id, a.p_academia))) return { data:null, error:null };
+      const ac = db.academias.find(y => y.id === a.p_academia) || {};
+      const lista = db.avisos.filter(y => y.academia_id === a.p_academia).sort((p, q) => String(q.created_at).localeCompare(String(p.created_at)));
+      const semana = lista.some(y => y.avisados > 0 && Date.now() - new Date(y.created_at) < 7 * 86400000);
+      return { data: { saldo: ac.envios_de_aviso || 0, avisos: lista, semana }, error:null };
+    }
+    if (nome === "enviar_aviso_da_academia") {
+      const x = meuAcesso();
+      if (!x || !vinculo(x.user_id, a.p_academia)) return erro("A sua conta não administra essa academia.", "42501");
+      const ac = db.academias.find(y => y.id === a.p_academia);
+      if (!ac || !["completo", "premium"].includes(ac.plano)) return erro("As promoções por e-mail são do Completo e do Premium.", "42501");
+      if (!(ac.envios_de_aviso > 0)) return erro("A academia não tem envios. Compre um pacote de envios para mandar a promoção por e-mail.", "22023");
+      const aviso = window.__promoAviso || { aviso: "ninguem", avisados: 0 };
+      const novo = { id: "aviso-" + (db.avisos.length + 1), academia_id: a.p_academia, titulo: a.p_titulo, mensagem: a.p_mensagem, tipo: "promocao", avisados: aviso.avisados, created_at: new Date().toISOString() };
+      db.avisos.push(novo);
+      if (aviso.avisados > 0) ac.envios_de_aviso -= 1;
+      return { data: { id: novo.id, aviso: aviso.aviso, avisados: aviso.avisados, saldo: ac.envios_de_aviso }, error:null };
+    }
+    if (nome === "somar_envios") {
+      if (!souAdmin()) return erro("Só o admin muda os envios.", "42501");
+      const ac = db.academias.find(y => y.id === a.p_academia);
+      ac.envios_de_aviso = Math.max(0, (ac.envios_de_aviso || 0) + Number(a.p_quantos || 0));
+      return { data: ac.envios_de_aviso, error:null };
+    }
+    if (nome === "apagar_promocao") {
+      const p = db.promocoes.find(y => y.id === a.p_id);
+      if (!p) return { data:null, error:null };
+      const x = meuAcesso();
+      if (!souAdmin() && !(x && vinculo(x.user_id, p.academia_id))) return erro("A sua conta não administra essa academia.", "42501");
+      // Devolve as semanas que ainda não começaram.
+      const hoje = new Date().toLocaleDateString("sv-SE", { timeZone: "America/Sao_Paulo" });
+      const faltam = Math.round((new Date(p.valida_ate + "T12:00:00Z") - new Date(hoje + "T12:00:00Z")) / 86400000);
+      const volta = p.valida_ate >= hoje && p.semanas > 0 && p.pago > 0 ? Math.min(p.pago, Math.floor(faltam / 7) * Math.floor(p.pago / p.semanas)) : 0;
+      if (volta > 0) { const acp = db.academias.find(y => y.id === p.academia_id); acp.envios_de_aviso = (acp.envios_de_aviso || 0) + volta; }
+      db.promocoes = window.__db.promocoes = db.promocoes.filter(y => y.id !== a.p_id);
+      return { data: volta, error:null };
+    }
+    if (nome === "promocoes_da_minha_academia") {
+      const x = meuAcesso();
+      if (!souAdmin() && !(x && vinculo(x.user_id, a.p_academia))) return { data:[], error:null };
+      const hoje = new Date().toLocaleDateString("sv-SE", { timeZone: "America/Sao_Paulo" });
+      return { data: db.promocoes.filter(y => y.academia_id === a.p_academia).map(y => ({ ...y, valendo: y.valida_ate >= hoje }))
+        .sort((p, q) => (q.valendo - p.valendo) || String(q.valida_ate).localeCompare(String(p.valida_ate))), error:null };
+    }
+    if (nome === "academias_da_minha_conta") {
+      const x = meuAcesso();
+      if (!x) return { data:[], error:null };
+      const lista = vinculosDe(x.user_id).map(v => {
+        const ac = db.academias.find(y => y.id === v.academia_id) || {};
+        const pausada = !!ac.pausada && (!ac.pausada_ate || new Date(ac.pausada_ate) > new Date());
+        return { academia_id: v.academia_id, nome: ac.name, papel: v.papel, status: ac.status, pausada, plano: ac.plano || "basico", bairro: ac.bairro, cidade: ac.cidade, aberta: v.academia_id === x.academia_id,
+          pausada_ate: ac.pausada_ate || null, pausada_pela_academia: !!ac.pausada_pela_academia, ...(window.__semFuncoes ? {} : { funcoes: funcoesDe(v) }) };
+      }).sort((p, q) => String(p.nome).localeCompare(String(q.nome)));
+      return { data: lista, error:null };
+    }
+    if (nome === "abrir_minha_academia") {
+      const x = meuAcesso();
+      const v = x && vinculo(x.user_id, a.p_academia);
+      if (!v) return erro("A sua conta não administra essa academia.", "42501");
+      Object.assign(x, { academia_id: v.academia_id, papel: v.papel });
+      return { data:null, error:null };
+    }
+    if (nome === "criar_acesso_academia") {
+      if (!souAdmin()) return erro("Só o GuiaTennis cria acesso.", "42501");
+      if (db.academia_acessos.some(x => x.usuario === a.p_usuario)) return erro("Esse usuário já existe. Escolha outro.", "23505");
+      const id = "u-" + a.p_academia;
+      db.academia_acessos.push({ user_id:id, academia_id:a.p_academia, usuario:a.p_usuario, created_at:new Date().toISOString() });
+      if (!vinculo(id, a.p_academia)) db.academia_vinculos.push({ user_id:id, academia_id:a.p_academia, papel:"principal", created_at:new Date().toISOString() });
+      window.__senhas[a.p_usuario + DOMINIO] = a.p_senha;
+      return { data:id, error:null };
+    }
+    if (nome === "nova_senha_academia") {
+      const x = db.academia_acessos.find(x => x.user_id === a.p_user);
+      if (!souAdmin() || !x) return erro("Só o GuiaTennis troca a senha de uma academia.", "42501");
+      window.__senhas[x.usuario + DOMINIO] = a.p_senha; x.senha_trocada_em = null;
+      return { data:null, error:null };
+    }
+    if (nome === "remover_acesso_academia") {
+      if (!souAdmin()) return erro("Só o GuiaTennis remove um acesso.", "42501");
+      window.__removido = { user: a.p_user, academia: a.p_academia || null };
+      if (a.p_academia && vinculosDe(a.p_user).some(v => v.academia_id !== a.p_academia)) { desligar(a.p_user, a.p_academia); return { data:null, error:null }; }
+      apagarConta(a.p_user);
+      return { data:null, error:null };
+    }
+    if (nome === "completar_meu_acesso") {
+      const x = meuAcesso();
+      if (!x) return erro("Acesso não encontrado.", "42501");
+      if (!x.termos_aceitos_em && !a.p_aceite) return erro("Falta aceitar os Termos de Uso e a Política de Privacidade.", "22023");
+      const novoEmail = String(a.p_email || "").trim().toLowerCase();
+      if (loginDe(x).endsWith(DOMINIO) && novoEmail && !window.__senhas[novoEmail]) {
+        window.__senhas[novoEmail] = window.__senhas[loginDe(x)];
+        delete window.__senhas[loginDe(x)];
+        x.loginEmail = novoEmail;
+      }
+      const nomeAntes = x.nome_responsavel;
+      Object.assign(x, { nome_responsavel:a.p_nome, cargo:a.p_cargo, tratamento:a.p_tratamento || x.tratamento || null, email:a.p_email.toLowerCase(), whatsapp:a.p_whatsapp, cnpj:a.p_cnpj || null, recebe_relatorio:!!a.p_recebe_relatorio,
+        termos_aceitos_em: x.termos_aceitos_em || new Date().toISOString(), dados_completos_em: x.dados_completos_em || new Date().toISOString() });
+      if (x.nome_responsavel !== nomeAntes) nomeDaContaMudou(x.user_id, x.nome_responsavel, false);
+      return { data:null, error:null };
+    }
+    if (nome === "login_do_usuario") {
+      const u = String(a.p_usuario || "").trim().toLowerCase();
+      const x = !u.includes("@") && db.academia_acessos.find(y => y.usuario === u);
+      return { data: x ? loginDe(x) : null, error:null };
+    }
+    if (nome === "login_do_email") {
+      const e = String(a.p_email || "").trim().toLowerCase();
+      const x = e.includes("@") && db.academia_acessos.find(x => loginDe(x) === e || (x.email || "").toLowerCase() === e);
+      return { data: x ? loginDe(x) : null, error:null };
+    }
+    if (nome === "criar_minha_conta") {
+      const e = String(a.p_email || "").trim().toLowerCase();
+      if (sessao) return erro("Saia da conta atual para criar outra.", "22023");
+      if (db.contas_excluidas.some(c => c.email === e)) return erro("Esse e-mail não pode criar conta no GuiaTennis. Fale com o GuiaTennis.", "42501");
+      if (!a.p_aceite) return erro("Falta aceitar os Termos de Uso e a Política de Privacidade.", "22023");
+      if (tel(a.p_whatsapp).length < 10 || tel(a.p_whatsapp).length > 11) return erro("WhatsApp inválido: use o DDD e o número.", "22023");
+      if (db.academia_acessos.some(x => loginDe(x) === e || (x.email || "").toLowerCase() === e) || e === ADMIN) return erro("Esse e-mail já tem conta no GuiaTennis Parceiros. Entre com a sua senha.", "23505");
+      const id = novoLogin(e, a.p_senha);
+      const t = new Date().toISOString();
+      if (a.p_tratamento && !["Sr.", "Sra.", "Prefiro não informar"].includes(a.p_tratamento)) return erro("Escolha o tratamento.", "22023");
+      db.academia_acessos.push({ user_id:id, academia_id:null, usuario:e, nome_responsavel:a.p_nome, email:e, whatsapp:tel(a.p_whatsapp), papel:"principal",
+        tratamento:a.p_tratamento || null, cargo:a.p_cargo || null, recebe_relatorio:!!a.p_recebe_novidades,
+        termos_aceitos_em:t, dados_completos_em:t, senha_trocada_em:t, created_at:t });
+      return { data:null, error:null };
+    }
+    if (nome === "pedir_para_administrar") {
+      const x = meuAcesso();
+      if (!x) return erro("Entre na sua conta do GuiaTennis Parceiros.", "42501");
+      // A declaração (SQL 20261006130000): false recusa, true guarda a hora.
+      if (a.p_declaro === false) return erro("Para enviar o pedido, marque a declaração.", "22023");
+      if (vinculo(x.user_id, a.p_academia)) return erro("A sua conta já administra essa academia.", "22023");
+      const ac = db.academias.find(y => y.id === a.p_academia && y.status === "published");
+      if (!ac) return erro("Academia não encontrada.", "22023");
+      const temDono = db.academia_vinculos.some(v => v.academia_id === ac.id && v.papel === "principal");
+      // Sem responsável e sem disputa (SQL 20261007130000): com o e-mail
+      // confirmado e a declaração, a conta assume na hora.
+      if (a.p_declaro === true && x.email_confirmado_em && x.dados_completos_em && !temDono) {
+        fecharPedido(x.user_id, ac.id);
+        assumir(x, ac.id);
+        return { data:"assumiu", error:null };
+      }
+      if (pedidosDe(x.user_id).filter(p => p.academia_id !== ac.id).length >= 10) return erro("A sua conta já tem 10 pedidos abertos. Espere algum ser confirmado ou cancele um.", "22023");
+      db.pedidos_de_acesso = db.pedidos_de_acesso.filter(p => !(p.user_id === x.user_id && p.academia_id === ac.id));
+      db.pedidos_de_acesso.push({ user_id: x.user_id, academia_id: ac.id, nome: ac.name, destino: temDono ? "responsavel" : "guiatennis", pedido_em: new Date().toISOString(), declarou_em: a.p_declaro ? new Date().toISOString() : null });
+      window.__db.pedidos_de_acesso = db.pedidos_de_acesso;
+      return { data:"pedido", error:null };
+    }
+    // A disputa com dois códigos (regra 222, SQL 20261109130000): o código de
+    // quem administra fica em window.__codigosResp[academia].
+    const principalDe = (id) => sessao && db.academia_vinculos.some(v => v.user_id === sessao.user.id && v.academia_id === id && v.papel === "principal");
+    const disputaDe = (id) => db.pedidos_de_acesso.filter(p => p.academia_id === id && p.destino === "disputa");
+    const codigoResp = (id, codigo) => { window.__codigosResp = window.__codigosResp || {}; window.__codigosResp[id] = { codigo, tentativas: 0, em: new Date().toISOString() }; return codigo; };
+    if (nome === "disputas_das_minhas_academias") {
+      if (window.__semDisputa) return semFuncao;
+      return { data: db.academias.filter(ac => principalDe(ac.id) && disputaDe(ac.id).length).map(ac => ({
+        academia_id: ac.id, nome: ac.name, numero: ac.phone || null, codigo_em: ((window.__codigosResp || {})[ac.id] || {}).em || null,
+        codigo_ok_em: disputaDe(ac.id).map(p => p.responsavel_codigo_ok_em).filter(Boolean).sort().pop() || null })), error:null };
+    }
+    if (nome === "confirmar_codigo_do_responsavel") {
+      if (!principalDe(a.p_academia)) return erro("Só o responsável principal confirma o WhatsApp da academia.", "42501");
+      const ps = disputaDe(a.p_academia);
+      if (!ps.length) return { data:"sem_disputa", error:null };
+      if (ps.some(p => p.responsavel_codigo_ok_em)) return { data:"analise", error:null };
+      const k = (window.__codigosResp || {})[a.p_academia];
+      if (!k) return { data:"sem_codigo", error:null };
+      if (k.tentativas >= 5) return { data:"tentativas", error:null };
+      if (String(a.p_codigo || "").replace(/\D/g, "") !== k.codigo) { k.tentativas++; return { data:"errado", error:null }; }
+      const ac = db.academias.find(y => y.id === a.p_academia) || {};
+      ps.forEach(p => Object.assign(p, { responsavel_codigo_ok_em: new Date().toISOString(), responsavel_numero: ac.phone || null }));
+      delete window.__codigosResp[a.p_academia];
+      db.emails_a_enviar.push({ id: "e-disputa-resp-" + ac.id, tipo: "disputa", para: ADMIN, assunto: "Disputa: quem administra confirmou o WhatsApp da " + ac.name, criado_em: new Date().toISOString(), enviado_em: null, tentativas: 0, erro: null });
+      return { data:"analise", error:null };
+    }
+    if (nome === "pedir_codigo_do_responsavel") {
+      if (!principalDe(a.p_academia)) return erro("Só o responsável principal confirma o WhatsApp da academia.", "42501");
+      if (!window.__whatsappLigado) return { data:"desligado", error:null };
+      codigoResp(a.p_academia, "135790");
+      return { data:"mandado", error:null };
+    }
+    if (nome === "gerar_codigo_do_responsavel") {
+      if (!souAdmin()) return erro("Só o GuiaTennis gera o código.", "42501");
+      if (!disputaDe(a.p_academia).length) return erro("Essa academia não está em disputa.", "22023");
+      return { data: codigoResp(a.p_academia, "112233"), error:null };
+    }
+    if (nome === "mandar_codigo_do_responsavel_admin") {
+      if (!souAdmin()) return erro("Só o GuiaTennis manda o código.", "42501");
+      if (!window.__whatsappLigado) return { data:"desligado", error:null };
+      codigoResp(a.p_academia, "135790");
+      return { data:"mandado", error:null };
+    }
+    if (nome === "contestar_academia") {
+      if (window.__semDisputa) return semFuncao;
+      const x = meuAcesso();
+      const p = x && pedidosDe(x.user_id).find(q => q.academia_id === a.p_academia && q.destino === "responsavel");
+      if (!p) return erro("Peça para administrar a academia antes de contestar.", "22023");
+      if (String(a.p_numero || "").replace(/\D/g, "").length < 10) return erro("Informe o WhatsApp da academia com DDD.", "22023");
+      Object.assign(p, { destino: "disputa", pedido_em: new Date().toISOString(), numero_contestado: a.p_numero, codigo_ok_em: null, responsavel_codigo_ok_em: null, responsavel_numero: null });
+      const ac = db.academias.find(y => y.id === a.p_academia) || {};
+      db.emails_a_enviar.push({ id: "e-disputa-" + a.p_academia + x.user_id, tipo: "disputa", para: ADMIN, assunto: "Disputa: " + ac.name, criado_em: p.pedido_em, enviado_em: null, tentativas: 0, erro: null });
+      // Banco antes do SQL 20261007140000: não devolve nada.
+      if (window.__semCodigoPeloWhatsapp) return { data:null, error:null };
+      return { data: codigoDaDisputaPelaConta(x, p.academia_id), error:null };
+    }
+    // O código da disputa pelo WhatsApp (SQL 20261007140000). window.__whatsappLigado
+    // liga o envio; window.__whatsapps anota as mensagens (o teste lê o código dali).
+    if (nome === "pedir_codigo_da_disputa") {
+      if (window.__semCodigoPeloWhatsapp) return semFuncao;
+      const x = meuAcesso();
+      if (!x) return erro("Entre na sua conta do GuiaTennis Parceiros.", "42501");
+      return { data: codigoDaDisputaPelaConta(x, a.p_academia), error:null };
+    }
+    if (nome === "mandar_codigo_admin") {
+      if (window.__semCodigoPeloWhatsapp) return semFuncao;
+      if (!souAdmin()) return erro("Só o GuiaTennis manda o código.", "42501");
+      const x = db.academia_acessos.find(y => y.user_id === a.p_user);
+      const p = x && pedidoDaConta(x.user_id, a.p_academia);
+      if (!p) return erro("Pedido não encontrado.", "22023");
+      return { data: codigoPeloWhatsapp(x, p.academia_id, "admin"), error:null };
+    }
+    // O que a pessoa guarda fica na conta (SQL 20261008130000).
+    if (nome === "guardar_na_conta") {
+      if (window.__semGuardados) return semFuncao;
+      const j = euJogador();
+      if (!j) return erro("Conta de jogador não encontrada.", "42501");
+      const objeto = ["preferencias", "pedir_avaliacao"].includes(a.p_chave);
+      if (!["favoritas", "chamadas", "viagens", "preferencias", "avaliadas", "pedir_avaliacao"].includes(a.p_chave)) return erro("Não sei guardar isso.", "22023");
+      if (a.p_valor == null || (objeto ? (typeof a.p_valor !== "object" || Array.isArray(a.p_valor)) : !Array.isArray(a.p_valor))) return erro("Formato errado.", "22023");
+      j.guardados = { ...(j.guardados || {}), [a.p_chave]: JSON.parse(JSON.stringify(a.p_valor)) };
+      return { data: null, error: null };
+    }
+    if (nome === "situacao_do_whatsapp") {
+      if (window.__semCodigoPeloWhatsapp) return semFuncao;
+      if (!souAdmin()) return erro("Só o admin.", "42501");
+      return { data: window.__situacaoWhatsapp || { ligado: !!window.__whatsappLigado, token: !!window.__whatsappLigado, numero: !!window.__whatsappLigado, real: true, numero_de_teste: false, envio: true, relogio: true, enviados_30_dias: (window.__whatsapps || []).length, falharam: 0, ultimo_erro: null }, error:null };
+    }
+    if (nome === "cancelar_meu_pedido") {
+      const x = meuAcesso();
+      if (x) pedidosDe(x.user_id).filter(p => !a || !a.p_academia || p.academia_id === a.p_academia).forEach(p => fecharPedido(x.user_id, p.academia_id));
+      return { data:null, error:null };
+    }
+    if (nome === "aprovar_pedido_de_acesso" || nome === "recusar_pedido_de_acesso") {
+      if (!souAdmin()) return erro("Só o GuiaTennis aprova pedidos.", "42501");
+      const x = db.academia_acessos.find(y => y.user_id === a.p_user);
+      const p = x && pedidoDaConta(x.user_id, a.p_academia);
+      if (!p) return erro("Pedido não encontrado.", "22023");
+      if (nome === "aprovar_pedido_de_acesso") {
+        if (p.destino === "disputa") {
+          const numero = p.codigo_ok_em && p.numero_contestado;
+          vencerDisputa(x, p.academia_id);
+          const ac = db.academias.find(y => y.id === p.academia_id);
+          if (numero && ac) ac.phone = numero;
+          if (window.__codigosResp) delete window.__codigosResp[p.academia_id];
+        } else ligar(x, p.academia_id);
+      }
+      else fecharPedido(x.user_id, p.academia_id);
+      return { data:null, error:null };
+    }
+    // Código para o WhatsApp da academia (SQL 20261001120000). O código
+    // gerado fica em window.__codigos, para o teste digitar.
+    if (nome === "gerar_codigo_do_pedido") {
+      if (!souAdmin()) return erro("Só o GuiaTennis gera o código.", "42501");
+      const x = db.academia_acessos.find(y => y.user_id === a.p_user);
+      const p = x && pedidoDaConta(x.user_id, a.p_academia);
+      if (!p) return erro("Pedido não encontrado.", "22023");
+      if (vinculo(x.user_id, p.academia_id)) return erro("Essa conta já administra essa academia.", "22023");
+      if (p.destino !== "disputa" && db.academia_vinculos.some(v => v.academia_id === p.academia_id && v.papel === "principal")) return erro("Essa academia já tem responsável: o pedido está com ele.", "22023");
+      const codigo = String(100000 + Math.floor(Math.random() * 900000));
+      window.__codigos = window.__codigos || {};
+      // Um código por conta e academia; o mais novo também fica na conta (o teste lê dali).
+      const c = { codigo, academia: p.academia_id, tentativas: 0, em: new Date().toISOString() };
+      window.__codigos[a.p_user + "|" + p.academia_id] = c;
+      window.__codigos[a.p_user] = c;
+      x.codigo_em = c.em;
+      return { data: codigo, error:null };
+    }
+    if (nome === "confirmar_meu_codigo") {
+      const x = meuAcesso();
+      if (!x) return erro("Entre na sua conta do GuiaTennis Parceiros.", "42501");
+      const cs = window.__codigos || {};
+      const daConta = cs[x.user_id];
+      const c = a.p_academia ? (cs[x.user_id + "|" + a.p_academia] || (daConta && daConta.academia === a.p_academia ? daConta : null)) : daConta;
+      if (!c || !pedidosDe(x.user_id).some(p => p.academia_id === c.academia)) return { data:"sem_codigo", error:null };
+      if (c.tentativas >= 5) return { data:"tentativas", error:null };
+      if (String(a.p_codigo || "").replace(/\D/g, "") !== c.codigo) { c.tentativas++; return { data:"errado", error:null }; }
+      // Na disputa (SQL 20261109120000), o código é a prova: guarda a data,
+      // avisa o admin e a academia não muda sozinha.
+      const pd = pedidosDe(x.user_id).find(p => p.academia_id === c.academia && p.destino === "disputa");
+      delete cs[x.user_id + "|" + c.academia];
+      if (pd) {
+        pd.codigo_ok_em = new Date().toISOString();
+        const ac = db.academias.find(y => y.id === c.academia) || {};
+        db.emails_a_enviar.push({ id: "e-disputa-codigo-" + c.academia + x.user_id, tipo: "disputa", para: ADMIN, assunto: "Disputa: código confirmado na " + ac.name, criado_em: pd.codigo_ok_em, enviado_em: null, tentativas: 0, erro: null });
+        return { data:"analise", error:null };
+      }
+      ligar(x, c.academia);
+      return { data:"ok", error:null };
+    }
+    // Contestar o acesso de outra pessoa (regra 223, SQL 20261109140000).
+    if (["contestar_acesso", "minhas_contestacoes_de_acesso", "contestacoes_de_acesso_admin", "resolver_contestacao_de_acesso", "verificacoes_do_meu_acesso", "responder_verificacao_de_acesso"].includes(nome)) {
+      if (window.__semContestarAcesso) return semFuncao;
+      db.contestacoes_de_acesso = db.contestacoes_de_acesso || [];
+      const x = meuAcesso();
+      if (nome === "contestar_acesso") {
+        if (!x || !db.academia_vinculos.some(v => v.user_id === x.user_id && v.academia_id === a.p_academia)) return erro("Só quem tem acesso à academia contesta um acesso.", "42501");
+        if (a.p_user === x.user_id) return erro("Você não pode contestar o próprio acesso.", "22023");
+        if (!a.p_meu_quem_e || !a.p_meu_desde || String(a.p_meu_o_que_faz || "").trim().length < 3) return erro("Conte quem você é na academia, o que faz e há quanto tempo está lá.", "22023");
+        if (a.p_conhece == null || !a.p_quem_e || !a.p_motivo || !a.p_suspeita) return erro("Responda às perguntas.", "22023");
+        if (a.p_quem_e !== "nao_sei" && String(a.p_o_que_faz || "").trim().length < 3) return erro("Conte o que essa pessoa faz (ou fazia) na academia.", "22023");
+        if (db.contestacoes_de_acesso.some(c => c.academia_id === a.p_academia && c.contestado === a.p_user && c.contestou === x.user_id && !c.resolvido_em)) return { data:"ja_enviada", error:null };
+        const ac = db.academias.find(y => y.id === a.p_academia) || {};
+        db.contestacoes_de_acesso.push({ id: "ca-" + db.contestacoes_de_acesso.length, academia_id: a.p_academia, contestado: a.p_user, contestou: x.user_id, conhece: !!a.p_conhece,
+          quem_e: a.p_quem_e, o_que_faz: a.p_o_que_faz || null, motivo: a.p_motivo, detalhes: a.p_detalhes || null, criado_em: new Date().toISOString(), resolvido_em: null,
+          contestou_quem_e: a.p_meu_quem_e, contestou_o_que_faz: a.p_meu_o_que_faz, contestou_desde: a.p_meu_desde, suspeita: a.p_suspeita });
+        db.emails_a_enviar.push({ id: "e-ca-" + db.contestacoes_de_acesso.length, tipo: "acesso_contestado", para: ADMIN, assunto: "Acesso contestado: " + ac.name, criado_em: new Date().toISOString(), enviado_em: null, tentativas: 0, erro: null });
+        return { data:"enviada", error:null };
+      }
+      if (nome === "verificacoes_do_meu_acesso") return { data: x ? db.contestacoes_de_acesso.filter(c => c.contestado === x.user_id && !c.resolvido_em)
+        .map(c => ({ id: c.id, academia_id: c.academia_id, academia: (db.academias.find(z => z.id === c.academia_id) || {}).name, criado_em: c.criado_em, respondido_em: c.respondido_em || null })) : [], error:null };
+      if (nome === "responder_verificacao_de_acesso") {
+        const cs = x ? db.contestacoes_de_acesso.filter(c => c.contestado === x.user_id && c.academia_id === a.p_academia && !c.resolvido_em) : [];
+        if (!cs.length) return { data:"sem_verificacao", error:null };
+        if (!a.p_quem_e || !a.p_desde || String(a.p_o_que_faz || "").trim().length < 3) return erro("Conte quem você é na academia, o que faz e há quanto tempo está lá.", "22023");
+        cs.forEach(c => Object.assign(c, { resposta_quem_e: a.p_quem_e, resposta_o_que_faz: a.p_o_que_faz, resposta_desde: a.p_desde, resposta_texto: a.p_texto || null, respondido_em: new Date().toISOString() }));
+        return { data:"respondida", error:null };
+      }
+      if (nome === "minhas_contestacoes_de_acesso") return { data: x ? db.contestacoes_de_acesso.filter(c => c.academia_id === a.p_academia && c.contestou === x.user_id && !c.resolvido_em).map(c => c.contestado) : [], error:null };
+      if (!souAdmin()) return nome === "contestacoes_de_acesso_admin" ? { data:[], error:null } : erro("Só o GuiaTennis decide a contestação.", "42501");
+      if (nome === "contestacoes_de_acesso_admin") return { data: db.contestacoes_de_acesso.filter(c => !c.resolvido_em).map(c => {
+        const y = db.academia_acessos.find(z => z.user_id === c.contestado) || {}, w = db.academia_acessos.find(z => z.user_id === c.contestou) || {};
+        const vy = db.academia_vinculos.find(v => v.user_id === c.contestado && v.academia_id === c.academia_id) || {}, vw = db.academia_vinculos.find(v => v.user_id === c.contestou && v.academia_id === c.academia_id) || {};
+        return { ...c, academia: (db.academias.find(z => z.id === c.academia_id) || {}).name, contestado_nome: y.nome_responsavel, contestado_email: y.email, contestado_cargo: y.cargo || null,
+          contestado_papel: vy.papel, contestado_desde: vy.created_at || null, contestou_nome: w.nome_responsavel, contestou_email: w.email, contestou_cargo: w.cargo || null, contestou_papel: vw.papel };
+      }), error:null };
+      const c = db.contestacoes_de_acesso.find(z => z.id === a.p_id);
+      if (!c) return erro("Contestação não encontrada.", "22023");
+      if (a.p_tirar) db.academia_vinculos = db.academia_vinculos.filter(v => !(v.user_id === c.contestado && v.academia_id === c.academia_id));
+      db.contestacoes_de_acesso.filter(z => z.academia_id === c.academia_id && z.contestado === c.contestado && !z.resolvido_em).forEach(z => { z.resolvido_em = new Date().toISOString(); z.resolucao = a.p_tirar ? "tirou" : "manteve"; });
+      return { data:null, error:null };
+    }
+    if (nome === "pessoas_da_minha_academia") {
+      const x = meuAcesso();
+      if (!x || !x.academia_id) return { data:[], error:null };
+      const lista = db.academia_vinculos.filter(v => v.academia_id === x.academia_id)
+        .sort((p, q) => (q.papel === "principal") - (p.papel === "principal"))
+        .map(v => { const y = db.academia_acessos.find(z => z.user_id === v.user_id) || {};
+          return { user_id:v.user_id, nome:y.nome_responsavel || null, email:y.email || y.usuario, papel:v.papel, dados_completos_em:y.dados_completos_em || null, ultimo_acesso:null, sou_eu:v.user_id === x.user_id,
+            ...(window.__semFuncoes ? {} : { funcoes: funcoesDe(v) }) }; });
+      return { data:lista, error:null };
+    }
+    // As funções da equipe e os responsáveis principais (SQL 20261029190000).
+    if (["mudar_funcoes_da_pessoa", "tornar_principal", "deixar_de_ser_principal"].includes(nome)) {
+      if (window.__semFuncoes) return erro(`Could not find the function public.${nome}`, "PGRST202");
+      const x = meuAcesso();
+      const eu = x && x.academia_id && vinculo(x.user_id, x.academia_id);
+      if (!eu || eu.papel !== "principal") return erro("Só o responsável principal muda o que cada pessoa pode fazer.", "42501");
+      if (nome === "deixar_de_ser_principal") {
+        if (!db.academia_vinculos.some(v => v.academia_id === x.academia_id && v.papel === "principal" && v.user_id !== x.user_id))
+          return erro("A academia precisa de um responsável principal: torne outra pessoa principal antes.", "22023");
+        Object.assign(eu, { papel: "equipe", funcoes: FUNCOES.slice() });
+        x.papel = "equipe";
+        return { data:null, error:null };
+      }
+      const ele = vinculo(a.p_user, x.academia_id);
+      if (!ele) return erro("Pessoa não encontrada.", "22023");
+      if (nome === "tornar_principal") {
+        if (ele.papel === "principal") return erro("Essa pessoa já é responsável principal.", "22023");
+        ele.papel = "principal";
+        const y = db.academia_acessos.find(z => z.user_id === a.p_user);
+        if (y && y.academia_id === x.academia_id) y.papel = "principal";
+        return { data:null, error:null };
+      }
+      if (ele.papel === "principal") return erro("O responsável principal pode tudo: não tem funções para escolher.", "22023");
+      ele.funcoes = FUNCOES.filter(f => (a.p_funcoes || []).includes(f));
+      return { data: ele.funcoes.slice(), error:null };
+    }
+    if (nome === "adicionar_pessoa") {
+      const x = meuAcesso();
+      if (!x || !x.academia_id) return erro("A sua conta ainda não administra uma academia.", "42501");
+      if ((vinculo(x.user_id, x.academia_id) || {}).papel !== "principal") return erro("Só o responsável principal adiciona pessoas.", "42501");
+      const e = String(a.p_email || "").trim().toLowerCase();
+      const lim = limite(planoDe(x.academia_id));
+      const convites = db.convites || (db.convites = []);
+      if (convites.some(c => c.academia_id === x.academia_id && c.email === e)) return erro("Essa pessoa já foi convidada.", "23505");
+      if (db.academia_vinculos.filter(v => v.academia_id === x.academia_id).length + convites.filter(c => c.academia_id === x.academia_id).length >= lim) return erro(`O seu plano permite até ${lim} ${lim === 1 ? "pessoa" : "pessoas"}. Aprimore o plano para adicionar mais.`, "22023");
+      const outro = db.academia_acessos.find(y => loginDe(y) === e || (y.email || "").toLowerCase() === e);
+      if (outro) {
+        if (vinculo(outro.user_id, x.academia_id)) return erro("Essa pessoa já tem acesso a esta academia.", "23505");
+        ligar(outro, x.academia_id, false);
+        return { data:"ligada", error:null };
+      }
+      // Convite por e-mail (SQL 20261030120000): sem senha provisória.
+      convites.push({ academia_id:x.academia_id, email:e, nome:a.p_nome || null, created_at:new Date().toISOString() });
+      return { data:"convidada", error:null };
+    }
+    if (nome === "convites_da_minha_academia") {
+      const x = meuAcesso();
+      if (!x || !x.academia_id) return { data:[], error:null };
+      return { data:(db.convites || []).filter(c => c.academia_id === x.academia_id).map(c => ({ email:c.email, nome:c.nome, created_at:c.created_at })), error:null };
+    }
+    if (nome === "cancelar_convite") {
+      const x = meuAcesso();
+      if (!x || !x.academia_id || (vinculo(x.user_id, x.academia_id) || {}).papel !== "principal") return erro("Só o responsável principal cancela convites.", "42501");
+      db.convites = (db.convites || []).filter(c => !(c.academia_id === x.academia_id && c.email === String(a.p_email || "").toLowerCase()));
+      return { data:null, error:null };
+    }
+    if (nome === "convidar_academia") {
+      const e = String(a.p_email || "").trim().toLowerCase();
+      const outro = db.academia_acessos.find(y => loginDe(y) === e || (y.email || "").toLowerCase() === e);
+      if (outro) { ligar(outro, a.p_academia, false); return { data:"ligada", error:null }; }
+      (db.convites || (db.convites = [])).push({ academia_id:a.p_academia, email:e, nome:null, created_at:new Date().toISOString() });
+      return { data:"convidada", error:null };
+    }
+    if (nome === "convites_pendentes") return { data:(db.convites || []).map(c => ({ academia_id:c.academia_id, email:c.email, created_at:c.created_at })), error:null };
+    if (nome === "remover_pessoa") {
+      const x = meuAcesso();
+      if (!x || !x.academia_id || (vinculo(x.user_id, x.academia_id) || {}).papel !== "principal") return erro("Só o responsável principal remove pessoas.", "42501");
+      if (a.p_user === x.user_id) return erro("Você não pode remover a si mesmo.", "22023");
+      const v = vinculo(a.p_user, x.academia_id);
+      if (!v) return erro("Pessoa não encontrada.", "22023");
+      if (v.papel === "principal") return erro("Outro responsável principal só o GuiaTennis remove.", "42501");
+      desligar(a.p_user, x.academia_id);
+      const ele = db.academia_acessos.find(y => y.user_id === a.p_user);
+      if (ele && !pedidosDe(a.p_user).length && !vinculosDe(a.p_user).length) apagarConta(a.p_user);
+      return { data:null, error:null };
+    }
+    // Números da academia: o plano sai de window.__plano ou da ficha.
+    if (nome === "numeros_da_academia") {
+      const x = meuAcesso();
+      if (!x || !x.academia_id) return erro("Sem acesso aos números dessa academia.", "42501");
+      const ac = db.academias.find(y => y.id === x.academia_id) || {};
+      const plano = window.__plano || ac.plano || "basico";
+      const pedido = a.p_dias === undefined ? 30 : a.p_dias;
+      const dias = plano === "premium" ? (pedido <= 0 ? 0 : pedido) : plano === "completo" ? Math.min(Math.max(pedido || 30, 7), 90) : 30;
+      // Desde 02/10/2026, números só no Premium (SQL 20261002120000).
+      // Desde 07/10/2026, os acessos de 30 dias em todo plano (SQL 20261007160000).
+      // window.__semAcessos finge o banco antes dele; window.__acessos troca o número.
+      // Regra 196: o Completo vê também os contatos dos 30 dias.
+      if (plano !== "premium") return { data: window.__semAcessos ? { plano, trancado: true } : { plano, trancado: true, dias: 30, acessos: window.__acessos ?? 42, ...(plano === "completo" ? { contatos: window.__contatos ?? 7 } : {}) }, error: null };
+      const base = { plano, dias, visitas: 42, contatos: 9 };
+      if (plano === "basico") return { data: base, error: null };
+      const n = dias || 120;
+      const por_dia = Array.from({ length: n }, (_, i) => ({ dia: new Date(Date.UTC(2026, 8, 30) - (n - 1 - i) * 864e5).toISOString().slice(0, 10), visitas: (i * 7) % 5, contatos: i % 4 === 0 ? 1 : 0 }));
+      const completo = { ...base, canais: { whatsapp: 7, instagram: 2, site: 0, reserva: 4, compartilhar: 1 }, guardaram: { lista: 3, contato: 2 }, anterior: { visitas: 30, contatos: 9 }, por_dia,
+        origens: [{ nome: "Instagram", n: 20 }, { nome: "Google", n: 15 }, { nome: "Direto", n: 7 }], aparelhos: [{ nome: "Celular", n: 35 }, { nome: "Computador", n: 7 }] };
+      if (plano === "completo") return { data: completo, error: null };
+      return { data: { ...completo, regioes: [{ nome: "Pinheiros, São Paulo", n: 12 }, { nome: "Vila Madalena, São Paulo", n: 5 }], media_cidade: { cidade: "São Paulo", academias: 2, visitas: 30, contatos: 5 } }, error: null };
+    }
+    if (nome === "conta_do_email") {
+      const email = String(a.p_email || "").trim().toLowerCase();
+      if (email === ADMIN) return { data: { tipo: "admin", login: email }, error: null };
+      const x = db.academia_acessos.find(y => (y.email || "").toLowerCase() === email || loginDe(y) === email);
+      if (x) return { data: { tipo: "academia", login: loginDe(x) }, error: null };
+      if (db.jogadores.some(j => j.email === email)) return { data: { tipo: "jogador", login: email }, error: null };
+      return { data: null, error: null };
+    }
+    if (nome === "confirmar_meu_email") {
+      if (!sessao || !sessao.otp) return erro("Confirme o e-mail pelo código.", "42501");
+      const agora2 = new Date().toISOString();
+      db.jogadores.filter(j => j.user_id === sessao.user.id).forEach(j => { j.email_confirmado_em = j.email_confirmado_em || agora2; });
+      db.academia_acessos.filter(x => x.user_id === sessao.user.id).forEach(x => { x.email_confirmado_em = x.email_confirmado_em || agora2; });
+      // aceitar_convites (SQL 20261030120000): o e-mail confirmado ganha as
+      // academias para as quais foi convidado.
+      { const eu = db.academia_acessos.find(y => y.user_id === sessao.user.id);
+        const meuEmail = String((eu && eu.email) || sessao.user.email || "").toLowerCase();
+        if (eu) (db.convites || []).filter(c => c.email === meuEmail).forEach((c, i) => ligar(eu, c.academia_id, i === 0));
+        db.convites = (db.convites || []).filter(c => !eu || c.email !== meuEmail); }
+      // assumir_pedidos_da_conta (SQL 20261007130000).
+      const x = meuAcesso();
+      if (x && x.dados_completos_em) pedidosDe(x.user_id).filter(p => p.destino === "guiatennis" && p.declarou_em).forEach(p => {
+        const ac = db.academias.find(y => y.id === p.academia_id);
+        if (!ac) return;
+        if (ac.status === "pending") { Object.assign(ac, { status: "published", confirmada: true, revisar_desde: agora2 }); ligar(x, ac.id, true); }
+        else if (!db.academia_vinculos.some(v => v.academia_id === ac.id && v.papel === "principal")) assumir(x, ac.id);
+      });
+      return { data:null, error:null };
+    }
+    if (nome === "criar_conta_jogador") {
+      const email = String(a.p_email || "").trim().toLowerCase();
+      if (sessao) return erro("Saia da conta atual para criar outra.", "22023");
+      if (!a.p_aceite) return erro("Falta aceitar os Termos de Uso e a Política de Privacidade.", "22023");
+      if ((a.p_senha || "").length < 8) return erro("A senha precisa ter pelo menos 8 caracteres.", "22023");
+      if (db.contas_excluidas.some(c => c.email === email)) return erro("Esse e-mail não pode criar conta no GuiaTennis. Fale com o GuiaTennis.", "42501");
+      if (window.__senhas[email] || email === ADMIN || db.academia_acessos.some(x => (x.email || "").toLowerCase() === email))
+        return erro("Esse e-mail já tem conta no GuiaTennis. Entre com a sua senha.", "23505");
+      const id = novoLogin(email, a.p_senha);
+      db.jogadores.push({ user_id: id, nome: String(a.p_nome).trim(), email, cidade: a.p_cidade || null,
+        avisos_academias: !!a.p_avisos_academias, promocoes: !!a.p_promocoes, novidades: !!a.p_novidades,
+        termos_aceitos_em: new Date().toISOString(), created_at: new Date().toISOString() });
+      return { data:null, error:null };
+    }
+    if (nome === "excluir_minha_conta_jogador") {
+      // A mesma conta do Parceiros sai inteira (SQL 20261023120000).
+      if (meuAcesso()) return rodarRpc("excluir_minha_conta_parceiros", a);
+      const j = euJogador();
+      if (!j) return erro("Essa conta não é de jogador.", "42501");
+      db.jogadores.splice(db.jogadores.indexOf(j), 1);
+      ocultarAutor(j.user_id);
+      delete window.__senhas[j.email];
+      return { data:null, error:null };
+    }
+    // Conta do GuiaTennis Parceiros também joga (SQL 20261005170000).
+    if (nome === "ativar_conta_de_jogador") {
+      const x = meuAcesso();
+      if (!x) return erro("Entre na sua conta.", "42501");
+      let j = euJogador();
+      if (!j) {
+        const login = sessao.user.email || "";
+        const email = login.includes("@") && !login.endsWith(DOMINIO) ? login : (x.email || "");
+        j = { user_id: x.user_id, nome: x.nome_responsavel || email.split("@")[0], email, cidade: null, avisos_academias: false, promocoes: false, novidades: false,
+          email_confirmado_em: x.email_confirmado_em || null, termos_aceitos_em: x.termos_aceitos_em || new Date().toISOString(), created_at: new Date().toISOString(), token_avisos: "tok-" + x.user_id };
+        db.jogadores.push(j);
+      }
+      return { data: j, error: null };
+    }
+    // Avisos por e-mail (SQL 20261005160000).
+    if (nome === "marcar_visita_da_conta") {
+      const j = sessao && db.jogadores.find(y => y.user_id === sessao.user.id);
+      if (!j || !("visto_em" in j)) return semFuncao;
+      j.visto_em = new Date().toISOString();
+      return { data: null, error: null };
+    }
+    // Acompanhamento depois de chamar a academia (regra 193, SQL 20261101120000).
+    if (["registrar_chamada", "acompanhamento_por_chave", "responder_acompanhamento", "salvar_whatsapp_do_jogador"].includes(nome) && !window.__acompanhamento) return semFuncao;
+    if (nome === "registrar_chamada") {
+      const j = sessao && db.jogadores.find(y => y.user_id === sessao.user.id);
+      if (!j || !j.email_confirmado_em || j.acompanhamento === false || souAdmin()) return { data: null, error: null };
+      const ja = db.acompanhamentos.find(x => x.user_id === j.user_id && x.academia_id === a.p_academia);
+      if (ja) return { data: ja.id, error: null };
+      const x = { id: "acomp-" + (db.acompanhamentos.length + 1), chave: "chave-" + (db.acompanhamentos.length + 1), user_id: j.user_id, academia_id: a.p_academia, criado_em: new Date().toISOString(), status: "aguardando", tipo: null, quando: null, instrucoes: {} };
+      db.acompanhamentos.push(x);
+      return { data: x.id, error: null };
+    }
+    if (nome === "acompanhamento_por_chave") {
+      const x = db.acompanhamentos.find(y => y.chave === a.p_chave);
+      if (!x) return { data: [], error: null };
+      const ac = db.academias.find(y => y.id === x.academia_id) || {};
+      const j = db.jogadores.find(y => y.user_id === x.user_id) || {};
+      return { data: [{ academia_id: x.academia_id, academia: ac.name, status: x.status, tipo: x.tipo, quando: x.quando, tem_whatsapp: !!j.whatsapp }], error: null };
+    }
+    if (nome === "responder_acompanhamento") {
+      const x = db.acompanhamentos.find(y => y.chave === a.p_chave);
+      if (!x) return erro("Este link não vale mais.", "22023");
+      window.__respostaDoAcompanhamento = JSON.parse(JSON.stringify(a));
+      if (a.p_resposta === "nao") { x.status = "nao_marcou"; return { data: "nao_marcou", error: null }; }
+      if (a.p_resposta === "cancelar") { x.status = "cancelado"; return { data: "cancelado", error: null }; }
+      if (!a.p_dia || !/^([01]\d|2[0-3]):[0-5]\d$/.test(a.p_hora || "")) return erro("Escolha o dia e a hora.", "22023");
+      const quando = new Date(a.p_dia + "T" + a.p_hora + ":00-03:00");
+      if (quando < new Date(Date.now() - 30 * 60000)) return erro("Esse horário já passou. Confira o dia e a hora.", "22023");
+      const whats = String(a.p_whatsapp || "").replace(/\D/g, "");
+      if (whats && !a.p_aceite_whatsapp) return erro("Para guardar o WhatsApp, marque que aceita receber os lembretes nele.", "22023");
+      if (whats && !/^\d{10,13}$/.test(whats)) return erro("Confira o WhatsApp: DDD e número.", "22023");
+      Object.assign(x, { status: "marcou", tipo: a.p_resposta, quando: quando.toISOString(), instrucoes: a.p_instrucoes || {} });
+      if (whats) { const j = db.jogadores.find(y => y.user_id === x.user_id); if (j) Object.assign(j, { whatsapp: whats, whatsapp_aceite_em: new Date().toISOString() }); }
+      return { data: "marcou", error: null };
+    }
+    if (nome === "salvar_whatsapp_do_jogador") {
+      const j = sessao && db.jogadores.find(y => y.user_id === sessao.user.id);
+      if (!j) return erro("Entre na sua conta.", "42501");
+      const whats = String(a.p_whatsapp || "").replace(/\D/g, "");
+      if (!whats) { Object.assign(j, { whatsapp: null, whatsapp_aceite_em: null }); return { data: null, error: null }; }
+      if (!/^\d{10,13}$/.test(whats)) return erro("Confira o WhatsApp: DDD e número.", "22023");
+      if (!a.p_aceite) return erro("Para guardar o WhatsApp, marque que aceita receber os lembretes nele.", "22023");
+      Object.assign(j, { whatsapp: whats, whatsapp_aceite_em: j.whatsapp === whats && j.whatsapp_aceite_em ? j.whatsapp_aceite_em : new Date().toISOString() });
+      return { data: whats, error: null };
+    }
+    if (nome === "parar_avisos") {
+      const j = db.jogadores.find(y => y.token_avisos === a.p_token);
+      if (j) {
+        const buscas = db.buscas_salvas.filter(b => b.user_id === j.user_id);
+        if (a.p_aviso === "acompanhamento" && "acompanhamento" in j) { j.acompanhamento = false; return { data: "acompanhamento", error: null }; }
+        if (a.p_aviso === "viagem") { j.avisos_viagem = false; return { data: "viagem", error: null }; }
+        if (a.p_aviso === "novas") { j.avisos_academias = false; buscas.forEach(b => { b.avisar = false; }); return { data: "novas", error: null }; }
+        if (a.p_aviso === "volta" && "lembrete_de_volta" in j) { j.lembrete_de_volta = false; return { data: "volta", error: null }; }
+        Object.assign(j, { avisos_academias: false, promocoes: false, novidades: false, avisos_viagem: false });
+        if ("lembrete_de_volta" in j) j.lembrete_de_volta = false;
+        if ("acompanhamento" in j) j.acompanhamento = false;
+        buscas.forEach(b => { b.avisar = false; });
+        return { data: "todos", error: null };
+      }
+      const x = db.academia_acessos.find(y => y.token_avisos === a.p_token);
+      if (x) { x.avisos_por_email = false; return { data: "parceiros", error: null }; }
+      return { data: null, error: null };
+    }
+    // Um por um (regra 201, SQL 20261104120000).
+    if (nome === "mudar_aviso_dos_parceiros") {
+      const x = meuAcesso();
+      if (!x) return erro("Entre na sua conta do GuiaTennis Parceiros.", "42501");
+      const todos = ["avaliacoes", "acessos", "equipe", "plano", "pagamentos", "ficha_parada", "resumo_do_mes"];
+      if (!todos.includes(a.p_aviso)) return erro("Aviso desconhecido.", "22023");
+      const fora = (x.avisos_desligados || []).filter(y => y !== a.p_aviso);
+      x.avisos_desligados = a.p_ligado ? (x.avisos_por_email === false ? todos.filter(y => y !== a.p_aviso) : fora) : [...fora, a.p_aviso];
+      if (a.p_ligado) x.avisos_por_email = true;
+      return { data: null, error: null };
+    }
+    if (nome === "mudar_avisos_dos_parceiros") {
+      const x = meuAcesso();
+      if (!x) return erro("Entre na sua conta do GuiaTennis Parceiros.", "42501");
+      x.avisos_por_email = !!a.p_ligado;
+      return { data: null, error: null };
+    }
+    if (nome === "situacao_dos_emails") {
+      if (!souAdmin()) return erro("Só o admin.", "42501");
+      return { data: window.__situacaoEmails || { chave: true, envio: true, relogio: true, na_fila: 0, enviados_7_dias: 3, falharam: 0, ultimo_erro: null, por_tipo: {} }, error: null };
+    }
+    // Painel do admin (SQL 20261006120000): os e-mails da fila, mandar de
+    // novo e os números das contas. window.__semPainelAdmin finge o banco sem o SQL.
+    // Conta de jogador passa a valer no Parceiros (SQL 20261006160000).
+    if (nome === "ativar_conta_do_parceiros") {
+      if (!sessao) return erro("Entre na sua conta.", "42501");
+      if (meuAcesso()) return { data: null, error: null };
+      const j = euJogador();
+      if (!j) return erro("Essa conta não é de jogador.", "42501");
+      if (!a.p_aceite) return erro("Falta aceitar os Termos de Uso e a Política de Privacidade.", "22023");
+      if (tel(a.p_whatsapp).length < 10 || tel(a.p_whatsapp).length > 11) return erro("WhatsApp inválido: use o DDD e o número.", "22023");
+      const t = new Date().toISOString();
+      db.academia_acessos.push({ user_id: j.user_id, academia_id: null, usuario: j.email, nome_responsavel: String(a.p_nome).trim(), tratamento: a.p_tratamento || null, cargo: a.p_cargo || null,
+        email: j.email, whatsapp: tel(a.p_whatsapp), recebe_relatorio: !!a.p_recebe_novidades, termos_aceitos_em: t, dados_completos_em: t, senha_trocada_em: t, papel: "principal",
+        email_confirmado_em: j.email_confirmado_em || null, avisos_por_email: true });
+      return { data: null, error: null };
+    }
+    // O admin exclui a conta de quem descumprir os Termos (SQL 20261006150000).
+    if (nome === "excluir_conta_admin") {
+      if (!souAdmin()) return erro("Só o admin.", "42501");
+      if (String(a.p_motivo || "").trim().length < 5) return erro("Escreva o motivo da exclusão.", "22023");
+      const j = db.jogadores.find(y => y.user_id === a.p_user), x = db.academia_acessos.find(y => y.user_id === a.p_user);
+      if (!j && !x) return erro("Conta não encontrada.", "22023");
+      const emails = [...new Set([j && j.email, x && x.email, x && loginDe(x)].filter(Boolean).map(e => e.toLowerCase()))];
+      const tipo = j && x ? "jogador e GuiaTennis Parceiros" : x ? "GuiaTennis Parceiros" : "jogador";
+      emails.forEach(e => { db.contas_excluidas = db.contas_excluidas.filter(c => c.email !== e); db.contas_excluidas.push({ email: e, nome: (j && j.nome) || (x && x.nome_responsavel), tipo, motivo: a.p_motivo.trim(), avaliacoes_apagadas: !!a.p_apagar_avaliacoes, excluida_em: new Date().toISOString() }); });
+      if (a.p_apagar_avaliacoes) db.avaliacoes = db.avaliacoes.filter(r => r.user_id !== a.p_user);
+      else ocultarAutor(a.p_user);
+      window.__db.avaliacoes = db.avaliacoes;
+      db.jogadores = db.jogadores.filter(y => y.user_id !== a.p_user); window.__db.jogadores = db.jogadores;
+      db.academia_acessos = db.academia_acessos.filter(y => y.user_id !== a.p_user); window.__db.academia_acessos = db.academia_acessos;
+      db.academia_vinculos = db.academia_vinculos.filter(y => y.user_id !== a.p_user); window.__db.academia_vinculos = db.academia_vinculos;
+      db.buscas_salvas = db.buscas_salvas.filter(y => y.user_id !== a.p_user); window.__db.buscas_salvas = db.buscas_salvas;
+      db.pedidos_de_acesso = db.pedidos_de_acesso.filter(y => y.user_id !== a.p_user); window.__db.pedidos_de_acesso = db.pedidos_de_acesso;
+      window.__db.contas_excluidas = db.contas_excluidas;
+      return { data: null, error: null };
+    }
+    // Avaliação editada (regra 167). window.__semAvaliacaoEditada finge o banco sem o SQL 20261028120000.
+    if ((nome === "minhas_avaliacoes" || nome === "editar_minha_avaliacao") && window.__semAvaliacaoEditada) return semFuncao;
+    const daConta = v => ({ id: v.id, academia_id: v.academia_id, stars: v.stars, comment: v.comment, created_at: v.created_at, editada_em: v.editada_em || null });
+    if (nome === "minhas_avaliacoes") {
+      if (!sessao) return erro("permission denied for function minhas_avaliacoes", "42501");
+      return { data: db.avaliacoes.filter(v => v.user_id && v.user_id === sessao.user.id).map(daConta), error:null };
+    }
+    if (nome === "editar_minha_avaliacao") {
+      if (!sessao) return erro("permission denied for function editar_minha_avaliacao", "42501");
+      const v = db.avaliacoes.find(r => r.id === a.p_avaliacao && r.user_id === sessao.user.id);
+      if (!v) return erro("Essa avaliação não é da sua conta.", "42501");
+      if (!(a.p_stars >= 1 && a.p_stars <= 5)) return erro("Escolha de 1 a 5 estrelas.", "22023");
+      const texto = String(a.p_comment || "").trim();
+      if (texto.length > 2000) return erro("O texto passa de 2.000 letras.", "22023");
+      if (suspensaoAtiva(sessao.user.id)) return erro("O seu nome está suspenso: troque o nome em Minha conta para editar a avaliação.", "42501");
+      if (vinculo(sessao.user.id, v.academia_id)) return erro("Você administra essa academia: responda às avaliações pelo painel do GuiaTennis Parceiros.", "42501");
+      if (a.p_stars !== v.stars || texto !== String(v.comment || "").trim()) {
+        Object.assign(v, { stars: a.p_stars, comment: texto, editada_em: new Date().toISOString() });
+        window.__editadas = (window.__editadas || 0) + 1;
+      }
+      return { data: [daConta(v)], error:null };
+    }
+    // Nome suspenso por 15 dias (regra 165). window.__semNomeSuspenso finge o banco sem o SQL.
+    const REGRA_165 = ["meu_nome_suspenso", "nomes_suspensos_admin", "suspender_nome_admin", "suspender_nome_pela_avaliacao_admin", "cancelar_suspensao_admin", "nome_trocado_conferido_admin"];
+    if (REGRA_165.includes(nome) && window.__semNomeSuspenso) return semFuncao;
+    db.nomes_suspensos = window.__db.nomes_suspensos = db.nomes_suspensos || [];
+    if (nome === "meu_nome_suspenso") {
+      if (!sessao) return erro("permission denied for function meu_nome_suspenso", "42501");
+      const n = suspensaoAtiva(sessao.user.id);
+      return { data: n ? [{ nome: n.nome, motivo: n.motivo, suspenso_em: n.suspenso_em, prazo: n.prazo, trocar_em: ondeEstaONome(n.user_id, n.nome) }] : [], error:null };
+    }
+    if (nome === "nomes_suspensos_admin") {
+      if (!souAdmin()) return { data:[], error:null };
+      return { data: JSON.parse(JSON.stringify(db.nomes_suspensos)), error:null };
+    }
+    if (nome === "suspender_nome_admin" || nome === "suspender_nome_pela_avaliacao_admin") {
+      if (!souAdmin()) return erro("Só o admin.", "42501");
+      let uid = a.p_user, visto = a.p_nome;
+      if (nome === "suspender_nome_pela_avaliacao_admin") {
+        const v = db.avaliacoes.find(r => r.id === a.p_avaliacao);
+        if (!v) return erro("Avaliação não encontrada.", "22023");
+        if (!v.user_id) return erro("Essa avaliação não tem conta ligada: a conta saiu ou é de antes das contas. Exclua a avaliação, se for o caso.", "22023");
+        uid = v.user_id; visto = v.nome_autor;
+      }
+      const motivo = String(a.p_motivo || "").trim();
+      if (motivo.length < 5) return erro("Escreva o motivo (vai no e-mail para a pessoa).", "22023");
+      const j = db.jogadores.find(y => y.user_id === uid), x = db.academia_acessos.find(y => y.user_id === uid);
+      if (!j && !x) return erro("Conta não encontrada.", "22023");
+      if (suspensaoAtiva(uid)) return erro("O nome dessa conta já está suspenso.", "22023");
+      const nm = visto && (mesmoNomeM(j && j.nome, visto) || mesmoNomeM(x && x.nome_responsavel, visto)) ? String(visto).trim() : ((j && j.nome) || (x && x.nome_responsavel));
+      const agora = new Date();
+      const n = { id: "ns-" + (db.nomes_suspensos.length + 1), user_id: uid, email: (j && j.email) || (x && loginDe(x)), nome: nm, motivo, suspenso_em: agora.toISOString(),
+        prazo: new Date(agora.getTime() + 15 * 864e5).toISOString(), lembrete_em: null, resolvido_em: null, resolucao: null, nome_novo: null, conferido_em: null };
+      db.nomes_suspensos.filter(o => o.user_id === uid && o.resolucao === "trocou" && !o.conferido_em).forEach(o => { o.conferido_em = agora.toISOString(); });
+      db.nomes_suspensos.push(n);
+      db.avaliacoes.filter(r => r.user_id === uid).forEach(r => Object.assign(r, { nome_autor: null, autor_oculto: true }));
+      db.emails_a_enviar.push({ id: "e-nome-" + n.id, tipo: "nome_suspenso", para: n.email, assunto: "O seu nome no GuiaTennis foi suspenso", criado_em: agora.toISOString(), enviado_em: null, tentativas: 0, erro: null });
+      return { data: n.id, error:null };
+    }
+    if (nome === "cancelar_suspensao_admin") {
+      if (!souAdmin()) return erro("Só o admin.", "42501");
+      const n = db.nomes_suspensos.find(o => o.id === a.p_id && !o.resolvido_em);
+      if (!n) return erro("Essa suspensão já terminou.", "22023");
+      Object.assign(n, { resolvido_em: new Date().toISOString(), resolucao: "cancelada" });
+      mostrarNomeNasAvaliacoes(n.user_id);
+      db.emails_a_enviar.push({ id: "e-nome-cancelado-" + n.id, tipo: "nome_suspensao_cancelada", para: n.email, assunto: "A suspensão do seu nome no GuiaTennis foi cancelada", criado_em: new Date().toISOString(), enviado_em: null, tentativas: 0, erro: null });
+      return { data:null, error:null };
+    }
+    if (nome === "nome_trocado_conferido_admin") {
+      if (!souAdmin()) return erro("Só o admin.", "42501");
+      db.nomes_suspensos.filter(o => o.id === a.p_id && o.resolucao === "trocou" && !o.conferido_em).forEach(o => { o.conferido_em = new Date().toISOString(); });
+      return { data:null, error:null };
+    }
+    if (nome === "contas_excluidas_admin") {
+      if (!souAdmin()) return { data: [], error: null };
+      return { data: JSON.parse(JSON.stringify(db.contas_excluidas)), error: null };
+    }
+    if (nome === "liberar_email_admin") {
+      if (!souAdmin()) return erro("Só o admin.", "42501");
+      db.contas_excluidas = db.contas_excluidas.filter(c => c.email !== String(a.p_email || "").trim().toLowerCase()); window.__db.contas_excluidas = db.contas_excluidas;
+      return { data: null, error: null };
+    }
+    // Academias novas que foram ao ar sozinhas (SQL 20261006140000).
+    if (nome === "academias_para_revisar_admin") {
+      if (!souAdmin()) return { data: [], error: null };
+      return { data: db.academias.filter(a => a.revisar_desde).map(a => {
+        const v = db.academia_vinculos.find(y => y.academia_id === a.id && y.papel === "principal");
+        const x = v && db.academia_acessos.find(y => y.user_id === v.user_id);
+        return { id: a.id, nome: a.name, bairro: a.bairro, cidade: a.cidade, no_ar_desde: a.revisar_desde, quem: x ? x.nome_responsavel : null, email: x ? (x.email || x.usuario) : null, whatsapp: x ? x.whatsapp : null, declarou_em: v ? v.declarou_em || null : null, reaberta_em: a.reaberta_em || null };
+      }), error: null };
+    }
+    if (nome === "marcar_academia_revisada") {
+      if (!souAdmin()) return erro("Só o admin.", "42501");
+      const ac = db.academias.find(y => y.id === a.p_academia);
+      if (ac) ac.revisar_desde = null;
+      return { data: null, error: null };
+    }
+    if (nome === "emails_recentes_admin" || nome === "reenviar_email_admin" || nome === "numeros_das_contas_admin") {
+      if (window.__semPainelAdmin) return semFuncao;
+      if (!souAdmin()) return erro("Só o admin.", "42501");
+      const fila = db.emails_a_enviar;
+      if (nome === "emails_recentes_admin") return { data: JSON.parse(JSON.stringify([...fila].sort((x, y) => String(y.criado_em).localeCompare(String(x.criado_em))).slice(0, a.p_limite || 50))), error: null };
+      if (nome === "reenviar_email_admin") {
+        fila.filter(e => e.id === a.p_id && !e.enviado_em).forEach(e => Object.assign(e, { tentativas: 0, erro: null, criado_em: new Date().toISOString() }));
+        return { data: null, error: null };
+      }
+      const semana = Date.now() - 7 * 86400000;
+      return { data: {
+        jogadores: db.jogadores.length, confirmados: db.jogadores.filter(j => j.email_confirmado_em).length,
+        novos_7_dias: db.jogadores.filter(j => new Date(j.created_at).getTime() > semana).length,
+        aviso_cidade: db.jogadores.filter(j => j.avisos_academias).length, aviso_viagem: db.jogadores.filter(j => j.avisos_viagem).length,
+        promocoes: db.jogadores.filter(j => j.promocoes).length, novidades: db.jogadores.filter(j => j.novidades).length,
+        buscas_salvas: db.buscas_salvas.length, buscas_com_aviso: db.buscas_salvas.filter(b => b.avisar).length,
+        contas_parceiros: db.academia_acessos.length,
+        academias_com_responsavel: new Set(db.academia_vinculos.filter(v => v.papel === "principal").map(v => v.academia_id)).size,
+        pedidos_abertos: db.pedidos_de_acesso.length,
+      }, error: null };
+    }
+    // Falhas do site (SQL 20261011120000): o site manda, o banco descobre quem.
+    if (nome === "registrar_falha") {
+      if (window.__semFalhas) return semFuncao;
+      const f = a.p_falha || {};
+      if (!/^[A-HJ-NP-Z2-9]{6}$/.test(f.codigo || "") || !f.acao) return { data: false, error: null };
+      const quem = souAdmin() ? "admin" : !sessao ? "visitante" : meuAcesso() ? "academia" : euJogador() ? "jogador" : "visitante";
+      const grupo = [f.acao, f.tipo, String(f.mensagem || "").replace(/[0-9]+/g, "#")].join("|");
+      db.falhas_do_site.unshift({ id: "falha-" + (db.falhas_do_site.length + 1), codigo: f.codigo, grupo, visita: f.visita || null, site: f.site, acao: f.acao,
+        tipo: f.tipo, mensagem: f.mensagem || null, detalhe: f.detalhe || null, tela: String(f.tela || "").split("?")[0] || null, quem,
+        academia_id: f.academia || null, dispositivo: f.dispositivo || null, navegador: f.navegador || null, sistema: f.sistema || null,
+        aviso_na_tela: !!f.aviso, resolvida_em: null, created_at: new Date().toISOString() });
+      return { data: true, error: null };
+    }
+    if (nome === "falhas_admin") {
+      if (window.__semFalhas) return semFuncao;
+      if (!souAdmin()) return { data: [], error: null };
+      const codigo = String(a.p_codigo || "").toUpperCase().replace(/-/g, "").trim();
+      const desde = Date.now() - (a.p_dias || 30) * 86400000;
+      const lista = db.falhas_do_site.filter(f => codigo ? f.codigo === codigo : new Date(f.created_at).getTime() > desde)
+        .map(f => ({ ...f, academia_nome: (db.academias.find(y => y.id === f.academia_id) || {}).name || null }))
+        .sort((x, y) => String(y.created_at).localeCompare(String(x.created_at)));
+      return { data: JSON.parse(JSON.stringify(lista)), error: null };
+    }
+    if (nome === "resolver_falhas_admin") {
+      if (!souAdmin()) return erro("Só o GuiaTennis marca a falha como resolvida.", "42501");
+      let n = 0;
+      db.falhas_do_site.forEach(f => { if (f.grupo === a.p_grupo && !f.resolvida_em) { f.resolvida_em = new Date().toISOString(); n++; } });
+      return { data: n, error: null };
+    }
+    if (nome === "marcar_senha_trocada") { const x = meuAcesso(); if (x) x.senha_trocada_em = new Date().toISOString(); return { data:null, error:null }; }
+    // Veracidade (SQL 20261026120000). window.__semVeracidade finge o banco
+    // sem o SQL novo.
+    const VERACIDADE = ["whatsapp_das_minhas_academias", "pedir_codigo_do_whatsapp", "confirmar_whatsapp_da_ficha", "desistir_do_whatsapp_novo",
+      "whatsapps_para_confirmar_admin", "gerar_codigo_do_whatsapp_admin", "mandar_codigo_do_whatsapp_admin", "aprovar_whatsapp_admin", "recusar_whatsapp_admin",
+      "informar_problema", "problemas_da_minha_academia", "problemas_admin", "resolver_problema_admin", "manter_whatsapp_admin", "tirar_whatsapp_admin",
+      "denunciar_avaliacao", "denuncias_admin", "resolver_denuncia_admin"];
+    if (VERACIDADE.includes(nome) && window.__semVeracidade) return semFuncao;
+    const administro = (id) => !!(sessao && vinculo(sessao.user.id, id));
+    const academiaDe = (id) => db.academias.find(y => y.id === id);
+    if (nome === "whatsapp_das_minhas_academias") {
+      if (!sessao) return { data:[], error:null };
+      return { data: db.academias.filter(ac => administro(ac.id) && (ac.whatsapp_a_confirmar || ac.whatsapp_em_revisao_desde)).map(ac => {
+        const k = (window.__codigosDoWhatsapp || {})[ac.id];
+        return { academia_id: ac.id, numero: ac.whatsapp_a_confirmar || null, troca: !!ac.whatsapp_antes, pedido_em: ac.whatsapp_pedido_em || null,
+          codigo_em: k && mesmoNumero(k.numero, ac.whatsapp_a_confirmar) ? k.criado_em : null, codigo_ok_em: ac.whatsapp_codigo_ok_em || null,
+          em_revisao: !!ac.whatsapp_em_revisao_desde, ligado: !!window.__whatsappLigado };
+      }), error:null };
+    }
+    if (nome === "pedir_codigo_do_whatsapp") {
+      if (!administro(a.p_academia)) return erro("Só quem administra a academia pede o código.", "42501");
+      const ac = academiaDe(a.p_academia);
+      if (!ac || !ac.whatsapp_a_confirmar) return { data:"sem_numero", error:null };
+      if (!window.__whatsappLigado) return { data:"desligado", error:null };
+      const meus = (window.__whatsapps || []).filter(w => w.academia_id === ac.id && w.tipo === "whatsapp_da_ficha" && w.origem !== "admin");
+      if (meus.some(w => Date.now() - new Date(w.criado_em).getTime() < 3600000)) return { data:"espere", error:null };
+      if (meus.filter(w => Date.now() - new Date(w.criado_em).getTime() < 3 * 86400000).length >= 3) return { data:"limite", error:null };
+      codigoDoWhatsapp(ac, "conta");
+      window.__whatsapps = window.__whatsapps || [];
+      window.__whatsapps.push({ academia_id: ac.id, para: "55" + tel(ac.whatsapp_a_confirmar), codigo: "654321", origem: "conta", tipo: "whatsapp_da_ficha", criado_em: new Date().toISOString() });
+      return { data:"mandado", error:null };
+    }
+    if (nome === "confirmar_whatsapp_da_ficha") {
+      if (!administro(a.p_academia)) return erro("Só quem administra a academia confirma o WhatsApp.", "42501");
+      const ac = academiaDe(a.p_academia);
+      if (!ac || !ac.whatsapp_a_confirmar) return { data:"sem_numero", error:null };
+      if (ac.whatsapp_codigo_ok_em) return { data:"publicado", error:null };
+      const k = (window.__codigosDoWhatsapp || {})[ac.id];
+      if (!k || !mesmoNumero(k.numero, ac.whatsapp_a_confirmar)) return { data:"sem_codigo", error:null };
+      if (k.tentativas >= 5) return { data:"tentativas", error:null };
+      if (String(a.p_codigo || "").replace(/\D/g, "") !== k.codigo) { k.tentativas++; return { data:"errado", error:null }; }
+      // Banco sem o SQL 20261026180000: o primeiro número entrava na hora.
+      if (!ac.whatsapp_antes && window.__semForaDoAr) { whatsappEntra(ac); return { data:"ok", error:null }; }
+      // Regra 222 (SQL 20261109130000): o número entra na ficha na hora,
+      // com "WhatsApp em confirmação pelo GuiaTennis" até o admin conferir.
+      Object.assign(ac, { phone: ac.whatsapp_a_confirmar, whatsapp_codigo_ok_em: new Date().toISOString(), whatsapp_em_confirmacao: true, dados_atualizados_em: new Date().toISOString() });
+      delete window.__codigosDoWhatsapp[ac.id];
+      db.emails_a_enviar.push({ id: "e-aprovar-" + ac.id, tipo: "whatsapp_para_aprovar", para: ADMIN, assunto: "WhatsApp em confirmação: " + ac.name, criado_em: new Date().toISOString(), enviado_em: null, tentativas: 0, erro: null });
+      return { data:"publicado", error:null };
+    }
+    if (nome === "desistir_do_whatsapp_novo") {
+      if (!administro(a.p_academia)) return erro("Só quem administra a academia muda o WhatsApp.", "42501");
+      const ac = academiaDe(a.p_academia);
+      if (ac) { Object.assign(ac, { phone: ac.whatsapp_em_confirmacao ? (ac.whatsapp_antes || null) : ac.phone, whatsapp_a_confirmar: null, whatsapp_antes: null, whatsapp_pedido_em: null, whatsapp_pedido_por: null, whatsapp_codigo_ok_em: null, whatsapp_em_confirmacao: false }); }
+      if (window.__codigosDoWhatsapp) delete window.__codigosDoWhatsapp[a.p_academia];
+      return { data:null, error:null };
+    }
+    if (nome === "whatsapps_para_confirmar_admin") {
+      if (!souAdmin()) return { data:[], error:null };
+      return { data: db.academias.filter(ac => ac.whatsapp_a_confirmar).map(ac => {
+        const k = (window.__codigosDoWhatsapp || {})[ac.id];
+        const x = db.academia_acessos.find(y => y.user_id === ac.whatsapp_pedido_por) || {};
+        return { academia_id: ac.id, nome: ac.name, bairro: ac.bairro, cidade: ac.cidade, numero: ac.whatsapp_a_confirmar, antes: ac.whatsapp_antes || null,
+          pedido_em: ac.whatsapp_pedido_em, codigo_em: k ? k.criado_em : null, codigo_origem: k ? k.origem : null, codigo_ok_em: ac.whatsapp_codigo_ok_em || null,
+          quem: x.nome_responsavel || null, email: x.email || null, ligado: !!window.__whatsappLigado };
+      }), error:null };
+    }
+    if (nome === "gerar_codigo_do_whatsapp_admin") {
+      if (!souAdmin()) return erro("Só o GuiaTennis gera o código.", "42501");
+      const ac = academiaDe(a.p_academia);
+      if (!ac || !ac.whatsapp_a_confirmar) return erro("Essa academia não tem WhatsApp esperando o código.", "22023");
+      return { data: codigoDoWhatsapp(ac, "admin").codigo, error:null };
+    }
+    if (nome === "mandar_codigo_do_whatsapp_admin") {
+      if (!souAdmin()) return erro("Só o GuiaTennis manda o código.", "42501");
+      const ac = academiaDe(a.p_academia);
+      if (!ac || !ac.whatsapp_a_confirmar) return { data:"sem_numero", error:null };
+      if (!window.__whatsappLigado) return { data:"desligado", error:null };
+      codigoDoWhatsapp(ac, "admin");
+      return { data:"mandado", error:null };
+    }
+    if (nome === "aprovar_whatsapp_admin" || nome === "recusar_whatsapp_admin") {
+      if (!souAdmin()) return erro("Só o GuiaTennis aprova o WhatsApp.", "42501");
+      const ac = academiaDe(a.p_academia);
+      if (!ac || !ac.whatsapp_a_confirmar) return erro("Essa academia não tem WhatsApp esperando.", "22023");
+      const numero = ac.whatsapp_a_confirmar;
+      if (nome === "aprovar_whatsapp_admin") whatsappEntra(ac);
+      else { Object.assign(ac, { phone: ac.whatsapp_em_confirmacao ? (ac.whatsapp_antes || null) : ac.phone, whatsapp_a_confirmar: null, whatsapp_antes: null, whatsapp_pedido_em: null, whatsapp_pedido_por: null, whatsapp_codigo_ok_em: null, whatsapp_em_confirmacao: false }); }
+      db.emails_a_enviar.push({ id: "e-" + nome + "-" + ac.id, tipo: nome === "aprovar_whatsapp_admin" ? "whatsapp_aprovado" : "whatsapp_recusado", para: "equipe", assunto: (nome === "aprovar_whatsapp_admin" ? "O WhatsApp novo está na ficha da " : "O WhatsApp novo não entrou na ficha da ") + ac.name, texto: a.p_motivo || numero, criado_em: new Date().toISOString(), enviado_em: null, tentativas: 0, erro: null });
+      return { data:null, error:null };
+    }
+    // O controle das fichas paradas no admin (SQL 20261026180000).
+    // window.__semForaDoAr finge o banco sem o SQL novo.
+    if (["fichas_paradas_admin", "lembrar_ficha_admin", "ficha_conferida_admin"].includes(nome) && window.__semForaDoAr) return semFuncao;
+    if (nome === "fichas_paradas_admin") {
+      if (!souAdmin()) return { data:[], error:null };
+      const lembretes = window.__lembretesDeFicha = window.__lembretesDeFicha || {};
+      const tres = Date.now() - 91 * 86400000;
+      const noAr = (ac) => ac.status === "published" && !(ac.pausada && (!ac.pausada_ate || new Date(ac.pausada_ate) > new Date()));
+      return { data: db.academias.filter(ac => noAr(ac) && new Date(ac.dados_atualizados_em || ac.created_at || 0).getTime() < tres
+          && !(lembretes[ac.id] && lembretes[ac.id].conferida_em && new Date(lembretes[ac.id].conferida_em).getTime() > tres))
+        .map(ac => {
+          const equipe = db.academia_vinculos.filter(v => v.academia_id === ac.id);
+          const recebem = equipe.map(v => db.academia_acessos.find(x => x.user_id === v.user_id)).filter(x => x && x.email_confirmado_em && x.avisos_por_email !== false).length;
+          return { academia_id: ac.id, nome: ac.name, atualizada_em: ac.dados_atualizados_em || ac.created_at || null, lembrada_em: (lembretes[ac.id] || {}).lembrada_em || null,
+            conferida_em: (lembretes[ac.id] || {}).conferida_em || null, com_responsavel: equipe.length > 0, recebem };
+        })
+        .sort((p, q) => String(p.atualizada_em).localeCompare(String(q.atualizada_em))), error:null };
+    }
+    if (nome === "lembrar_ficha_admin") {
+      if (!souAdmin()) return erro("Só o GuiaTennis manda esse lembrete.", "42501");
+      const ac = academiaDe(a.p_academia);
+      if (!ac) return erro("Academia não encontrada.", "22023");
+      const lembretes = window.__lembretesDeFicha = window.__lembretesDeFicha || {};
+      const l = lembretes[ac.id] || {};
+      if (l.lembrada_em && new Date(l.lembrada_em).toDateString() === new Date().toDateString()) return erro("A academia já recebeu o lembrete hoje.", "22023");
+      const quem = db.academia_vinculos.filter(v => v.academia_id === ac.id).map(v => db.academia_acessos.find(x => x.user_id === v.user_id)).filter(x => x && x.email_confirmado_em && x.avisos_por_email !== false);
+      if (!quem.length) return erro("Ninguém da academia recebe os e-mails do GuiaTennis (e-mail não confirmado ou avisos desligados). Fale pelo WhatsApp.", "22023");
+      quem.forEach(x => db.emails_a_enviar.push({ id: "e-parada-" + ac.id + "-" + x.user_id, tipo: "ficha_parada", para: x.email, assunto: "Confira a ficha da " + ac.name + " no GuiaTennis", criado_em: new Date().toISOString(), enviado_em: null, tentativas: 0, erro: null }));
+      lembretes[ac.id] = { ...l, lembrada_em: new Date().toISOString() };
+      return { data: quem.length, error:null };
+    }
+    if (nome === "ficha_conferida_admin") {
+      if (!souAdmin()) return erro("Só o GuiaTennis marca a ficha como conferida.", "42501");
+      if (!academiaDe(a.p_academia)) return erro("Academia não encontrada.", "22023");
+      const lembretes = window.__lembretesDeFicha = window.__lembretesDeFicha || {};
+      lembretes[a.p_academia] = { ...(lembretes[a.p_academia] || {}), conferida_em: new Date().toISOString() };
+      return { data:null, error:null };
+    }
+    if (nome === "informar_problema") {
+      if (!sessao) return erro("Entre na sua conta para informar um problema.", "42501");
+      if (administro(a.p_academia)) return erro("Vocês administram esta academia: corrijam em Minha ficha, no GuiaTennis Parceiros.", "42501");
+      const j = euJogador();
+      if (!j) return erro("Entre na sua conta para informar um problema.", "42501");
+      if (!j.email_confirmado_em) return erro("Confirme o seu e-mail para informar um problema.", "42501");
+      if (!["whatsapp", "fechou", "endereco", "preco_horario", "outro"].includes(a.p_motivo)) return erro("Escolha o que está errado.", "22023");
+      const detalhes = String(a.p_detalhes || "").trim() || null;
+      if (a.p_motivo === "outro" && !detalhes) return erro("Conte o que está errado.", "22023");
+      const ac = academiaDe(a.p_academia);
+      if (!ac || ac.status !== "published") return erro("Academia não encontrada.", "22023");
+      if (a.p_motivo === "whatsapp" && !ac.phone && !ac.whatsapp_em_revisao_desde) return erro("Esta academia não tem WhatsApp na ficha.", "22023");
+      let p = db.problemas_na_ficha.find(x => x.academia_id === ac.id && x.user_id === j.user_id && x.motivo === a.p_motivo && !x.resolvido_em);
+      if (p) p.detalhes = detalhes || p.detalhes;
+      else db.problemas_na_ficha.push(p = { id: "prob-" + (db.problemas_na_ficha.length + 1), academia_id: ac.id, user_id: j.user_id, motivo: a.p_motivo, detalhes, criado_em: new Date().toISOString(), resolvido_em: null });
+      db.emails_a_enviar.push({ id: "e-prob-" + p.id, tipo: "problema_na_ficha", para: ADMIN, assunto: "Problema informado: " + ac.name, criado_em: new Date().toISOString(), enviado_em: null, tentativas: 0, erro: null });
+      if (a.p_motivo === "whatsapp" && ac.phone && !ac.whatsapp_em_revisao_desde
+          && new Set(db.problemas_na_ficha.filter(x => x.academia_id === ac.id && x.motivo === "whatsapp" && !x.resolvido_em).map(x => x.user_id)).size >= 2) {
+        Object.assign(ac, { whatsapp_em_revisao_desde: new Date().toISOString(), whatsapp_em_revisao_numero: ac.phone, phone: null });
+                return { data:"whatsapp_em_revisao", error:null };
+      }
+      return { data:"ok", error:null };
+    }
+    if (nome === "problemas_da_minha_academia") {
+      if (!administro(a.p_academia)) return { data:[], error:null };
+      return { data: db.problemas_na_ficha.filter(p => p.academia_id === a.p_academia && !p.resolvido_em).map(p => ({ id: p.id, motivo: p.motivo, detalhes: p.detalhes, criado_em: p.criado_em })), error:null };
+    }
+    if (nome === "problemas_admin") {
+      if (!souAdmin()) return { data:[], error:null };
+      return { data: db.problemas_na_ficha.filter(p => !p.resolvido_em).map(p => {
+        const ac = academiaDe(p.academia_id) || {};
+        const j = db.jogadores.find(x => x.user_id === p.user_id) || {};
+        return { id: p.id, academia_id: p.academia_id, nome: ac.name, bairro: ac.bairro, cidade: ac.cidade, motivo: p.motivo, detalhes: p.detalhes, criado_em: p.criado_em,
+          quem: j.nome || null, email: j.email || null, telefone: ac.phone || ac.whatsapp_em_revisao_numero || null, em_revisao: !!ac.whatsapp_em_revisao_desde, numero_em_revisao: ac.whatsapp_em_revisao_numero || null };
+      }), error:null };
+    }
+    if (nome === "resolver_problema_admin") {
+      if (!souAdmin()) return erro("Só o GuiaTennis resolve esse aviso.", "42501");
+      const p = db.problemas_na_ficha.find(x => x.id === a.p_id && !x.resolvido_em);
+      if (p) Object.assign(p, { resolvido_em: new Date().toISOString(), resolucao: a.p_resolucao });
+      return { data:null, error:null };
+    }
+    if (nome === "manter_whatsapp_admin" || nome === "tirar_whatsapp_admin") {
+      if (!souAdmin()) return erro("Só o GuiaTennis decide.", "42501");
+      const ac = academiaDe(a.p_academia);
+      if (ac) {
+        if (nome === "manter_whatsapp_admin") Object.assign(ac, { phone: ac.whatsapp_em_revisao_numero || ac.phone, whatsapp_em_revisao_desde: null, whatsapp_em_revisao_numero: null });
+        else Object.assign(ac, { phone: null, whatsapp_em_revisao_desde: null, whatsapp_em_revisao_numero: null, whatsapp_confirmado_em: null });
+              }
+      db.problemas_na_ficha.filter(p => p.academia_id === a.p_academia && p.motivo === "whatsapp" && !p.resolvido_em)
+        .forEach(p => Object.assign(p, { resolvido_em: new Date().toISOString(), resolucao: nome === "manter_whatsapp_admin" ? "whatsapp_mantido" : "whatsapp_tirado" }));
+      return { data:null, error:null };
+    }
+    // Denunciar a conta de quem escreveu (regra 224, SQL 20261109150000).
+    if (["denunciar_conta", "denuncias_de_conta_admin", "resolver_denuncia_de_conta"].includes(nome)) {
+      db.denuncias_de_conta = db.denuncias_de_conta || [];
+      if (nome === "denunciar_conta") {
+        const j = euJogador();
+        if (!j) return erro("Entre na sua conta para denunciar.", "42501");
+        if (!["nome", "falsa", "academia", "outro"].includes(a.p_motivo)) return erro("Escolha o motivo.", "22023");
+        if (a.p_motivo === "outro" && !a.p_detalhes) return erro("Conte o que está errado na conta.", "22023");
+        const v = db.avaliacoes.find(r => r.id === a.p_avaliacao);
+        if (!v || !v.user_id) return erro("Avaliação não encontrada.", "22023");
+        if (v.user_id === j.user_id) return erro("Essa conta é sua.", "22023");
+        if (db.denuncias_de_conta.some(d => d.denunciado === v.user_id && d.denunciou === j.user_id && !d.resolvido_em)) return { data:"ja_enviada", error:null };
+        db.denuncias_de_conta.push({ denunciado: v.user_id, denunciou: j.user_id, avaliacao_id: v.id, nome_visto: v.nome_autor, motivo: a.p_motivo, detalhes: a.p_detalhes || null, criado_em: new Date().toISOString(), resolvido_em: null });
+        db.emails_a_enviar.push({ id: "e-dc-" + v.id, tipo: "conta_denunciada", para: ADMIN, assunto: "Conta denunciada: " + (v.nome_autor || "jogador"), criado_em: new Date().toISOString(), enviado_em: null, tentativas: 0, erro: null });
+        return { data:"enviada", error:null };
+      }
+      if (!souAdmin()) return nome === "denuncias_de_conta_admin" ? { data:[], error:null } : erro("Só o GuiaTennis decide a denúncia.", "42501");
+      const abertas = db.denuncias_de_conta.filter(d => !d.resolvido_em);
+      if (nome === "denuncias_de_conta_admin") return { data: [...new Set(abertas.map(d => d.denunciado))].map(u => {
+        const ds = abertas.filter(d => d.denunciado === u);
+        return { denunciado: u, nome: ds[ds.length - 1].nome_visto, email: u + "@exemplo.com", nome_visto: ds[ds.length - 1].nome_visto, denuncias: ds.length,
+          motivos: [...new Set(ds.map(d => d.motivo))], detalhes: ds.map(d => d.detalhes).filter(Boolean),
+          academias: [...new Set(ds.map(d => ((academiaDe((db.avaliacoes.find(r => r.id === d.avaliacao_id) || {}).academia_id) || {}).name)).filter(Boolean))],
+          avaliacoes: db.avaliacoes.filter(r => r.user_id === u).length, nome_suspenso: false, primeira: ds[0].criado_em };
+      }), error:null };
+      abertas.filter(d => d.denunciado === a.p_user).forEach(d => { d.resolvido_em = new Date().toISOString(); d.resolucao = a.p_suspender ? "suspendeu" : "manteve"; });
+      if (a.p_suspender) { window.__suspensosPelaConta = (window.__suspensosPelaConta || []).concat([{ user: a.p_user, motivo: a.p_motivo }]); }
+      return { data:null, error:null };
+    }
+    if (nome === "denunciar_avaliacao") {
+      const j = euJogador();
+      if (!j) return erro("Entre na sua conta para denunciar.", "42501");
+      if (!["falsa", "ofensiva", "propaganda", "conflito", "pessoal"].includes(a.p_motivo)) return erro("Escolha o motivo.", "22023");
+      const v = db.avaliacoes.find(r => r.id === a.p_avaliacao);
+      if (!v) return erro("Avaliação não encontrada.", "22023");
+      if (v.user_id === j.user_id) return erro("Essa avaliação é sua.", "22023");
+      let d = db.denuncias_de_avaliacao.find(x => x.avaliacao_id === v.id && x.user_id === j.user_id);
+      if (d) Object.assign(d, { motivo: a.p_motivo, resolvido_em: null });
+      else db.denuncias_de_avaliacao.push({ avaliacao_id: v.id, user_id: j.user_id, motivo: a.p_motivo, criado_em: new Date().toISOString(), resolvido_em: null });
+      db.emails_a_enviar.push({ id: "e-den-" + v.id, tipo: "avaliacao_denunciada", para: ADMIN, assunto: "Avaliação denunciada: " + ((academiaDe(v.academia_id) || {}).name || "academia"), criado_em: new Date().toISOString(), enviado_em: null, tentativas: 0, erro: null });
+      return { data:"ok", error:null };
+    }
+    if (nome === "denuncias_admin") {
+      if (!souAdmin()) return { data:[], error:null };
+      const abertas = db.denuncias_de_avaliacao.filter(d => !d.resolvido_em);
+      return { data: [...new Set(abertas.map(d => d.avaliacao_id))].map(id => {
+        const v = db.avaliacoes.find(r => r.id === id) || {};
+        const ds = abertas.filter(d => d.avaliacao_id === id);
+        return { avaliacao_id: id, academia_id: v.academia_id, academia: (academiaDe(v.academia_id) || {}).name, stars: v.stars, comentario: v.comment, autor: v.nome_autor,
+          avaliada_em: v.created_at, denuncias: ds.length, motivos: [...new Set(ds.map(d => d.motivo))], primeira_em: ds[0].criado_em,
+          da_academia: ds.some(d => d.da_academia), detalhes: ds.map(d => d.detalhes).filter(Boolean) };
+      }), error:null };
+    }
+    // Regra 158 (SQL 20261026200000). window.__semFechadaGuardada finge o banco sem o SQL novo.
+    const REGRA_158 = ["academias_fechadas", "reabrir_academia", "cancelar_reabertura", "academias_fechadas_admin", "pedidos_de_reabertura_admin",
+      "resolver_reabertura_admin", "reabrir_academia_admin", "avisos_do_admin", "pedir_analise_da_avaliacao"];
+    if (REGRA_158.includes(nome) && window.__semFechadaGuardada) return semFuncao;
+    db.pedidos_de_reabertura = window.__db.pedidos_de_reabertura = db.pedidos_de_reabertura || [];
+    if (nome === "academias_fechadas") {
+      if (!sessao) return erro("permission denied for function academias_fechadas", "42501");
+      const email = String(sessao.user.email || "").toLowerCase();
+      return { data: db.academias.filter(ac => ac.status === "fechada").map(ac => ({ academia_id: ac.id, nome: ac.name, bairro: ac.bairro, cidade: ac.cidade, fechada_em: ac.fechada_em,
+        minha: (ac.fechada_emails || []).includes(email),
+        pedido_em: (db.pedidos_de_reabertura.find(p => p.academia_id === ac.id && p.user_id === sessao.user.id && !p.resolvido_em) || {}).criado_em || null })), error:null };
+    }
+    if (nome === "reabrir_academia") {
+      const x = meuAcesso();
+      if (!x) return erro("Entre com a sua conta do GuiaTennis Parceiros.", "42501");
+      if (!x.email_confirmado_em) return erro("Confirme o seu e-mail para reabrir a academia.", "42501");
+      if (!a.p_declaro) return erro("Marque a declaração de que você responde pela academia.", "22023");
+      const ac = academiaDe(a.p_academia);
+      if (!ac || ac.status !== "fechada") return erro("Essa academia não está fechada no GuiaTennis.", "22023");
+      const email = String(sessao.user.email || "").toLowerCase();
+      if ((ac.fechada_emails || []).includes(email)) {
+        voltaAoGuia(ac, x.user_id, true);
+        db.emails_a_enviar.push({ id: "e-reaberta-" + ac.id, tipo: "academia_reaberta", para: ADMIN, assunto: "Academia reaberta: " + ac.name, criado_em: new Date().toISOString(), enviado_em: null, tentativas: 0, erro: null });
+        return { data:"reaberta", error:null };
+      }
+      let p = db.pedidos_de_reabertura.find(y => y.academia_id === ac.id && y.user_id === x.user_id && !y.resolvido_em);
+      if (!p) db.pedidos_de_reabertura.push(p = { id: "reab-" + (db.pedidos_de_reabertura.length + 1), academia_id: ac.id, user_id: x.user_id, criado_em: new Date().toISOString(), resolvido_em: null });
+      p.detalhes = a.p_detalhes || null;
+      db.emails_a_enviar.push({ id: "e-reab-" + p.id, tipo: "pedido_de_reabertura", para: ADMIN, assunto: "Pedido para reabrir: " + ac.name, criado_em: new Date().toISOString(), enviado_em: null, tentativas: 0, erro: null });
+      return { data:"pedido", error:null };
+    }
+    if (nome === "cancelar_reabertura") {
+      db.pedidos_de_reabertura.filter(p => p.academia_id === a.p_academia && sessao && p.user_id === sessao.user.id && !p.resolvido_em).forEach(p => Object.assign(p, { resolvido_em: new Date().toISOString(), resolucao: "cancelado" }));
+      return { data:null, error:null };
+    }
+    if (nome === "academias_fechadas_admin") {
+      if (!souAdmin()) return { data:[], error:null };
+      return { data: db.academias.filter(ac => ac.status === "fechada").map(ac => ({ academia_id: ac.id, nome: ac.name, bairro: ac.bairro, cidade: ac.cidade, fechada_em: ac.fechada_em,
+        emails: ac.fechada_emails || [], avaliacoes: db.avaliacoes.filter(v => v.academia_id === ac.id).length, publicada_em: ac.publicada_em || ac.created_at || null })), error:null };
+    }
+    if (nome === "pedidos_de_reabertura_admin") {
+      if (!souAdmin()) return { data:[], error:null };
+      return { data: db.pedidos_de_reabertura.filter(p => !p.resolvido_em).map(p => {
+        const ac = academiaDe(p.academia_id) || {};
+        const x = db.academia_acessos.find(y => y.user_id === p.user_id) || {};
+        return { id: p.id, academia_id: ac.id, nome: ac.name, bairro: ac.bairro, cidade: ac.cidade, fechada_em: ac.fechada_em, quem: x.nome_responsavel || null, email: x.email || null,
+          whatsapp: x.whatsapp || null, detalhes: p.detalhes, criado_em: p.criado_em, emails_antes: ac.fechada_emails || [] };
+      }), error:null };
+    }
+    if (nome === "resolver_reabertura_admin") {
+      if (!souAdmin()) return erro("Só o GuiaTennis decide.", "42501");
+      const p = db.pedidos_de_reabertura.find(y => y.id === a.p_id && !y.resolvido_em);
+      if (!p) return erro("Pedido não encontrado ou já resolvido.", "22023");
+      Object.assign(p, { resolvido_em: new Date().toISOString(), resolucao: a.p_aprovar ? "reaberta" : "recusada", resposta: a.p_resposta || null });
+      const ac = academiaDe(p.academia_id);
+      if (a.p_aprovar && ac && ac.status === "fechada") voltaAoGuia(ac, p.user_id, false);
+      return { data:null, error:null };
+    }
+    if (nome === "reabrir_academia_admin") {
+      if (!souAdmin()) return erro("Só o GuiaTennis reabre uma academia.", "42501");
+      const ac = academiaDe(a.p_academia);
+      if (!ac || ac.status !== "fechada") return erro("Essa academia não está fechada.", "22023");
+      voltaAoGuia(ac, null, false);
+      return { data:null, error:null };
+    }
+    if (nome === "avisos_do_admin") {
+      if (!souAdmin()) return { data:[], error:null };
+      return { data: db.emails_a_enviar.filter(e => e.para === ADMIN).slice().reverse().map(e => ({ id: e.id, tipo: e.tipo, assunto: e.assunto, criado_em: e.criado_em, enviado_em: e.enviado_em, erro: e.erro })), error:null };
+    }
+    if (nome === "pedir_analise_da_avaliacao") {
+      const v = db.avaliacoes.find(r => r.id === a.p_avaliacao);
+      if (!v) return erro("Avaliação não encontrada.", "22023");
+      if (!sessao || !vinculo(sessao.user.id, v.academia_id)) return erro("Só quem administra a academia pede a análise.", "42501");
+      if (!["falsa", "ofensiva", "propaganda", "conflito", "pessoal"].includes(a.p_motivo)) return erro("Escolha o motivo.", "22023");
+      let d = db.denuncias_de_avaliacao.find(x => x.avaliacao_id === v.id && x.user_id === sessao.user.id);
+      if (d) Object.assign(d, { motivo: a.p_motivo, da_academia: true, detalhes: a.p_detalhes || null, resolvido_em: null });
+      else db.denuncias_de_avaliacao.push({ avaliacao_id: v.id, user_id: sessao.user.id, motivo: a.p_motivo, da_academia: true, detalhes: a.p_detalhes || null, criado_em: new Date().toISOString(), resolvido_em: null });
+      db.emails_a_enviar.push({ id: "e-analise-" + v.id, tipo: "analise_pedida", para: ADMIN, assunto: "A academia pediu análise de uma avaliação: " + ((academiaDe(v.academia_id) || {}).name || "academia"), criado_em: new Date().toISOString(), enviado_em: null, tentativas: 0, erro: null });
+      return { data:"ok", error:null };
+    }
+    if (nome === "resolver_denuncia_admin") {
+      if (!souAdmin()) return erro("Só o GuiaTennis decide.", "42501");
+      if (a.p_remover) { db.avaliacoes = window.__db.avaliacoes = db.avaliacoes.filter(r => r.id !== a.p_avaliacao); db.denuncias_de_avaliacao = window.__db.denuncias_de_avaliacao = db.denuncias_de_avaliacao.filter(d => d.avaliacao_id !== a.p_avaliacao); }
+      else db.denuncias_de_avaliacao.filter(d => d.avaliacao_id === a.p_avaliacao && !d.resolvido_em).forEach(d => Object.assign(d, { resolvido_em: new Date().toISOString(), resolucao: "mantida" }));
+      return { data:null, error:null };
+    }
+    return semFuncao;
+  }
   window.supabase = { createClient(url, chave){ window.__banco = { url, chave }; return {
     from: builder,
-    rpc(){ return { single(){ return Promise.resolve({ data:{ acessos_total:1234, buscas_total:567, fichas_total:89, contatos_total:12 }, error:null }); } }; },
+    rpc(nome, args){
+      // window.__rpcComFalha[nome]: a função devolve esse erro (falha de teste).
+      const comFalha = window.__rpcComFalha && window.__rpcComFalha[nome];
+      if (comFalha) window.__rpcs.push({ nome, args: JSON.parse(JSON.stringify(args || {})) });
+      const r = comFalha ? { data: null, error: comFalha } : rodarRpc(nome, args);
+      const p = Promise.resolve(r);
+      p.single = () => Promise.resolve(r);
+      return p;
+    },
     auth: {
-      getSession(){ return Promise.resolve({ data:{ session: window.__admin ? { user:{ email:"a@b" } } : null } }); },
-      signInWithPassword(){ return Promise.resolve({ data:{}, error:null }); },
-      signOut(){ return Promise.resolve({}); },
+      getSession(){ return Promise.resolve({ data:{ session: sessao } }); },
+      signInWithPassword({ email, password }){
+        window.__ultimoLogin = email;
+        if (email === ADMIN || (window.__senhas[email] && window.__senhas[email] === password)) {
+          const acesso = db.academia_acessos.find(x => loginDe(x) === email);
+          const jog = db.jogadores.find(x => x.email === email);
+          sessao = { user: { id: email === ADMIN ? "admin" : (acesso ? acesso.user_id : jog ? jog.user_id : "sem-acesso"), email } };
+          return Promise.resolve({ data:{ session: sessao, user: sessao.user }, error:null });
+        }
+        return Promise.resolve({ data:{ session:null }, error:{ message:"Invalid login credentials", code:"invalid_credentials" } });
+      },
+      updateUser(attrs){
+        // window.__erroSenha: true (a mesma senha de antes) ou o erro do Supabase; vale uma vez.
+        if (window.__erroSenha) {
+          const e = window.__erroSenha === true ? { message:"New password should be different from the old password.", code:"same_password", status:422 } : window.__erroSenha;
+          window.__erroSenha = null;
+          return Promise.resolve({ data:{}, error:e });
+        }
+        window.__senhaNova = attrs.password;
+        window.__senhaAtualEnviada = attrs.current_password;
+        if (sessao) window.__senhas[sessao.user.email] = attrs.password;
+        return Promise.resolve({ data:{ user: sessao && sessao.user }, error:null });
+      },
+      // Código por e-mail (SQL 20261002150000): o código mandado fica em
+      // __codigos[email]; window.__semEmail finge o serviço de e-mail desligado.
+      signInWithOtp({ email }){
+        if (window.__semEmail) return Promise.resolve({ data:{}, error:{ message:"Error sending magic link email" } });
+        window.__codigos = window.__codigos || {};
+        window.__codigos[email] = "123456";
+        return Promise.resolve({ data:{}, error:null });
+      },
+      verifyOtp({ email, token }){
+        if (!window.__codigos || window.__codigos[email] !== token) return Promise.resolve({ data:{ session:null }, error:{ message:"Token has expired or is invalid" } });
+        delete window.__codigos[email];
+        const acesso = db.academia_acessos.find(x => loginDe(x) === email);
+        const jog = db.jogadores.find(x => x.email === email);
+        sessao = { user: { id: email === ADMIN ? "admin" : acesso ? acesso.user_id : jog ? jog.user_id : "sem-acesso", email }, otp: true };
+        return Promise.resolve({ data:{ session: sessao, user: sessao.user }, error:null });
+      },
+      signOut(){ sessao = null; window.__saiu = true; return Promise.resolve({}); },
       onAuthStateChange(){ return { data:{ subscription:{ unsubscribe(){} } } }; },
     },
   }; } };

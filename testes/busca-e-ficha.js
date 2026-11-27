@@ -7,8 +7,8 @@ const { abrir, ok } = require('./harness');
     const kids = [...hero.children].map(e => e.className || e.tagName);
     return { kids, sub: hero.querySelector('.home-hero-sub')?.textContent };
   });
-  ok(ordem.kids.indexOf('searchcard') < ordem.kids.indexOf('home-hero-sub'), 'frase vem depois da barra de busca: ' + ordem.kids.join(' > '));
-  ok(ordem.sub === 'Compare preço, estrutura e comodidades de academias de tênis — e fale direto com elas.', 'texto da frase');
+  ok(ordem.kids.indexOf('home-hero-sub') < ordem.kids.indexOf('searchcard'), 'frase vem antes da busca (regra 263): ' + ordem.kids.join(' > '));
+  ok(ordem.sub === 'Compare preço, estrutura e avaliações e fale direto com a academia.', 'texto da frase (regra 263)');
   await page.screenshot({ path: require('path').join(require('os').tmpdir(), 'guiatennis-home.png') });
   await page.fill('#cep-input', '05422-000');
   await page.keyboard.press('Enter');
@@ -16,7 +16,7 @@ const { abrir, ok } = require('./harness');
   let cl = await page.evaluate(() => window.__cliques.map(c => c.tipo + ':' + (c.detalhe || '')));
   ok(cl.includes('busca:Pinheiros, São Paulo'), 'visitante: busca registrada com a região — ' + cl.join(' | '));
   const cepGravado = await page.evaluate(() => window.__cliques.filter(c => c.tipo === 'busca').map(c => c.cep));
-  ok(cepGravado[0] === '05422-000', 'busca por CEP guarda o CEP digitado — ' + cepGravado);
+  ok(cepGravado[0] === '05422', 'busca por CEP guarda só a região do CEP (5 primeiros números, regra 336) — ' + cepGravado);
   const filtro = await page.evaluate(() => document.body.innerHTML.includes('Empréstimo de raquete') && !document.body.innerHTML.includes('Empresta raquete'));
   ok(filtro, 'rótulo "Empréstimo de raquete"');
   await browser.close();
@@ -67,7 +67,7 @@ const { abrir, ok } = require('./harness');
   ({ browser, page } = await abrir({ q: '?busca=05422-000' }));
   await page.waitForTimeout(1200);
   cl = await page.evaluate(() => window.__cliques.filter(c => c.tipo === 'busca').map(c => c.detalhe + '|' + c.cep));
-  ok(cl.join() === 'Pinheiros, São Paulo|05422-000', 'abrir link ?busca=CEP faz a busca e grava — ' + cl);
+  ok(cl.join() === 'Pinheiros, São Paulo|05422', 'abrir link ?busca=CEP faz a busca e grava (só a região do CEP) — ' + cl);
   ok(await page.evaluate(() => state.origin && state.origin.bairro === 'Pinheiros' && location.search.includes('05422')), 'link mantém o CEP e ordena por distância');
   await browser.close();
 
@@ -158,16 +158,36 @@ const { abrir, ok } = require('./harness');
 
   // Fichas
   ({ browser, page } = await abrir({ q: '?court=a1' }));
+  // Cancelamento aparece a partir do plano Completo (02/10/2026).
+  await page.evaluate(async () => { window.__db.academias.forEach(a => a.plano = 'completo'); await loadEverything(); openCourt('a1'); });
+  await page.waitForTimeout(200);
   let txt = await page.evaluate(() => document.getElementById('app').textContent);
   ok(!txt.includes('Cobra metade'), 'só aula: regra de locação não aparece');
   ok(txt.includes('Perde a aula'), 'só aula: regra da aula aparece');
   ok(txt.includes('professor da academia. Para alugar a quadra avulsa'), 'FAQ "professor da academia"');
-  ok(txt.includes('consulte com a academia'), '"consulte com a academia"');
+  ok(txt.includes('Sob consulta') && txt.includes('fale com a academia'), 'sem preço: "Sob consulta" e "fale com a academia"');
+  // Cartão da busca sem preço e sem WhatsApp: sem repetir "confirme o valor".
+  const cartao = await page.evaluate(() => {
+    const div = document.createElement('div');
+    div.innerHTML = renderCard(decorate({ ...state.allCourts.find(x => x.id === 'a1'), phone: '', priceAula: '', priceLocacao: '', priceRange: '' }));
+    return div.textContent.replace(/\s+/g, ' ');
+  });
+  ok(cartao.includes('Sob consulta') && cartao.includes('fale com a academia') && !cartao.includes('Confirme o valor') && !cartao.includes('confirme os valores'), 'cartão sem preço: "Sob consulta · fale com a academia", sem a frase repetida embaixo');
   ok(txt.includes('Estacionamento grátis.') && !txt.includes('Rua de trás'), 'com vaga própria: ficha mostra "No local" e não o texto de onde parar');
   await browser.close();
   ({ browser, page } = await abrir({ q: '?court=a2' }));
+  // Cancelamento aparece a partir do plano Completo (02/10/2026).
+  await page.evaluate(async () => { window.__db.academias.forEach(a => a.plano = 'completo'); await loadEverything(); openCourt('a2'); });
+  await page.waitForTimeout(200);
   txt = await page.evaluate(() => document.getElementById('app').textContent);
   ok(txt.includes('reposição da reserva') || txt.includes('reposição de reserva'), 'só locação: fala em reserva, não aula');
   ok(!/reposição da aula/.test(txt), 'só locação: não fala em aula na política');
+  // Sem preço, a ficha inteira diz "sob consulta" (regra 3, pedido de 08/10/2026).
+  await page.evaluate(() => openCourt('a1'));
+  await page.waitForTimeout(200);
+  txt = await page.evaluate(() => document.getElementById('app').textContent.replace(/\s+/g, ' '));
+  const faqPreco = await page.evaluate(() => perguntasAcademia(state.selected).find(f => f.q.startsWith('Quanto custa')).a);
+  ok(txt.includes('O valor é sob consulta: fale com a academia.') && !/(valor|preço) não foi incluído|: não incluído/.test(txt + faqPreco) && faqPreco.startsWith('O valor é sob consulta'),
+    'sem preço: "sob consulta" no texto da ficha e na pergunta do preço, nunca "não foi incluído"');
   await browser.close();
 })();

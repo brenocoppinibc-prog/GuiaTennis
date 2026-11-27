@@ -49,7 +49,7 @@ create policy "Enviar avaliacao" on public.avaliacoes
 drop policy if exists "Registrar clique" on public.cliques;
 create policy "Registrar clique" on public.cliques
   for insert
-  with check (tipo in ('acesso_site', 'busca', 'visualizacao', 'whatsapp', 'site', 'instagram', 'compartilhar'));
+  with check (tipo in ('acesso_site', 'busca', 'visualizacao', 'whatsapp', 'site', 'instagram', 'compartilhar', 'lista_whatsapp', 'contato_salvo'));
 
 drop policy if exists "Enviar academia para analise" on public.academias;
 create policy "Enviar academia para analise" on public.academias

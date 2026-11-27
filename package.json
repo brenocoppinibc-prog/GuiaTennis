@@ -1,0 +1,12 @@
+{
+  "name": "guiatennis",
+  "private": true,
+  "description": "Monta o site para a Netlify publicar (scripts/montar.mjs).",
+  "scripts": {
+    "montar": "node scripts/montar.mjs"
+  },
+  "dependencies": {
+    "node-forge": "1.4.4",
+    "terser": "5.36.0"
+  }
+}

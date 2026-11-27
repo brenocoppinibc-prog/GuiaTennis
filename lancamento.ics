@@ -1,0 +1,21 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//GuiaTennis//Lancamento//PT
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+UID:lancamento-20261129@guiatennis.com.br
+DTSTAMP:20261126T190000Z
+DTSTART:20261129T210000Z
+DTEND:20261129T213000Z
+SUMMARY:Lançamento do novo GuiaTennis
+DESCRIPTION:O novo GuiaTennis chega hoje\, às 18h: guiatennis.com.br
+URL:https://guiatennis.com.br
+LOCATION:guiatennis.com.br
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:O novo GuiaTennis chegou: guiatennis.com.br
+TRIGGER:PT0M
+END:VALARM
+END:VEVENT
+END:VCALENDAR

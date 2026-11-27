@@ -1,48 +1,66 @@
-const { abrir, ok } = require('./harness');
+const { abrir, ok, irParte, salvarFicha } = require('./harness');
 (async () => {
   let { browser, page } = await abrir({ admin: true, q: '?court=a1' });
   await page.evaluate(() => document.querySelector('.editar-academia[data-court="a1"]').click());
   await page.waitForTimeout(300);
-  const f = await page.evaluate(() => {
-    const ov = document.getElementById('register-overlay');
-    const labels = [...ov.querySelectorAll('.field-label')].map(e => e.textContent.trim());
-    return {
-      labels,
-      polModo: ov.querySelectorAll('.pol-modo').length,
-      rep: [...ov.querySelectorAll('.reg-reposicao.active')].map(e => e.dataset.reposicao + '@' + e.dataset.alvo),
-      fora: [...ov.querySelectorAll('[id^="f-politica-fora-"]')].map(e => e.id + '=' + e.value),
-      horas: [...ov.querySelectorAll('.hr-time')].map(e => e.value).join(','),
-      estacionar: !!document.getElementById('f-acesso-estacionar'),
-    };
-  });
-  console.log(f.labels.join(' | '));
+  // Cada parte numa tela: a de cancelamento, a de horário e a de como chegar.
+  const parte = async (id, ler) => { await irParte(page, id); return page.evaluate(ler); };
+  const ordem = await page.evaluate(() => REG_PASSOS.map(x => x.id).join());
+  console.log(ordem);
+  const f = {
+    ...(await parte('cancelamento', () => ({
+      polModo: document.querySelectorAll('#register-overlay .pol-modo').length,
+      rep: [...document.querySelectorAll('#register-overlay .reg-reposicao.active')].map(e => e.dataset.reposicao + '@' + e.dataset.alvo),
+      fora: [...document.querySelectorAll('#register-overlay [id^="f-politica-fora-"]')].map(e => e.id + '=' + e.value),
+    }))),
+    horas: await parte('horario', () => [...document.querySelectorAll('#register-overlay .hr-time')].map(e => e.value).join(',')),
+    estacionar: await parte('chegada', () => !!document.getElementById('f-acesso-estacionar')),
+  };
   ok(f.polModo === 0, 'só aula: sem a escolha "Aula e locação diferentes"');
   ok(f.rep.join() === '24@aula' && f.fora.length === 1 && f.fora[0].includes('Perde a aula'), 'só aula: um bloco, com a regra da aula carregada — ' + f.rep + ' ' + f.fora);
   ok(f.horas.startsWith('06:00,22:00'), 'edição carrega o horário — ' + f.horas);
   ok(!f.estacionar, 'com estacionamento grátis: sem "Onde estacionar"');
-  ok(f.labels.indexOf('Como é a fachada') > f.labels.indexOf('Cancelamento e reposição'), 'fachada/chegada/estacionar abaixo do cancelamento');
+  ok(ordem === 'dados,modalidades,precos,locacao,eventos,ranking,projeto,quadras,contato,fotos,horario,cancelamento,chegada,sobre,revisar', 'partes na ordem (a Apresentação antes de Revisar, regra 205): primeiro o que o jogador e o GuiaTennis precisam (as modalidades e, depois, as aulas e a locação em partes separadas, regras 169 e 170), fachada/chegada depois do cancelamento');
 
   // Tira o estacionamento: aparece o campo com o texto antigo
+  await irParte(page, 'quadras');
   await page.evaluate(() => document.querySelector('.reg-amenity[data-amenity="estacionamento_gratuito"]').click());
   await page.waitForTimeout(200);
-  const est = await page.evaluate(() => document.getElementById('f-acesso-estacionar')?.value);
+  const est = await parte('chegada', () => document.getElementById('f-acesso-estacionar')?.value);
   ok(est === 'Rua de trás', 'sem estacionamento: aparece "Onde estacionar" — ' + est);
 
-  // Marca locação também: aparece a escolha, com as duas regras antigas
-  await page.evaluate(() => document.querySelector('.reg-modalidade[data-modalidade="locacao"]').click());
+  // Marca a locação nas Modalidades: aparece a escolha, com as duas regras antigas
+  await irParte(page, 'modalidades');
+  await page.evaluate(() => document.querySelector('[data-reg-mod="locacao"]').click());
   await page.waitForTimeout(200);
+  await irParte(page, 'cancelamento');
   const f2 = await page.evaluate(() => ({ polModo: document.querySelectorAll('.pol-modo').length, rep: [...document.querySelectorAll('.reg-reposicao.active')].map(e => e.dataset.reposicao + '@' + e.dataset.alvo).join() }));
   ok(f2.polModo === 2 && f2.rep === '24@aula,12@locacao', 'aula + locação: volta a escolha, regras preservadas — ' + f2.rep);
-  // Desmarca aula: fica só a de locação
-  await page.evaluate(() => document.querySelector('.reg-modalidade[data-modalidade="aulas_proprias"]').click());
+  // Regra 184: o título em cima do campo do que acontece fora do prazo.
+  const titulos = await page.evaluate(() => [...document.querySelectorAll('label[for^="f-politica-fora-"]')].map(e => e.innerText.trim()));
+  ok(titulos.join(' | ') === 'O que acontece com a aula se a pessoa cancelar com menos de 24h de antecedência? Há reposição? | O que acontece com a locação se a pessoa cancelar com menos de 12h de antecedência? Há reposição?', 'cada campo do cancelamento com o título em cima — ' + titulos.join(' | '));
+  // Regra 184: "Pular" vira "Continuar" na hora em que a parte ganha algo.
+  await page.evaluate(() => { window.__horarioGuardado = JSON.stringify(window.__form.horario); window.__form.horario = {}; });
+  await irParte(page, 'horario');
+  const antes = await page.innerText('#reg-continuar');
+  await page.fill('#f-horario-nota', 'Fechado aos feriados');
+  await page.waitForTimeout(50);
+  ok(antes === 'Pular' && (await page.innerText('#reg-continuar')) === 'Continuar', '"Pular" vira "Continuar" assim que se escreve, sem esperar — ' + antes);
+  await page.evaluate(() => { window.__form.horario = JSON.parse(window.__horarioGuardado); });
+  // Desmarca as aulas nas Modalidades: fica só a de locação
+  await irParte(page, 'modalidades');
+  await page.evaluate(() => document.querySelector('[data-reg-mod="aulas_proprias"]').click());
   await page.waitForTimeout(200);
+  await irParte(page, 'cancelamento');
   const f3 = await page.evaluate(() => ({ polModo: document.querySelectorAll('.pol-modo').length, rep: [...document.querySelectorAll('.reg-reposicao.active')].map(e => e.dataset.reposicao + '@' + e.dataset.alvo).join() }));
   ok(f3.polModo === 0 && f3.rep === '12@locacao', 'só locação: um bloco, regra de locação — ' + f3.rep);
   // Volta para só aula e salva
-  await page.evaluate(() => document.querySelector('.reg-modalidade[data-modalidade="aulas_proprias"]').click());
-  await page.evaluate(() => document.querySelector('.reg-modalidade[data-modalidade="locacao"]').click());
+  await irParte(page, 'modalidades');
+  await page.evaluate(() => document.querySelector('[data-reg-mod="aulas_proprias"]').click());
+  await page.evaluate(() => document.querySelector('[data-reg-mod="locacao"]').click());
+  await irParte(page, 'quadras');
   await page.evaluate(() => document.querySelector('.reg-amenity[data-amenity="estacionamento_gratuito"]').click());
-  await page.evaluate(() => document.getElementById('register-submit').click());
+  await salvarFicha(page);
   await page.waitForTimeout(600);
   const up = await page.evaluate(() => window.__ultimoUpdate);
   ok(JSON.stringify(up.politica) === JSON.stringify({ modo: 'igual', reposicao: '24', foraDoPrazo: 'Perde a aula.' }), 'salva só a regra da aula — ' + JSON.stringify(up.politica));
@@ -54,27 +72,32 @@ const { abrir, ok } = require('./harness');
   ({ browser, page } = await abrir({ admin: true, q: '?court=a2' }));
   await page.evaluate(() => document.querySelector('.editar-academia[data-court="a2"]').click());
   await page.waitForTimeout(300);
+  await irParte(page, 'cancelamento');
   const r = await page.evaluate(() => [...document.querySelectorAll('.reg-reposicao.active')].map(e => e.dataset.reposicao).join());
   ok(r === '48', 'regra única aparece na edição — ' + r);
-  await page.evaluate(() => document.getElementById('register-submit').click());
+  await salvarFicha(page);
   await page.waitForTimeout(600);
   const up2 = await page.evaluate(() => window.__ultimoUpdate);
   ok(up2.politica.reposicao === '48', 'regra única continua depois de salvar');
   // Prazo personalizado de reposição
   await page.evaluate(async () => { await loadEverything(); state.showRegister = false; render(); document.querySelector('.editar-academia[data-court="a2"]').click(); });
   await page.waitForTimeout(300);
+  await irParte(page, 'cancelamento');
   await page.evaluate(() => document.querySelector('.reg-reposicao-outro').click());
   await page.waitForTimeout(150);
   ok(await page.evaluate(() => !!document.querySelector('[id^="f-politica-horas-"]') && document.activeElement.id.startsWith('f-politica-horas-')), 'Personalizar abre o campo de horas, já com o cursor');
   await page.fill('[id^="f-politica-horas-"]', '36');
-  await page.evaluate(() => document.getElementById('register-submit').click());
+  await salvarFicha(page);
   await page.waitForTimeout(600);
   ok(await page.evaluate(() => window.__ultimoUpdate.politica.reposicao === '36' && !('__personalizar' in window.__ultimoUpdate.politica)), 'salva 36 horas, sem sujeira do formulário');
-  await page.evaluate(async () => { await loadEverything(); state.showRegister = false; state.selected = state.allCourts.find(c => c.id === 'a2'); render(); });
+  // A ficha do Básico não mostra o cancelamento: confere no Completo.
+  await page.evaluate(async () => { window.__db.academias.find(a => a.id === 'a2').plano = 'completo'; await loadEverything(); state.showRegister = false; state.selected = decorate(state.allCourts.find(c => c.id === 'a2')); render(); });
   const fichaPol = await page.evaluate(() => document.getElementById('app').textContent.replace(/\s+/g, ' '));
-  ok(fichaPol.includes('36h é a antecedência mínima'), 'ficha mostra 36h');
+  ok(fichaPol.includes('Desmarcou até 36h antes') && fichaPol.includes('Com menos de 36h') && !fichaPol.includes('antecedência mínima'), 'ficha mostra 36h, em duas linhas');
   await page.evaluate(() => document.querySelector('.editar-academia[data-court="a2"]').click());
   await page.waitForTimeout(300);
+  ok(await page.evaluate(() => state.regPasso === 0), 'editar de novo abre na primeira parte');
+  await irParte(page, 'cancelamento');
   const reaberto = await page.evaluate(() => ({ ativo: document.querySelector('.reg-reposicao-outro').classList.contains('active'), v: document.querySelector('[id^="f-politica-horas-"]')?.value }));
   ok(reaberto.ativo && reaberto.v === '36', 'editar de novo: Personalizar marcado com 36');
   await page.evaluate(() => document.querySelector('.reg-reposicao[data-reposicao="24"]').click());
@@ -84,11 +107,81 @@ const { abrir, ok } = require('./harness');
 
   // Cadastro novo com as duas modalidades mostra a escolha
   await page.evaluate(() => { window.__form = null; state.showRegister = true; state.registerStatus = 'idle'; render(); });
-  await page.evaluate(() => { document.querySelector('.reg-modalidade[data-modalidade="aulas_proprias"]').click(); });
+  ok(await page.evaluate(() => window.__form.modalidades.length === 0 && ![...document.querySelectorAll('.reg-secoes [data-reg-passo]')].some(b => /^(✓ )?(Aulas|Locação)$/.test(b.innerText))), 'cadastro novo: nenhuma modalidade escolhida, e as partes Aulas e Locação não aparecem');
+  await irParte(page, 'modalidades');
+  await page.evaluate(() => { document.querySelector('[data-reg-mod="aulas_proprias"]').click(); });
+  ok(await page.evaluate(() => [...document.querySelectorAll('.reg-secoes [data-reg-passo]')].map(b => b.innerText.replace('✓ ', '')).join() === 'Nome e endereço,Modalidades,Aulas,Quadras,Contato,Fotos,Horário,Cancelamento,Como chegar,Apresentação,Revisar'), 'escolhendo Aulas, a parte Aulas aparece logo depois das Modalidades');
+  await irParte(page, 'cancelamento');
   let n = await page.evaluate(() => document.querySelectorAll('.pol-modo').length);
   ok(n === 0, 'cadastro novo, só aula: sem escolha');
-  await page.evaluate(() => { document.querySelector('.reg-modalidade[data-modalidade="locacao"]').click(); });
+  await irParte(page, 'modalidades');
+  await page.evaluate(() => { document.querySelector('[data-reg-mod="locacao"]').click(); });
+  await irParte(page, 'cancelamento');
   n = await page.evaluate(() => document.querySelectorAll('.pol-modo').length);
   ok(n === 2, 'cadastro novo, aula e locação: com escolha');
+  await browser.close();
+
+  // Pelo menos uma modalidade, também na edição (regra 171: "obrigatório
+  // selecionar entre aula ou locação, pelo menos um").
+  ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/ficha' }));
+  await page.waitForTimeout(400);
+  await page.click('.editar-academia');
+  await page.waitForTimeout(400);
+  await irParte(page, 'modalidades');
+  await page.click('[data-reg-mod="aulas_proprias"]');
+  const semNada = await page.evaluate(() => ({ rotulo: document.querySelector('.reg-passo .field-label')?.innerText, legenda: !!document.querySelector('.reg-legenda'), botao: document.getElementById('reg-continuar')?.innerText }));
+  ok(/^modalidades \*$/i.test(semNada.rotulo) && semNada.legenda && semNada.botao === 'Continuar', 'na edição, "Modalidades" também é obrigatória, com o * — ' + JSON.stringify(semNada));
+  await page.click('#reg-continuar');
+  await page.waitForTimeout(200);
+  const travou = await page.evaluate(() => ({ passo: regPassoAtual().passo.id, erro: document.querySelector('.form-error')?.innerText || '' }));
+  ok(travou.passo === 'modalidades' && travou.erro.includes('pelo menos uma modalidade (Aulas ou Locação de quadra)'), 'sem nenhuma, "Continuar" não passa e diz o que falta — ' + travou.erro);
+  await irParte(page, 'revisar');
+  await salvarFicha(page);
+  await page.waitForTimeout(500);
+  const naoSalvou = await page.evaluate(() => ({ passo: regPassoAtual().passo.id, erro: [...document.querySelectorAll('.form-error')].map(x => x.innerText).join(' | '), salvou: !!window.__ultimoUpdate }));
+  ok(naoSalvou.passo === 'modalidades' && naoSalvou.erro.includes('Escolha pelo menos uma modalidade') && !naoSalvou.salvou, 'e salvar também não passa: volta para as Modalidades — ' + naoSalvou.erro);
+  await page.click('[data-reg-mod="locacao"]');
+  await page.click('#reg-continuar');
+  await page.waitForTimeout(200);
+  ok(await page.evaluate(() => regPassoAtual().passo.id === 'locacao'), 'com a locação marcada, segue para a parte Locação');
+  // Regra 189: a academia conta o diferencial e a estrutura, até 750 letras,
+  // sem telefone, link ou preço; a ficha mostra em "Sobre a academia".
+  // Regra 205: a parte "Apresentação", a última antes de Revisar.
+  await irParte(page, 'sobre');
+  let ap = await page.evaluate(() => ({
+    ordem: REG_PASSOS.map(x => x.id).slice(-2).join(), titulo: document.querySelector('#reg-sheet, .sheet')?.innerText || '',
+    dica: document.getElementById('f-sobre')?.placeholder || '', planos: [...document.querySelectorAll('.reg-sobre-planos li')].map(l => l.innerText),
+  }));
+  ok(ap.ordem === 'sobre,revisar' && ap.titulo.includes('Apresentação da academia') && ap.titulo.includes('Agora nos conte um pouco mais sobre vocês.'), 'a Apresentação é a última parte antes de Revisar, com o subtítulo');
+  // Regra 216: menos informação (sem a lista dos planos), uma linha só embaixo.
+  const nota = await page.evaluate(() => document.getElementById('f-sobre-conta')?.nextElementSibling?.innerText || '');
+  ok(ap.dica.startsWith('Dicas do que escrever') && ap.dica.includes('o que vocês têm de diferente') && ap.planos.length === 0 && nota.includes('Sem telefone, link ou preço.') && nota.length < 120, 'o quadrado com as dicas e uma linha só embaixo — ' + nota);
+  ok((await page.getAttribute('#f-sobre', 'maxlength')) === '750' && (await page.innerText('label[for="f-sobre"]')).startsWith('O que vocês querem que o jogador saiba'), 'o texto da academia, até 750 letras');
+  await page.fill('#f-sobre', 'Chame no 11 99999-0000 ou em www.academia.com.br');
+  let falta = await page.evaluate(() => regFaltas(window.__form, 'sobre').join(' | '));
+  ok(falta.includes('link ou @'), 'link no texto não passa — ' + falta);
+  await page.fill('#f-sobre', 'Chame no 11 99999-0000');
+  falta = await page.evaluate(() => regFaltas(window.__form, 'sobre').join(' | '));
+  ok(falta.includes('telefone no texto'), 'telefone no texto não passa (o WhatsApp entra pelo código) — ' + falta);
+  const sobre = 'Quadras de saibro cobertas e turmas de até 4 alunos.';
+  await page.fill('#f-sobre', sobre);
+  ok(!(await page.evaluate(() => regFaltas(window.__form, 'sobre').join())).includes('texto') && (await page.innerText('#f-sobre-conta')) === sobre.length + '/750' && (await page.evaluate(() => toRow(window.__form).sobre)) === sobre, 'o texto certo passa, com o contador, e vai para o banco');
+  // Regra 204: o texto da academia é do Premium; o Completo tem o resumo
+  // completo do site (até 750) e o Básico, o resumo curto.
+  const sobreNoPlano = (plano) => page.evaluate(([t, plano]) => {
+    state.showRegister = false; state.page = 'court';
+    state.selected = decorate(aplicarPlano({ ...state.allCourts.find(x => x.id === 'a1'), plano, sobre: t }));
+    render();
+    const el = document.querySelector('#ht-visao');
+    return { academia: el.querySelector('.ht-about-academia')?.innerText || '', texto: el.querySelector('.ht-about')?.innerText || '', curto: descricaoAcademia(state.selected) };
+  }, [sobre, plano]);
+  let ps = await sobreNoPlano('premium');
+  ok(ps.academia === sobre, 'Premium: a ficha mostra o texto da academia em "Sobre a academia"');
+  ps = await sobreNoPlano('completo');
+  ok(!ps.academia && !ps.texto.includes(sobre) && ps.texto.length <= 400, 'Completo: sem o texto da academia, o resumo do site, até 400 letras (regra 330) — ' + ps.texto.length + ' letras: ' + ps.texto.slice(0, 120));
+  ps = await sobreNoPlano('basico');
+  ok(!ps.academia && ps.texto === ps.curto, 'Básico: o resumo curto de sempre');
+  ps = await page.evaluate(() => { const c = decorate(aplicarPlano({ ...state.allCourts.find(x => x.id === 'a1'), plano: 'premium', sobre: '' })); return { r: esc(resumoCompleto(c)), h: htSobre(c) }; });
+  ok(ps.r && ps.h.includes(ps.r) && !ps.h.includes('ht-about-academia'), 'Premium sem texto: o resumo completo');
   await browser.close();
 })();

@@ -124,11 +124,12 @@ social real, com autorização).
 >
 > #tenis #tenissp #aulasdetenis #quadradetenis #saopaulo
 
-**Sexta — Reels "Domingo, às 18h" (sem link: o site abre só no domingo)**
+**Sexta — Reels "Domingo, às 18h" (sem link: o site abre só no domingo; a legenda não repete a fala do vídeo, completa)**
 
-> Se você joga tênis, sabe o quão difícil é encontrar quadra e como é fácil se perder na falta de informação. 🎾
+> Encontrar quadra de tênis em São Paulo não deveria ser tão difícil. 🎾
 >
-> Eu vou ajudar você: no domingo, 29/11, às 18h, lanço a solução para acabar com esse problema. 👀
+> Preço que só aparece depois da mensagem, academia que demora para responder, informação espalhada em todo
+> lugar… No domingo, 29/11, às 18h, isso muda. 👀
 >
 > Gostou da ideia? Siga o @guiatennis e ative o lembrete nos Stories para não perder. 🔔
 >

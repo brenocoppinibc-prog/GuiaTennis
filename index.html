@@ -10358,19 +10358,27 @@ function linkPedirAnalise(c, r) {
 
 // O que falta para a ficha ficar completa — o "complete seu perfil" do
 // Google Business Profile. Na mesma ordem da ficha.
+const FOTOS_MINIMAS_DA_FICHA = 3;
 function faltasDaFicha(c) {
   if (!c) return [];
   const faltas = [];
   if (!c.endereco && !c.address) faltas.push("Endereço");
   if (!c.phone && !(whatsappNovoDe(c.id) || {}).numero) faltas.push("WhatsApp");
+  // 27/11/2026 ("tudo preenchido com todas as informações mesmo: horário, a apresentação, se estiver no Premium, tudo
+  // mais"): entra tudo o que o plano mostra na ficha — o Instagram (Completo e Premium), pelo menos 3 fotos, a foto de
+  // cada opção do catálogo e a apresentação (Premium). Site e link de reserva ficam de fora: nem toda academia tem.
+  const lim = limitesDoPlano(c.plano);
+  if (lim.contatos.includes("instagram") && !String(c.instagram || "").trim()) faltas.push("Instagram");
   if (!temHorario(c)) faltas.push("Horário");
   if (!opcoesPreco(c).some(o => temPreco(o.faixa))) faltas.push("Preço");
+  if (lim.fotosDoCatalogo && (c.catalogo || []).some(i => i && typeof i === "object" && !i.foto)) faltas.push("Fotos das opções");
   if (limitesDoPlano(c.plano).cancelamento && !temPolitica(c)) faltas.push("Cancelamento");
   if (!totalQuadras(c)) faltas.push("Quadras");
   if (!(c.amenities || []).length) faltas.push("Comodidades");
   else if ((regraDoEstacionamento(c) || {}).tipo === "misto") faltas.push("Como funciona o estacionamento");
   if (limitesDoPlano(c.plano).chegada && !temAcesso(c)) faltas.push("Como chegar");
-  if (!(c.photos || []).length) faltas.push("Fotos");
+  if ((c.photos || []).length < Math.min(FOTOS_MINIMAS_DA_FICHA, lim.fotos)) faltas.push("Fotos");
+  if (lim.sobre === "academia" && !String(c.sobre || "").trim()) faltas.push("Apresentação");
   return faltas;
 }
 
@@ -11887,7 +11895,7 @@ const PC_PLANOS = [
   { key: "completo", nome: "Completo", preco: "Grátis por enquanto", pessoas: 5, resumo: "Para ter a ficha completa e a equipe junto." },
   { key: "premium", nome: "Premium", preco: "Por assinatura", pessoas: 10, resumo: "Para aparecer primeiro, divulgar promoções e ver os números." },
 ];
-const PC_ITENS_FICHA = ["Endereço", "WhatsApp", "Horário", "Preço", "Cancelamento", "Quadras", "Comodidades", "Como chegar", "Fotos"];
+const PC_ITENS_FICHA = ["Endereço", "WhatsApp", "Instagram", "Horário", "Preço", "Fotos das opções", "Cancelamento", "Quadras", "Comodidades", "Como chegar", "Fotos", "Apresentação"];
 // 27/11/2026 ("o tudo preenchido não está funcionando 100%"): "Como funciona o estacionamento" não é um item da
 // lista, e a conta dizia "6 de 7" com os 7 marcados. Agora ele conta como "Comodidades", e a lista, a porcentagem
 // e o "Tudo preenchido" usam a mesma conta.
@@ -11902,7 +11910,8 @@ function porcentoDaFicha(c) {
 // No Básico, "Cancelamento" e "Como chegar" não entram na conta (são do Completo).
 function itensDaFicha(c) {
   const l = limitesDoPlano(c && c.plano);
-  return PC_ITENS_FICHA.filter(i => (i !== "Como chegar" || l.chegada) && (i !== "Cancelamento" || l.cancelamento));
+  return PC_ITENS_FICHA.filter(i => (i !== "Como chegar" || l.chegada) && (i !== "Cancelamento" || l.cancelamento)
+    && (i !== "Instagram" || l.contatos.includes("instagram")) && (i !== "Fotos das opções" || l.fotosDoCatalogo) && (i !== "Apresentação" || l.sobre === "academia"));
 }
 
 function perguntasParceiros() {
@@ -12115,7 +12124,10 @@ function oportunidadesDoPlano(c, atual) {
 const DICAS_DA_FICHA = [
   { falta: "WhatsApp", passo: "contato", t: "Informe o WhatsApp da academia", s: "É o botão que o jogador toca para chamar vocês.", bt: "Informar o WhatsApp" },
   { falta: "Endereço", passo: "dados", t: "Complete o endereço", s: "É o que faz a academia aparecer para quem busca perto.", bt: "Completar o endereço" },
-  { falta: "Fotos", passo: "fotos", t: "Adicione fotos da academia", s: "Ficha com foto recebe muito mais contato.", bt: "Adicionar fotos" },
+  { falta: "Fotos", passo: "fotos", t: "Adicione pelo menos 3 fotos da academia", s: "Ficha com foto recebe muito mais contato.", bt: "Adicionar fotos" },
+  { falta: "Instagram", passo: "contato", t: "Adicione o Instagram da academia", s: "Quem compara academias olha as fotos e os vídeos do Instagram.", bt: "Adicionar o Instagram" },
+  { falta: "Fotos das opções", passo: "precos", t: "Coloque uma foto em cada aula e na locação", s: "Cada opção da ficha ganha a própria foto: o jogador vê a turma e a quadra antes de chamar.", bt: "Adicionar as fotos" },
+  { falta: "Apresentação", passo: "sobre", t: "Escreva a apresentação da academia", s: "Conte o que só a sua academia tem: a história, os professores e o jeito de dar aula.", bt: "Escrever a apresentação" },
   { falta: "Preço", passo: "precos", t: "Diga o preço da aula ou da locação", s: "É o que o jogador compara primeiro.", bt: "Informar o preço" },
   { falta: "Horário", passo: "horario", t: "Informe o horário de funcionamento", s: "A ficha mostra se a academia está aberta agora.", bt: "Informar o horário" },
   { falta: "Quadras", passo: "quadras", t: "Diga quantas quadras vocês têm", s: "Piso e cobertura viram filtros na busca.", bt: "Informar as quadras" },
@@ -16496,7 +16508,7 @@ function pcFicha() {
         <div class="pc-progresso"><i style="width:${Math.round(((itensDaFicha(c).length - faltas.size) / itensDaFicha(c).length) * 100)}%"></i></div>
         <ul class="pc-checklist">
           ${itensDaFicha(c).map(i => faltas.has(i)
-            ? `<li class="falta"><button type="button" class="pc-check-falta editar-academia" data-court="${c.id}" data-passo="${passoDe(i)}"><span class="pc-bolinha"></span><span>${esc(i)}${i === "Comodidades" && estacionamento ? `<small>Explique o estacionamento grátis e pago</small>` : ""}</span>${icon('chevron', 14, 'var(--green)')}</button></li>`
+            ? `<li class="falta"><button type="button" class="pc-check-falta editar-academia" data-court="${c.id}" data-passo="${passoDe(i)}"><span class="pc-bolinha"></span><span>${esc(i)}${i === "Comodidades" && estacionamento ? `<small>Explique o estacionamento grátis e pago</small>` : i === "Fotos" ? `<small>Pelo menos ${FOTOS_MINIMAS_DA_FICHA}</small>` : ""}</span>${icon('chevron', 14, 'var(--green)')}</button></li>`
             : `<li>${icon('check', 16, 'var(--green)')}<span>${esc(i)}</span></li>`).join("")}
         </ul>
         <p class="pc-card-s">Quem procura academia compara horário, preço e fotos antes de chamar no WhatsApp.</p>

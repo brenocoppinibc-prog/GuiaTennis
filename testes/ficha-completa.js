@@ -4,7 +4,7 @@
 const { abrir, ok } = require('./harness');
 const texto = (page, sel) => page.evaluate((s) => (document.querySelector(s)?.innerText || '').replace(/\s+/g, ' ').trim(), sel);
 (async () => {
-  const { browser, page } = await abrir({ academia: 'a1', q: 'parceiros/ficha' });
+  let { browser, page } = await abrir({ academia: 'a1', q: 'parceiros/ficha' });
   await page.waitForTimeout(500);
   // Tudo preenchido de verdade
   // Estacionamento grátis e pago, sem a explicação
@@ -28,5 +28,16 @@ const texto = (page, sel) => page.evaluate((s) => (document.querySelector(s)?.in
   await page.waitForTimeout(300);
   const cheio = await page.evaluate(() => ({ t: document.querySelector('.pc-pagina .pc-card')?.innerText || '', barra: document.querySelector('.pc-pagina .pc-progresso i')?.style.width, pend: document.querySelectorAll('.pc-checklist li.falta').length }));
   ok(/Tudo preenchido/.test(cheio.t) && cheio.barra === '100%' && cheio.pend === 0, 'sem nada faltando: "Tudo preenchido", barra em 100% e nada pendente — ' + JSON.stringify({ barra: cheio.barra, pend: cheio.pend }));
+  await browser.close();
+  // 27/11/2026: a lista tem tudo o que o plano mostra (Premium: Instagram, fotos das opções e a apresentação).
+  ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/ficha', premium: ['a1'] }));
+  await page.waitForTimeout(500);
+  const p = await page.evaluate(() => { const c = minhaAcademia(); c.sobre = ''; c.instagram = ''; c.photos = (c.photos || []).slice(0, 2); render();
+    return { itens: itensDaFicha(c), faltam: [...itensQueFaltam(c)], botoes: [...document.querySelectorAll('.pc-check-falta')].map(b => b.innerText.split('\n')[0].trim() + ':' + b.dataset.passo) }; });
+  ok(['Instagram', 'Apresentação', 'Fotos das opções'].every(i => p.itens.includes(i)), 'no Premium, a lista tem Instagram, fotos das opções e apresentação — ' + p.itens.join(', '));
+  ok(p.faltam.includes('Apresentação') && p.faltam.includes('Instagram') && p.faltam.includes('Fotos') && p.botoes.includes('Apresentação:sobre') && p.botoes.includes('Instagram:contato'),
+    'sem apresentação, sem Instagram e com 2 fotos: pendentes, cada um levando à sua parte — ' + p.botoes.join(' | '));
+  const b = await page.evaluate(() => { const c = minhaAcademia(); c.plano = 'basico'; return itensDaFicha(c); });
+  ok(!b.includes('Instagram') && !b.includes('Apresentação') && !b.includes('Fotos das opções') && !b.includes('Cancelamento'), 'no Básico, só o que o plano mostra — ' + b.join(', '));
   await browser.close();
 })();

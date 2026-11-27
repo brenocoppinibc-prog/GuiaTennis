@@ -12,7 +12,8 @@ const texto = (page, sel) => page.evaluate((sel) => (document.querySelector(sel)
 async function fichaCompleta(page, foto) {
   await page.evaluate(async (foto) => {
     const a = window.__db.academias.find(x => x.id === 'a1');
-    Object.assign(a, { price_aula: '120', photos: [foto] });
+    Object.assign(a, { price_aula: '120', photos: [foto, foto, foto], instagram: 'academiateste', sobre: 'Academia de tênis com professores formados e turmas para todas as idades.' });
+    if (Array.isArray(a.catalogo)) a.catalogo = a.catalogo.map(i => i && typeof i === 'object' ? { ...i, foto: i.foto || foto } : i);
     await loadEverything(); await recarregarConta(); render();
   }, foto);
 }
@@ -27,7 +28,7 @@ async function pedirDica(page) {
   await page.waitForTimeout(2200);
   const faltas = await page.evaluate(() => faltasDaFicha(minhaAcademia()));
   let dica = await texto(page, '#gt-dica');
-  ok(faltas.includes('Fotos') && dica.startsWith('Adicione fotos da academia') && dica.includes('Ficha com foto recebe muito mais contato.') && dica.includes('Adicionar fotos ›'),
+  ok(faltas.includes('Fotos') && dica.startsWith('Adicione pelo menos 3 fotos da academia') && dica.includes('Ficha com foto recebe muito mais contato.') && dica.includes('Adicionar fotos ›'),
     'ficha sem fotos: a dica desce no alto, com o porquê e o atalho — ' + dica + ' / falta: ' + faltas.join(', '));
   await page.click('.gt-dica-acao');
   await page.waitForTimeout(300);
@@ -40,7 +41,7 @@ async function pedirDica(page) {
   await page.waitForTimeout(2600);
   ok(!(await page.$('#gt-dica')), 'voltando no mesmo dia, nenhuma dica (no máximo uma por dia)');
   // Sem o preço: a dica seguinte é a do preço.
-  await page.evaluate(async (foto) => { window.__db.academias.find(x => x.id === 'a1').photos = [foto]; await loadEverything(); await recarregarConta(); }, foto);
+  await page.evaluate(async (foto) => { window.__db.academias.find(x => x.id === 'a1').photos = [foto, foto, foto]; await loadEverything(); await recarregarConta(); }, foto);
   await pedirDica(page);
   dica = await texto(page, '#gt-dica');
   ok(dica.startsWith('Diga o preço da aula ou da locação') && dica.includes('É o que o jogador compara primeiro.'), 'com as fotos, a próxima é o preço — ' + dica);
@@ -100,7 +101,7 @@ async function pedirDica(page) {
   await page.evaluate(async () => { await carregarPromocoes(); });
   await pedirDica(page);
   dica = await texto(page, '#gt-dica');
-  ok(dica.startsWith('Leve a promoção ao e-mail do bairro') && dica.includes('faixa patrocinada') && dica.includes('Promover ›') && !dica.includes('leilão'), 'Premium com promoção sem alcance: levar a promoção ao e-mail do bairro (regra 317) — ' + dica);
+  ok(dica.startsWith('Leve a promoção ao e-mail do bairro') && dica.includes('destaque na busca') && dica.includes('Promover ›') && !dica.includes('leilão'), 'Premium com promoção sem alcance: levar a promoção ao e-mail do bairro (regra 317) — ' + dica);
   await page.click('.gt-dica-acao');
   await page.waitForTimeout(300);
   ok(await page.evaluate(() => state.parceirosAba === 'promocoes'), 'o atalho abre Promoções');

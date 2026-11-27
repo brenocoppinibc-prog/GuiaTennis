@@ -10,14 +10,14 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 27/11/2026 (regras 334 a 341 e troca de chat; ver o começo da seção 9)
+**Atualizado em:** 27/11/2026 (merge do PR #5 na `main`; ver o começo da seção 9)
 
 | | |
 |---|---|
 | Dono | Breno (brenocoppini.bc@gmail.com) |
 | Repositório | `brenocoppinibc-prog/GuiaTennis` (público) |
 | No ar | guiatennis.com.br (Netlify publica a `main` sozinho) |
-| PR aberto | **#5**, branch `ccr-0a610d86-k6plx0` → `main`, com tudo desde 30/09/2026 |
+| PR | **#5** (`ccr-0a610d86-k6plx0`, tudo de 30/09 a 27/11/2026) **entrou na `main` em 27/11/2026**. Trabalho novo: branch nova a partir da `main` e PR novo |
 | Prévia do PR | https://deploy-preview-5--stately-salamander-652f72.netlify.app (banco de teste) |
 | Banco de verdade | Supabase `eultezheqwmxyakvgyjy` |
 | Banco de teste | Supabase `ohvbengbujdioxdtewsy` (projeto `guiatennis-teste`) |
@@ -27,10 +27,11 @@ para o histórico).
 
 ## 0. Chat novo: por onde começar
 
-1. `git fetch origin` e trabalhar na branch do PR aberto
-   (`ccr-0a610d86-k6plx0`). Se o PR #5 já entrou na `main`, trabalho novo
-   vai numa branch nova a partir da `main`, com PR novo.
-2. Voltar a acompanhar o PR #5 (inscrição nos eventos do PR).
+1. `git fetch origin main` e começar a branch do chat a partir dela
+   (`git checkout -B <branch> origin/main`). O PR #5 já entrou (27/11/2026):
+   trabalho novo vai num PR novo para a `main`, juntando vários pedidos
+   (cada publicação gasta 15 créditos da Netlify).
+2. Acompanhar o PR novo (inscrição nos eventos do PR).
 3. `bash testes/check-js.sh` antes de qualquer outra coisa.
 4. Ler a seção 9 (estado e pendências) deste arquivo.
 
@@ -467,6 +468,17 @@ sozinho vira "-", "Sob consulta"), numa linha
   rodar à mão no banco de teste (`banco.yml`, `destino: teste`, na branch do PR).
 
 ## 9. Estado atual e pendências (27/11/2026, troca de chat)
+
+**Merge do PR #5 (sexta, 27/11/2026, à noite).** O Breno disse "pode subir" e o PR #5 entrou na `main`
+(squash): o site no ar passa a mostrar a página do pré-lançamento até domingo, 29/11, às 18h, e o "Banco de
+dados" aplica as 109 migrações novas no banco de verdade. **Antes do merge, ensaio local do modo `real`**: um
+Postgres 16 com o banco como ficou depois do PR #3 (as 3 primeiras migrações) e dados parecidos com os de
+verdade (8 publicadas, 3 pendentes, uma sem coordenada, nome repetido, avaliações e 1.673 cliques):
+`aplicar.sh real` aplicou as 109 sem erro, `configurar_emails`/`configurar_whatsapp` sem chave passaram, e o
+visitante lê as 8 academias, as estatísticas e o sitemap. **Depois do merge, com o Breno:** abrir o site em
+aba anônima (a página do lançamento), o código libera o site; A1 de novo no site de verdade e Configurar ›
+Ligada › Produção; "Verificar domínio" na Meta; Pinterest; Search Console depois das 18h de domingo. O texto
+abaixo é o da troca de chat, antes do merge.
 
 **Troca de chat (sexta, 27/11, à noite).** O **PR #5** (`ccr-0a610d86-k6plx0` → `main`) tem tudo até a **regra
 341**: verde, prévia no ar, descrição em dia (passos até o 181; a descrição foi encurtada: 263 a 330 e os passos

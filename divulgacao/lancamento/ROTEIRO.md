@@ -126,10 +126,9 @@ social real, com autorização).
 
 **Sexta — Reels "Domingo, às 18h" (sem link: o site abre só no domingo)**
 
-> Quem joga tênis em São Paulo conhece isto: para saber o preço de uma aula, é preciso mandar mensagem para
-> várias academias e esperar a resposta. 😮‍💨
+> Se você joga tênis, sabe o quão difícil é encontrar quadra e como é fácil se perder na falta de informação. 🎾
 >
-> No domingo, 29/11, às 18h, isso muda. 🎾
+> Eu vou ajudar você: no domingo, 29/11, às 18h, lanço a solução para acabar com esse problema. 👀
 >
 > 🔔 Ative o lembrete nos nossos Stories para não perder.
 > 💬 Comente o seu bairro: no domingo, respondemos com as academias de lá.

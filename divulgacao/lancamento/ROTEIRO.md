@@ -124,6 +124,18 @@ social real, com autorização).
 >
 > #tenis #tenissp #aulasdetenis #quadradetenis #saopaulo
 
+**Sexta — Reels "Domingo, às 18h" (sem link: o site abre só no domingo)**
+
+> Quem joga tênis em São Paulo conhece isto: para saber o preço de uma aula, é preciso mandar mensagem para
+> várias academias e esperar a resposta. 😮‍💨
+>
+> No domingo, 29/11, às 18h, isso muda. 🎾
+>
+> 🔔 Ative o lembrete nos nossos Stories para não perder.
+> 💬 Comente o seu bairro: no domingo, respondemos com as academias de lá.
+>
+> #tenis #tenissp #aulasdetenis #quadradetenis #saopaulo
+
 **Domingo — lançamento**
 
 > Chegou o novo GuiaTennis. 🎾

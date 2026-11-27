@@ -10,7 +10,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 26/11/2026 (regras 334 a 340: pré-lançamento, Acessibilidade, a busca só com a região, os Compromissos, Minha ficha e o Promover como o Instagram)
+**Atualizado em:** 27/11/2026 (regras 334 a 341 e troca de chat; ver o começo da seção 9)
 
 | | |
 |---|---|
@@ -466,13 +466,28 @@ sozinho vira "-", "Sob consulta"), numa linha
   SQL novo (05/11: o da regra 209 não rodou). Conferir em Actions e, se faltar,
   rodar à mão no banco de teste (`banco.yml`, `destino: teste`, na branch do PR).
 
-## 9. Estado atual e pendências (26/11/2026, troca de chat)
+## 9. Estado atual e pendências (27/11/2026, troca de chat)
 
-**PR #5** (`ccr-0a610d86-k6plx0` → `main`) com tudo até a **regra 333**: verde, prévia no ar, descrição
-em dia (passos até o 171) e os SQL `20261125120000_nota_fiscal_automatica` e
-`20261125150000_nota_fiscal_nacional` já rodaram no banco de teste (25/11; o `registrar_nota` do 333 ganhou
-depois o aviso `nota_cancelada`, que só entra no banco de verdade com o merge). **O chat de 25-26/11 deixou de
-acompanhar o PR; o chat de 26/11 voltou a acompanhar.**
+**Troca de chat (sexta, 27/11, à noite).** O **PR #5** (`ccr-0a610d86-k6plx0` → `main`) tem tudo até a **regra
+341**: verde, prévia no ar, descrição em dia (passos até o 181; a descrição foi encurtada: 263 a 330 e os passos
+110 a 171 ficam nas versões anteriores do PR). O SQL novo `20261126120000_busca_so_a_regiao` (regra 336) já rodou
+no banco de teste (o "Banco de dados" foi disparado à mão em 26/11). **O chat de 26-27/11 deixou de acompanhar o
+PR: o chat novo se inscreve com `subscribe_pr_activity`.** O merge espera o **"pode subir"** do Breno, que
+precisa ser **antes de domingo, 18h** (o convite às academias com `?acesso=` só funciona no site de verdade depois
+do merge). **Pendente com o Breno:** (1) o **preço por dia da promoção na ficha**: estudo entregue na conversa
+(Meta/Instagram de R$ 3 a 6 por dia de piso, destaque da OLX € 1,99/dia e € 24,99/30 dias, Doctoralia € 89–129
+por mês) e a proposta, ainda **sem resposta**: R$ 1 por dia, R$ 0,85 no Premium (15%), 7 dias R$ 7, 15 dias
+R$ 14, 30 dias R$ 25 ("Melhor preço por dia", "Economize R$ 5"), a 1ª promoção com 7 dias grátis no lançamento;
+implementar só com o "sim" (a tela de Promoções passa de semanas para dias; SQL novo no preço, no `promover` e na
+devolução por dia; Ajuda e Termos). (2) Avisar a MesqTenis (ficha nas telas do pré-lançamento) e a Morumbi Tennis
+(busca); os Termos (seção 5) já autorizam o uso da ficha na divulgação. **Código do pré-lançamento:**
+`FUNDADORA` (só a conta fica no código). **Ambiente do Claude:** em 26/11, a rede liberou também
+`eultezheqwmxyakvgyjy.supabase.co` (o banco de verdade, só para ler e tirar as telas do site; o script das telas
+ficou na pasta temporária do chat: refazer com Playwright, o `supabase-js` do npm e a fonte Roboto do
+`@fontsource`, bloqueando tudo que não for GET ao banco). **Instagram:** o roteiro em
+`divulgacao/lancamento/ROTEIRO.md` está em dia até a legenda do Reels de sexta ("Domingo, às 18h, eu vou acabar com
+o problema de encontrar quadra de tênis em São Paulo…"); a série "Testei" saiu (26/11), o "Guia do bairro" só
+com 3 fichas completas num bairro, e uma série "Dica do Guia" foi sugerida na conversa, sem resposta.
 
 **Lançamento no domingo, 29/11, e a nova fase (26/11):** o Breno quer "ativar o GuiaTennis no domingo para
 todos". O site está pronto; o foco passa a ser **divulgar e trazer academias** (fichas completas com preço e

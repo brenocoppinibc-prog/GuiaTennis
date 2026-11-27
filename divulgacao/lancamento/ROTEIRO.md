@@ -126,12 +126,12 @@ social real, com autorização).
 
 **Sexta — Reels "Domingo, às 18h" (sem link: o site abre só no domingo; a legenda não repete a fala do vídeo, completa)**
 
-> Encontrar quadra de tênis em São Paulo não deveria ser tão difícil. 🎾
+> Domingo, às 18h, eu vou acabar com o problema de encontrar quadra de tênis em São Paulo. 🎾
+>
+> Mas, para saber na hora, siga o @guiatennis e ative o lembrete nos Stories. 🔔
 >
 > Preço que só aparece depois da mensagem, academia que demora para responder, informação espalhada em todo
-> lugar… No domingo, 29/11, às 18h, isso muda. 👀
->
-> Gostou da ideia? Siga o @guiatennis e ative o lembrete nos Stories para não perder. 🔔
+> lugar… isso está com os dias contados. 👀
 >
 > #tenis #tenissp #aulasdetenis #quadradetenis #saopaulo
 

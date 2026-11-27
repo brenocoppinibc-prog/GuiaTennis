@@ -2493,6 +2493,9 @@
   @media (min-width: 640px) { .pc-checklist { grid-template-columns: 1fr 1fr 1fr; } }
   .pc-checklist li { display: flex; align-items: center; gap: 10px; font-size: 15px; }
   .pc-checklist li.falta { color: var(--muted); }
+  .pc-check-falta { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px; margin: -10px 0; padding: 0; border: 0; background: none; font: inherit; font-size: 15px; color: var(--muted); text-align: left; cursor: pointer; }
+  .pc-check-falta > span:nth-child(2) { flex: 1; }
+  .pc-check-falta small { display: block; font-size: 13px; color: var(--green); }
   .pc-bolinha { width: 16px; height: 16px; border-radius: 999px; border: 2px solid var(--muted-dark); flex-shrink: 0; }
   .pc-atalhos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
   @media (min-width: 900px) { .pc-atalhos { grid-template-columns: repeat(4, 1fr); } }
@@ -11880,6 +11883,17 @@ const PC_PLANOS = [
   { key: "premium", nome: "Premium", preco: "Por assinatura", pessoas: 10, resumo: "Para aparecer primeiro, divulgar promoções e ver os números." },
 ];
 const PC_ITENS_FICHA = ["Endereço", "WhatsApp", "Horário", "Preço", "Cancelamento", "Quadras", "Comodidades", "Como chegar", "Fotos"];
+// 27/11/2026 ("o tudo preenchido não está funcionando 100%"): "Como funciona o estacionamento" não é um item da
+// lista, e a conta dizia "6 de 7" com os 7 marcados. Agora ele conta como "Comodidades", e a lista, a porcentagem
+// e o "Tudo preenchido" usam a mesma conta.
+function itensQueFaltam(c) {
+  const itens = itensDaFicha(c);
+  return new Set(faltasDaFicha(c).map(f => f === "Como funciona o estacionamento" ? "Comodidades" : f).filter(f => itens.includes(f)));
+}
+function porcentoDaFicha(c) {
+  const n = itensDaFicha(c).length;
+  return n ? Math.round(((n - itensQueFaltam(c).size) / n) * 100) : 100;
+}
 // No Básico, "Cancelamento" e "Como chegar" não entram na conta (são do Completo).
 function itensDaFicha(c) {
   const l = limitesDoPlano(c && c.plano);
@@ -14260,8 +14274,8 @@ function pcPainel() {
       ${podeEditar(c) || posso("avaliacoes") ? `
       <div class="${podeEditar(c) && posso("avaliacoes") ? "pc-duas" : ""}">
         ${podeEditar(c) ? `<div class="pc-card">
-          <p class="pc-card-t">${faltas.length ? `Sua ficha está ${Math.round(((itensDaFicha(c).length - faltas.length) / itensDaFicha(c).length) * 100)}% completa` : "Ficha completa"}</p>
-          <div class="pc-progresso"><i style="width:${Math.round(((itensDaFicha(c).length - faltas.length) / itensDaFicha(c).length) * 100)}%"></i></div>
+          <p class="pc-card-t">${faltas.length ? `Sua ficha está ${porcentoDaFicha(c)}% completa` : "Ficha completa"}</p>
+          <div class="pc-progresso"><i style="width:${porcentoDaFicha(c)}%"></i></div>
           <p class="pc-card-s">${faltas.length ? `Falta: ${esc(faltas.join(", "))}.` : "Tudo preenchido. Mantenha horário e preço em dia."}</p>
           <button type="button" class="cta-btn cta-primary editar-academia" data-court="${c.id}">${icon('edit', 15, '#fff')} ${faltas.length ? "Completar a ficha" : "Editar a ficha"}</button>
         </div>` : ""}
@@ -16459,7 +16473,9 @@ async function encerrarPromocao(id) {
 function pcFicha() {
   const c = minhaAcademia();
   if (!c) return pcSemFicha();
-  const faltas = new Set(faltasDaFicha(c));
+  const faltas = itensQueFaltam(c);
+  const estacionamento = faltasDaFicha(c).includes("Como funciona o estacionamento");
+  const passoDe = (i) => (DICAS_DA_FICHA.find(d => d.falta === i) || {}).passo || "";
   return `
     <section class="pc-pagina">
       ${pcNomeDaAcademia(c)}
@@ -16471,7 +16487,9 @@ function pcFicha() {
         <p class="pc-card-t">${faltas.size ? `${itensDaFicha(c).length - faltas.size} de ${itensDaFicha(c).length} itens preenchidos` : "Tudo preenchido"}</p>
         <div class="pc-progresso"><i style="width:${Math.round(((itensDaFicha(c).length - faltas.size) / itensDaFicha(c).length) * 100)}%"></i></div>
         <ul class="pc-checklist">
-          ${itensDaFicha(c).map(i => `<li class="${faltas.has(i) ? "falta" : ""}">${faltas.has(i) ? `<span class="pc-bolinha"></span>` : icon('check', 16, 'var(--green)')}<span>${esc(i)}</span></li>`).join("")}
+          ${itensDaFicha(c).map(i => faltas.has(i)
+            ? `<li class="falta"><button type="button" class="pc-check-falta editar-academia" data-court="${c.id}" data-passo="${passoDe(i)}"><span class="pc-bolinha"></span><span>${esc(i)}${i === "Comodidades" && estacionamento ? `<small>Explique o estacionamento grátis e pago</small>` : ""}</span>${icon('chevron', 14, 'var(--green)')}</button></li>`
+            : `<li>${icon('check', 16, 'var(--green)')}<span>${esc(i)}</span></li>`).join("")}
         </ul>
         <p class="pc-card-s">Quem procura academia compara horário, preço e fotos antes de chamar no WhatsApp.</p>
         <button type="button" class="cta-btn cta-primary editar-academia" data-court="${c.id}">${icon('edit', 15, '#fff')} Editar a ficha</button>

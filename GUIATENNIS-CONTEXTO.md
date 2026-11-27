@@ -477,8 +477,10 @@ verdade (8 publicadas, 3 pendentes, uma sem coordenada, nome repetido, avaliaç�
 `aplicar.sh real` aplicou as 109 sem erro, `configurar_emails`/`configurar_whatsapp` sem chave passaram, e o
 visitante lê as 8 academias, as estatísticas e o sitemap. **Depois do merge, com o Breno:** abrir o site em
 aba anônima (a página do lançamento), o código libera o site; A1 de novo no site de verdade e Configurar ›
-Ligada › Produção; "Verificar domínio" na Meta; Pinterest; Search Console depois das 18h de domingo. O texto
-abaixo é o da troca de chat, antes do merge.
+Ligada › Produção; "Verificar domínio" na Meta; Pinterest; Search Console depois das 18h de domingo. **Esteira do banco de verdade no merge: verde** (Actions › "Banco de dados" #328,
+20h58–21h08 UTC): as 109 aplicadas, "chave do Resend guardada", "token do WhatsApp guardado", modelo do e-mail
+do código trocado (6 números), "visitante lê as academias: 22 publicadas", "sitemap: 49 endereços (22 fichas,
+20 regiões, 4 do GuiaTennis Parceiros)". O texto abaixo é o da troca de chat, antes do merge.
 
 **Troca de chat (sexta, 27/11, à noite).** O **PR #5** (`ccr-0a610d86-k6plx0` → `main`) tem tudo até a **regra
 341**: verde, prévia no ar, descrição em dia (passos até o 181; a descrição foi encurtada: 263 a 330 e os passos

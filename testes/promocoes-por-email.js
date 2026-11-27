@@ -19,9 +19,13 @@ const texto = (page, sel) => page.evaluate((s) => (document.querySelector(s)?.in
   await page.click('[data-promo-alcance="50"]');
   await page.waitForTimeout(400);
   corpo = await texto(page, '#parceiros .pc-main');
-  ok(/entre 1\.333 e 2\.000 aparições/.test(corpo) && corpo.includes('Sugerido para aparecer em cerca de 1 a cada 4 buscas') && corpo.includes('O preço muda todo dia'),
-    'o alcance mostra a estimativa de aparições, o sugerido e que o preço muda todo dia — ' + (corpo.match(/Em Pinheiros[^.]*\./) || [''])[0]);
+  ok(/Cerca de 1\.330 a 2\.000 aparições em 2 semanas/.test(corpo) && /(Sugerido para o bairro|Acima do sugerido para o bairro).*1 a cada 4 buscas/.test(corpo) && corpo.includes('O preço da aparição muda todo dia'),
+    'o alcance mostra a estimativa em números redondos e nas semanas escolhidas, o sugerido e que o preço muda todo dia — ' + (corpo.match(/Cerca de[^\n]*/) || [''])[0]);
   ok(/2 semanas na ficha\s+R\$ 16\s+Alcance\s+R\$ 50\s+Total\s+R\$ 66/.test(await texto(page, '#pc-promo-preco')), 'o total soma as semanas (com os 15% do Premium) e o alcance — ' + await texto(page, '#pc-promo-preco'));
+  // 26/11/2026 (print do Breno, "não está fazendo muito sentido"): com a semana na ficha sem custo, nada de "R$ 0".
+  const gratis = await page.evaluate(() => { const L = state.pcLeilao; const antes = { ...L }; L.preco_promocao = 0; L.preco_promocao_semana = 0;
+    const div = document.createElement('div'); div.innerHTML = precoNaPromocao(minhaAcademia(), 4, 20); Object.assign(L, antes); return div.innerText.replace(/\s+/g, ' '); });
+  ok(/4 semanas na ficha\s*Grátis\s*Alcance\s*R\$ 20\s*Total\s*R\$ 20/.test(gratis) && !gratis.includes('Por semana') && !gratis.includes('R$ 0'), 'semanas sem custo: "Grátis", sem "Por semana R$ 0" — ' + gratis);
   await page.click('#pc-promo-revisar');
   await page.waitForTimeout(300);
   ok((await texto(page, '#pc-promo-revisao')).includes('Alcance R$ 50 · faixa patrocinada e e-mail do bairro') && (await texto(page, '#pc-promo-revisao')).includes('num pagamento só'), 'a revisão mostra o alcance e o pagamento único');

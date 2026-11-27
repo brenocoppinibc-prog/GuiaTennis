@@ -10,7 +10,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 26/11/2026 (regras 334 a 337: pré-lançamento, Acessibilidade, a busca só com a região e os Compromissos)
+**Atualizado em:** 26/11/2026 (regras 334 a 338: pré-lançamento, Acessibilidade, a busca só com a região, os Compromissos e o Promover claro)
 
 | | |
 |---|---|
@@ -671,6 +671,7 @@ mesmo histórico de 23/11 e nas descrições antigas do PR (`historico/PR5-descr
 - 335 (26/11) — a comodidade "Acessibilidade" (`acessibilidade`, ícone `acessivel`, como o grupo do Airbnb e do Booking): cadastro, Filtros, "Com acessibilidade" na inicial e destaque na ficha (`testes/comodidade-acessibilidade.js`); no pré-lançamento, "Reservar online" nas novidades e para as academias (Completo) e sem "preço sempre à vista" (há "Sob consulta").
 - 336 (26/11) — a busca guarda só a região ("dizer que não guardamos o endereço digitado é uma ilusão… temos o nome da rua"): na estatística (`cliques`), os 5 primeiros números do CEP e o ponto em ~1 km (`pontoDaBusca`; a `pontoAproximado` de ~100 m segue só na conta, nas buscas salvas e na última busca, que a Política explica); SQL `20261126120000_busca_so_a_regiao` deixa as linhas antigas assim (conferido num Postgres local; a seção nova do `banco-emails.py` não rodou: este contêiner não tem o banco local); "Sobre" e Política (26/11/2026) dizem isso, com a conta à parte; Admin: "CEPs buscados, pelos 5 primeiros números".
 - 337 (26/11) — Sobre › Compromissos refeito ("compromisso com veracidade, autenticidade, realidade e entregar sempre o melhor ao cliente", com o processo de verificação): "O que você vê no GuiaTennis é o que você encontra na quadra." e 5 compromissos com o que o site faz de verdade (Veracidade: declaração, código e aprovação do WhatsApp, selo de confirmada, "informar um problema", 2 contas tiram o botão; Autenticidade: avaliações; Realidade: preço da academia ou "Sob consulta", distância em linha reta, "Mais bem avaliadas", "Patrocinado", números para baixo; O melhor para você: chat e sugestões; Privacidade: só a região); o "Patrocinado" saiu do "Grátis para quem joga" (repetia). Revisão de marketing, design e gramática: a Veracidade em 4 passos numerados, textos de 2 frases, sem "melhor/melhora/melhorar" juntos nem "região" três vezes na Política; no pré-lançamento, "Quando a academia usa um sistema de reservas, você escolhe o horário pela própria ficha.". `testes/sobre.js`.
+- 338 (27/11) — Promoções (print: "não está fazendo muito sentido, precisamos corrigir para lançar"): com a semana na ficha sem custo, "4 semanas na ficha · Grátis" (sem "Por semana R$ 0"); a estimativa do alcance em destaque e em números redondos, nas semanas escolhidas ("Cerca de 530 a 800 aparições em 4 semanas"), o preço de hoje numa frase, o sugerido só quando o valor está abaixo dele (acima: "✓ Acima do sugerido para o bairro") e a nota do preço que muda (`blocoDoAlcance`, `precoNaPromocao`; `testes/promocoes-por-email.js`).
 
 ## 11. WhatsApp e mensagem para as academias
 

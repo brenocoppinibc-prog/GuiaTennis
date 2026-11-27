@@ -3714,6 +3714,13 @@
   .pc-divulgar-nota { margin: 10px 16px 12px; }
   /* Regra 315 no Promover (23/11/2026): preço riscado, economia e risco zero. */
   .pc-preco-de { font-weight: 400; color: var(--muted); text-decoration: line-through; font-variant-numeric: tabular-nums; }
+  .pc-alcance-est p { margin: 0 0 6px; }
+  .pc-alcance-est p:last-child { margin-bottom: 0; }
+  .pc-alcance-num { font-size: 17px; font-weight: 700; color: var(--green); }
+  .pc-alcance-ok { display: flex; align-items: flex-start; gap: 6px; }
+  .pc-alcance-ok svg { flex-shrink: 0; margin-top: 3px; }
+  .pc-alcance-nota { font-size: 13px; color: var(--muted); }
+  .pc-gratis { color: var(--green); }
   .pc-promo-eco { margin: 8px 0 0; font-size: 13.5px; font-weight: 700; color: var(--green); }
   .pc-promo-garantia { display: flex; align-items: center; gap: 6px; margin: 8px 0 0; font-size: 13px; color: var(--muted); }
   .pc-promo-upsell { margin: 10px 0 0; padding: 10px 12px; border-radius: 10px; background: #FFF6DB; color: #2A2410; font-size: 13.5px; line-height: 1.45; }
@@ -16240,6 +16247,9 @@ function blocoDoAlcance(c, f, ed) {
   const n = (v) => Number(v || 0).toLocaleString("pt-BR");
   const outro = !ALCANCES.includes(f.alcance);
   const sugerido = e && Number(e.sugerido || 0);
+  // Números redondos (a estimativa não é exata) e o período nas semanas escolhidas.
+  const dezena = (v) => n(Math.max(10, Math.round(Number(v || 0) / 10) * 10));
+  const periodo = e && e.dias && e.dias % 7 === 0 ? nSemanas(e.dias / 7) : `${n(e && e.dias)} dias`;
   return `
           <p class="field-label" id="pc-promo-alcance-t">Alcance (opcional)</p>
           <p class="footnote" style="margin:0 0 8px">Aparições na faixa patrocinada do início e da busca, perto da academia${premium ? ", e o e-mail da semana para os jogadores do bairro" : ""}. Quem investe mais aparece mais.</p>
@@ -16250,11 +16260,14 @@ function blocoDoAlcance(c, f, ed) {
           ${outro ? `<div class="pc-ads-moeda pc-checkout-outro"><span>R$</span><input class="form-field" id="pc-promo-alcance" type="text" inputmode="numeric" maxlength="4" value="${esc(f.alcance || "")}" placeholder="Ex.: 40" aria-label="Alcance, em reais" /></div>` : ""}
           ${e === null ? `<p class="pc-alcance-est">${bolaGirando(13)} Calculando a estimativa…</p>`
             : e && e.sem_bairro ? `<p class="pc-alcance-est">Informe o bairro da academia em Minha ficha para usar o alcance.</p>`
-            : e ? `<p class="pc-alcance-est">${f.alcance
-                ? `Em ${esc(e.bairro)}, ${esc(emReais(f.alcance))} rendem <strong>entre ${n(e.exibicoes_min)} e ${n(e.exibicoes_max)} aparições</strong> em ${n(e.dias)} dias, pelo preço de hoje (${esc(reaisComCentavos(e.preco_mil))} a cada mil${premium ? ", já com 15% de desconto do Premium" : ""}).${e.gasto_estimado !== undefined && Number(e.gasto_estimado) < f.alcance * 0.9 ? ` Com a procura de hoje, cerca de ${esc(reaisComCentavos(e.gasto_estimado))} devem ser usados.` : ""}`
-                : `Em ${esc(e.bairro)}, a faixa tem cerca de ${n(e.exibicoes_dia)} aparições por dia.`}
-                ${sugerido ? ` Sugerido para aparecer em cerca de 1 a cada 4 buscas: <button type="button" class="inline-link" data-promo-alcance="${sugerido}">${esc(emReais(sugerido))}</button>.` : ""}
-                O preço muda todo dia com os acessos e as outras academias do bairro.</p>` : ""}`;
+            : e ? `<div class="pc-alcance-est">${f.alcance
+                ? `<p class="pc-alcance-num">Cerca de ${dezena(e.exibicoes_min)} a ${dezena(e.exibicoes_max)} aparições em ${periodo}</p>
+                   <p>Na faixa patrocinada de ${esc(e.bairro)}, pelo preço de hoje: ${esc(reaisComCentavos(e.preco_mil))} a cada mil aparições${premium ? `, já com ${precoDaPromocao().desconto || 15}% de desconto do Premium` : ""}.${e.gasto_estimado !== undefined && Number(e.gasto_estimado) < f.alcance * 0.9 ? ` Com a procura de hoje, cerca de ${esc(reaisComCentavos(e.gasto_estimado))} devem ser usados; o restante volta para os créditos.` : ""}</p>`
+                : `<p>Em ${esc(e.bairro)}, a faixa patrocinada tem cerca de ${n(e.exibicoes_dia)} aparições por dia.</p>`}
+                ${sugerido ? (f.alcance >= sugerido
+                  ? `<p class="pc-alcance-ok">${icon('check', 13, 'var(--green)')} Acima do sugerido para o bairro (${esc(emReais(sugerido))}), que faz a academia aparecer em cerca de 1 a cada 4 buscas.</p>`
+                  : `<p>Sugerido para o bairro: <button type="button" class="inline-link" data-promo-alcance="${sugerido}">${esc(emReais(sugerido))}</button>, para aparecer em cerca de 1 a cada 4 buscas.</p>`) : ""}
+                <p class="pc-alcance-nota">O preço da aparição muda todo dia, com a procura e as outras academias do bairro.</p></div>` : ""}`;
 }
 // Encerrar devolve as semanas que ainda não começaram (apagar_promocao).
 function voltaDaPromocao(x) {
@@ -16276,8 +16289,8 @@ function precoNaPromocao(c, semanas, alcance = 0) {
   return `
       <div class="pc-promo-preco" id="pc-promo-preco">
         <ul class="pc-leilao-dados">
-          <li><span>Por semana</span><strong>${desconto ? `<s class="pc-preco-de">${emReais(p.cheio)}</s> ` : ""}${emReais(p.semana)}${desconto ? ` <small class="pc-promo-desconto">${p.desconto}% de desconto do Premium</small>` : ""}</strong></li>
-          ${semanas ? `<li><span>${nSemanas(semanas)} na ficha</span><strong>${emReais(p.semana * semanas)}</strong></li>` : ""}
+          ${p.cheio ? `<li><span>Por semana</span><strong>${desconto ? `<s class="pc-preco-de">${emReais(p.cheio)}</s> ` : ""}${emReais(p.semana)}${desconto ? ` <small class="pc-promo-desconto">${p.desconto}% de desconto do Premium</small>` : ""}</strong></li>` : ""}
+          ${semanas ? `<li><span>${nSemanas(semanas)} na ficha</span><strong${p.semana ? "" : ' class="pc-gratis"'}>${p.semana ? emReais(p.semana * semanas) : "Grátis"}</strong></li>` : ""}
           ${alcance ? `<li><span>Alcance</span><strong>${emReais(alcance)}</strong></li>` : ""}
           ${semanas || alcance ? `<li class="total"><span>Total</span><strong>${emReais(total)}</strong></li>` : ""}
           <li><span>Créditos disponíveis</span><strong>${emReais(saldo)}${posso("pagamentos") ? ` · <button type="button" class="inline-link" data-comprar-creditos>Comprar</button>` : ""}</strong></li>

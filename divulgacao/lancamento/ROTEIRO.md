@@ -166,8 +166,8 @@ social real, com autorização).
    em "Lembrar" recebe o aviso na hora do lançamento.
 2. **Quinta — `stories-2`:** figurinha de **enquete** com 4 opções: "Preço escondido", "Distância e trânsito",
    "Horário" e "Achar academia boa". O resultado vira assunto dos próximos posts.
-3. **Sexta — `stories-3`:** figurinha de **pergunta** ("Digite o seu bairro"). No sábado, responda com a
-   figurinha "Responder" e o link da página do bairro.
+3. **Sexta — `stories-3`:** figurinha de **pergunta** ("Digite o seu bairro"). No domingo, depois das 18h, responda
+   com a figurinha "Responder" e o link da página do bairro (antes disso, o link leva à página fechada).
 4. **Domingo — `stories-4`:** figurinha de **link** para guiatennis.com.br. Em seguida, o vídeo do anúncio.
 5. **Segunda — `stories-5`:** figurinha de **link** para guiatennis.com.br/parceiros.
 
@@ -208,8 +208,8 @@ segundos e **um pedido só** no fim.
   encontra aula e quadra de tênis perto de você, compara preço, estrutura e avaliações e chama direto a
   academia no WhatsApp, sem taxa e sem cadastro." (2 ou 3 segundos da tela do site, de passagem) "Comente o seu
   bairro, e eu respondo com as academias de lá. O link está na bio."
-- Por que não repete o Reels de sexta: sexta é a **prova**; domingo é o **anúncio**, com você, que é o que
-  cria vínculo.
+- Por que não repete o Reels de sexta: sexta é a **curiosidade**, sem mostrar o site; domingo é o **anúncio**,
+  com você e o site, que é o que cria vínculo.
 
 **Depois — a série "Guia do bairro" (cada bairro que chegar a 3 fichas completas; entre eles, o mais pedido nos comentários)**
 - **"Onde jogar tênis em [bairro]"**: o mesmo formato de sexta, em outro bairro. Cada vídeo vai também para o

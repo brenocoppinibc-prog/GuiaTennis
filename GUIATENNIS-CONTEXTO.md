@@ -10,7 +10,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 26/11/2026 (regras 334 a 338: pré-lançamento, Acessibilidade, a busca só com a região, os Compromissos e o Promover claro)
+**Atualizado em:** 26/11/2026 (regras 334 a 340: pré-lançamento, Acessibilidade, a busca só com a região, os Compromissos, Minha ficha e o Promover como o Instagram)
 
 | | |
 |---|---|
@@ -673,6 +673,7 @@ mesmo histórico de 23/11 e nas descrições antigas do PR (`historico/PR5-descr
 - 337 (26/11) — Sobre › Compromissos refeito ("compromisso com veracidade, autenticidade, realidade e entregar sempre o melhor ao cliente", com o processo de verificação): "O que você vê no GuiaTennis é o que você encontra na quadra." e 5 compromissos com o que o site faz de verdade (Veracidade: declaração, código e aprovação do WhatsApp, selo de confirmada, "informar um problema", 2 contas tiram o botão; Autenticidade: avaliações; Realidade: preço da academia ou "Sob consulta", distância em linha reta, "Mais bem avaliadas", "Patrocinado", números para baixo; O melhor para você: chat e sugestões; Privacidade: só a região); o "Patrocinado" saiu do "Grátis para quem joga" (repetia). Revisão de marketing, design e gramática: a Veracidade em 4 passos numerados, textos de 2 frases, sem "melhor/melhora/melhorar" juntos nem "região" três vezes na Política; no pré-lançamento, "Quando a academia usa um sistema de reservas, você escolhe o horário pela própria ficha.". `testes/sobre.js`.
 - 338 (27/11) — Promoções (print: "não está fazendo muito sentido, precisamos corrigir para lançar"): com a semana na ficha sem custo, "4 semanas na ficha · Grátis" (sem "Por semana R$ 0"); a estimativa do alcance em destaque e em números redondos, nas semanas escolhidas ("Cerca de 530 a 800 aparições em 4 semanas"), o preço de hoje numa frase, o sugerido só quando o valor está abaixo dele (acima: "✓ Acima do sugerido para o bairro") e a nota do preço que muda (`blocoDoAlcance`, `precoNaPromocao`; `testes/promocoes-por-email.js`).
 - 339 (27/11) — "o tudo preenchido não está funcionando 100%": "Como funciona o estacionamento" (grátis e pago sem explicação) não era item da lista e a conta dizia "6 de 7" com os 7 marcados; agora conta como "Comodidades" (`itensQueFaltam`, `porcentoDaFicha`, a mesma conta no Painel e em Minha ficha), e cada item pendente é um botão que abre o cadastro na parte certa (`data-passo`, regra 327). `testes/ficha-completa.js`.
+- 340 (27/11) — Promoções como o "Turbinar" do Instagram ("faça no estilo que o WhatsApp, Instagram, Google usam… mostrando o alcance de público com base no preço e não usando alcance com o valor… não precisamos explicar como funciona o valor"): "Destaque na busca", o orçamento em chips ("Só na ficha", R$ 20, R$ 50, R$ 100, "Outro valor"; "Recomendado" no menor valor que chega ao sugerido do bairro) e, em destaque, "Visualizações estimadas: 530 a 800 em 4 semanas, de jogadores perto de [bairro]"; sem preço por mil, preço do dia ou sugerido escrito. "Alcance" virou "Destaque na busca"/"orçamento" na tela, na revisão, nos avisos, nas dicas, em Pagamentos e na Ajuda (os Termos seguem com "alcance de Promover"). `testes/promocoes-por-email.js`, `testes/promocoes.js`.
 
 ## 11. WhatsApp e mensagem para as academias
 

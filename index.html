@@ -3719,7 +3719,12 @@
   .pc-preco-de { font-weight: 400; color: var(--muted); text-decoration: line-through; font-variant-numeric: tabular-nums; }
   .pc-alcance-est p { margin: 0 0 6px; }
   .pc-alcance-est p:last-child { margin-bottom: 0; }
-  .pc-alcance-num { font-size: 17px; font-weight: 700; color: var(--green); }
+  .pc-alcance-rot { font-size: 13px; font-weight: 600; color: var(--muted); }
+  .pc-alcance-num { margin: 2px 0 0 !important; font-size: 26px; line-height: 1.15; font-weight: 700; color: var(--green); font-variant-numeric: tabular-nums; }
+  .pc-alcance-sub { font-size: 13.5px; color: var(--muted); }
+  .pc-chip-recomendado { position: relative; }
+  .pc-recomendado { margin-left: 6px; padding: 1px 6px; border-radius: 6px; background: #FFF6DB; color: #6B5414; font-size: 12px; font-weight: 700; }
+  .chip.active .pc-recomendado { background: rgba(255,255,255,.2); color: #fff; }
   .pc-alcance-ok { display: flex; align-items: flex-start; gap: 6px; }
   .pc-alcance-ok svg { flex-shrink: 0; margin-top: 3px; }
   .pc-alcance-nota { font-size: 13px; color: var(--muted); }
@@ -11923,7 +11928,7 @@ function perguntasParceiros() {
     { q: "O GuiaTennis cobra comissão sobre aula ou locação?", a: "Não. O jogador fala direto com vocês, e o valor e o pagamento são combinados entre vocês." },
     { id: "avaliacoes", q: "Posso apagar uma avaliação ruim?", a: "Não. Para ser justo com quem procura, nenhuma academia apaga avaliação. Vocês podem responder em público e pedir a análise do GuiaTennis se a avaliação for falsa ou ofensiva." },
     { q: "A academia pode avaliar outras academias?", a: "Quem administra uma academia não pode avaliá-la: responde às avaliações dela pelo GuiaTennis Parceiros. Nas outras academias, a mesma conta funciona como a de qualquer jogador: busca, salva buscas, recebe avisos e avalia onde jogou." },
-    { id: "promocoes", q: "Como funciona Promover?", a: "Nos planos Completo e Premium, em Promoções, a academia publica uma promoção por vez (por exemplo, \"Primeira aula grátis\"), com o título em até 30 letras e os detalhes em até 150, e escolhe por quantas semanas ela vale na ficha e na busca (de 1 a 12). Se quiser, escolhe também o alcance: um valor a mais que compra aparições numa faixa pequena, marcada \"Patrocinado\", no início e no alto da busca, perto da academia" + (leilao ? ", e que, no Premium, também concorre ao e-mail da semana para os jogadores do bairro" : "") + ". Tudo sai dos créditos num pagamento só, e a tela mostra o total e a estimativa de aparições antes de publicar. O preço de cada aparição muda todo dia com os acessos e com o que as outras academias do bairro investem; quem investe mais aparece mais. No Premium, as semanas e o alcance têm 15% de desconto. Mudar o texto não custa nada, e dá para somar semanas e alcance; encerrar antes devolve as semanas que ainda não começaram e o alcance que sobrou, que também volta sozinho quando a promoção termina." },
+    { id: "promocoes", q: "Como funciona Promover?", a: "Nos planos Completo e Premium, em Promoções, a academia publica uma promoção por vez (por exemplo, \"Primeira aula grátis\"), com o título em até 30 letras e os detalhes em até 150, e escolhe por quantas semanas ela vale na ficha e na busca (de 1 a 12). Se quiser, escolhe também o destaque na busca: um orçamento a mais para a academia aparecer numa faixa marcada \"Patrocinado\", no início e no alto da busca, perto da academia" + (leilao ? ", e que, no Premium, também concorre ao e-mail da semana para os jogadores do bairro" : "") + ". Tudo sai dos créditos num pagamento só, e a tela mostra o total e a estimativa de aparições antes de publicar. O preço de cada aparição muda todo dia com os acessos e com o que as outras academias do bairro investem; quem investe mais aparece mais. No Premium, as semanas e o destaque na busca têm 15% de desconto. Mudar o texto não custa nada, e dá para somar semanas e destaque; encerrar antes devolve as semanas que ainda não começaram e o valor do destaque que sobrou, que também volta sozinho quando a promoção termina." },
     ...(leilao ? [{ id: "promocoes-email", q: "Como funciona o e-mail das promoções no Premium?", a: "Duas vezes por semana, o GuiaTennis manda aos jogadores de cada bairro que pediram promoções um e-mail com a promoção de uma academia do bairro, marcada como patrocinada. Não há lance separado: no Premium, o alcance escolhido em Promover concorre sozinho. Ganham as duas maiores notas, que são o alcance da semana vezes a qualidade da ficha (fotos, avaliações e uma promoção bem explicada); a 1ª sai na terça e a 2ª na sexta, às 10h, e quem ganha paga só o necessário para passar a seguinte, tirado do próprio alcance. Em Promoções, cada promoção mostra para quantos jogadores o e-mail chegou." }] : []),
     { id: "numeros", q: "Como são contados os números do GuiaTennis?", a: NOTA_DOS_NUMEROS },
     { id: "desempenho", q: "O que aparece em Desempenho?", a: "Quantas pessoas abriram a ficha e quantas chamaram vocês. Conforme o plano, também o dia a dia, de onde vieram, o aparelho e os bairros de quem procurou. São contagens: ninguém é identificado. No começo de cada mês, chega por e-mail o resumo do mês anterior (acessos e avaliações; no Premium, também quem chamou e de onde vieram)." },
@@ -12088,7 +12093,7 @@ function oportunidadesDoPlano(c, atual) {
   if (faltas.length) itens.push({ t: `Completar a ficha: falta ${faltas.slice(0, 3).join(", ")}${faltas.length > 3 ? "…" : ""}`, d: "Ficha completa recebe mais contato" + (atual === "basico" ? "." : " e sobe entre as recomendadas."), ir: "ficha", bt: "Completar a ficha" });
   const semResposta = getReviews(c.id).filter(r => !r.resposta).length;
   if (semResposta) itens.push({ t: `Responder ${semResposta === 1 ? "1 avaliação" : semResposta + " avaliações"}`, d: "Quem vai escolher lê as respostas da academia.", ir: "avaliacoes", bt: "Responder" });
-  if (atual === "premium" && !temAlcance()) itens.push({ t: "Levar a promoção ao e-mail do bairro", d: "Com o alcance de Promover, ela chega aos jogadores perto da academia.", ir: "promocoes", bt: "Promover" });
+  if (atual === "premium" && !temAlcance()) itens.push({ t: "Levar a promoção ao e-mail do bairro", d: "Com o destaque na busca, em Promover, ela chega aos jogadores perto da academia.", ir: "promocoes", bt: "Promover" });
   if (atual !== "basico" && !(state.pcPromocoes || []).some(x => x.valendo)) itens.push({ t: "Publicar uma promoção", d: "Ela aparece na ficha e no resultado da busca.", ir: "promocoes", bt: "Promoções na ficha" });
   if (!itens.length) itens.push({ t: "Imprimir o QR code da ficha", d: "Na recepção, quem jogou avalia a academia na hora.", ir: "ficha", bt: "Minha ficha" });
   return itens;
@@ -12153,7 +12158,7 @@ function dicaDeVenda(c, plano, dia) {
     return null;
   }
   if (promocao) return promocao;
-  if (!temAlcance()) return { tipo: "email", ic: "mail", t: "Leve a promoção ao e-mail do bairro", s: "Com o alcance de Promover, ela aparece na faixa patrocinada e concorre ao e-mail semanal para os jogadores do bairro.", bt: "Promover", fn: () => irParceiros("promocoes") };
+  if (!temAlcance()) return { tipo: "email", ic: "mail", t: "Leve a promoção ao e-mail do bairro", s: "Com o destaque na busca, em Promover, ela aparece como “Patrocinado” e concorre ao e-mail semanal para os jogadores do bairro.", bt: "Promover", fn: () => irParceiros("promocoes") };
   return null;
 }
 // No máximo uma por dia e por academia (a hora da última fica no aparelho,
@@ -14661,7 +14666,7 @@ function pcPagamentos() {
           <strong class="pc-pag-saldo">${emReais(saldoDeEnvios())}</strong>
         </div>
         ${comCreditos
-          ? `<p class="pc-card-s">Pagam as semanas da promoção na ficha e o alcance${c.plano === "premium" ? ", na faixa patrocinada e no e-mail do bairro" : ", na faixa patrocinada"}.</p>
+          ? `<p class="pc-card-s">Pagam as semanas da promoção na ficha e o destaque na busca${c.plano === "premium" ? " e no e-mail do bairro" : ""}.</p>
              <button type="button" class="cta-btn cta-primary pc-pag-comprar" data-comprar-creditos>Comprar créditos</button>`
           : `<p class="pc-card-s">Os créditos são dos planos Completo e Premium.</p>
              <a href="/parceiros/plano" class="pc-link-btn" data-pc="plano">Ver planos</a>`}
@@ -15034,7 +15039,7 @@ function pcCreditos() {
         </ul>
         <p class="pc-checkout-nota">${plano
           ? `${automatica ? `Renova sozinho todo ${periodo === "anual" ? "ano" : "mês"}${comecaEm ? `; a primeira cobrança é em ${diaDaAssinatura(comecaEm)}, e nada é cobrado hoje` : ""}. Cancele quando quiser, em Plano.` : "O plano muda assim que o pagamento é confirmado."}${periodo === "anual" ? " No anual, 2 meses saem de graça." : ""}`
-          : `Saldo atual: ${emReais(saldo)}. Os créditos pagam as semanas da promoção na ficha e o alcance${c.plano === "premium" ? ", na faixa patrocinada e no e-mail do bairro" : ", na faixa patrocinada"}. Créditos usados não são devolvidos (<button type="button" class="inline-link" data-menu="termos">Termos de Uso</button>).`}</p>
+          : `Saldo atual: ${emReais(saldo)}. Os créditos pagam as semanas da promoção na ficha e o destaque na busca${c.plano === "premium" ? " e no e-mail do bairro" : ""}. Créditos usados não são devolvidos (<button type="button" class="inline-link" data-menu="termos">Termos de Uso</button>).`}</p>
       </aside>`;
   // Regra 315: no QR code do Pix (e no pagamento de teste), "Voltar" volta à
   // escolha do valor, como o passo anterior de um checkout (Stripe, Apple).
@@ -16255,33 +16260,36 @@ function estimativaDoAlcance(c, f, ed) {
   }
   return state.pcEstimativas[chave];
 }
+// 27/11/2026 ("faça no estilo que o WhatsApp, o Instagram e o Google usam para impulsionar a postagem, mostrando o
+// alcance de público com base no preço… não precisamos explicar como funciona o valor"): como o "Turbinar" do
+// Instagram e o "Anunciar" do WhatsApp — escolhe-se o orçamento e vê-se, grande, as visualizações estimadas. Sem o
+// preço por mil nem o preço do dia; o "Recomendado" marca o menor valor que chega ao sugerido para o bairro.
 function blocoDoAlcance(c, f, ed) {
   const e = estimativaDoAlcance(c, f, ed);
   const premium = c.plano === "premium";
   const n = (v) => Number(v || 0).toLocaleString("pt-BR");
   const outro = !ALCANCES.includes(f.alcance);
   const sugerido = e && Number(e.sugerido || 0);
+  const recomendado = sugerido ? (ALCANCES.find(v => v && v >= sugerido) || 0) : 0;
   // Números redondos (a estimativa não é exata) e o período nas semanas escolhidas.
   const dezena = (v) => n(Math.max(10, Math.round(Number(v || 0) / 10) * 10));
   const periodo = e && e.dias && e.dias % 7 === 0 ? nSemanas(e.dias / 7) : `${n(e && e.dias)} dias`;
   return `
-          <p class="field-label" id="pc-promo-alcance-t">Alcance (opcional)</p>
-          <p class="footnote" style="margin:0 0 8px">Aparições na faixa patrocinada do início e da busca, perto da academia${premium ? ", e o e-mail da semana para os jogadores do bairro" : ""}. Quem investe mais aparece mais.</p>
+          <p class="field-label" id="pc-promo-alcance-t">Destaque na busca</p>
+          <p class="footnote" style="margin:0 0 8px">Escolha o orçamento: quanto maior, mais jogadores do bairro veem a sua academia no início e na busca${premium ? " e no e-mail da semana" : ""}, com a marca “Patrocinado”.</p>
           <div class="chip-row" role="radiogroup" aria-labelledby="pc-promo-alcance-t">
-            ${ALCANCES.map(v => `<button type="button" class="chip small${!outro && f.alcance === v ? " active" : ""}" role="radio" aria-checked="${!outro && f.alcance === v}" data-promo-alcance="${v}">${v ? emReais(v) : "Sem alcance"}</button>`).join("")}
+            ${ALCANCES.map(v => `<button type="button" class="chip small${!outro && f.alcance === v ? " active" : ""}${v && v === recomendado ? " pc-chip-recomendado" : ""}" role="radio" aria-checked="${!outro && f.alcance === v}" data-promo-alcance="${v}">${v ? emReais(v) : "Só na ficha"}${v && v === recomendado ? `<span class="pc-recomendado">Recomendado</span>` : ""}</button>`).join("")}
             <button type="button" class="chip small${outro ? " active" : ""}" role="radio" aria-checked="${outro}" data-promo-alcance="outro">Outro valor</button>
           </div>
-          ${outro ? `<div class="pc-ads-moeda pc-checkout-outro"><span>R$</span><input class="form-field" id="pc-promo-alcance" type="text" inputmode="numeric" maxlength="4" value="${esc(f.alcance || "")}" placeholder="Ex.: 40" aria-label="Alcance, em reais" /></div>` : ""}
-          ${e === null ? `<p class="pc-alcance-est">${bolaGirando(13)} Calculando a estimativa…</p>`
-            : e && e.sem_bairro ? `<p class="pc-alcance-est">Informe o bairro da academia em Minha ficha para usar o alcance.</p>`
-            : e ? `<div class="pc-alcance-est">${f.alcance
-                ? `<p class="pc-alcance-num">Cerca de ${dezena(e.exibicoes_min)} a ${dezena(e.exibicoes_max)} aparições em ${periodo}</p>
-                   <p>Na faixa patrocinada de ${esc(e.bairro)}, pelo preço de hoje: ${esc(reaisComCentavos(e.preco_mil))} a cada mil aparições${premium ? `, já com ${precoDaPromocao().desconto || 15}% de desconto do Premium` : ""}.${e.gasto_estimado !== undefined && Number(e.gasto_estimado) < f.alcance * 0.9 ? ` Com a procura de hoje, cerca de ${esc(reaisComCentavos(e.gasto_estimado))} devem ser usados; o restante volta para os créditos.` : ""}</p>`
-                : `<p>Em ${esc(e.bairro)}, a faixa patrocinada tem cerca de ${n(e.exibicoes_dia)} aparições por dia.</p>`}
-                ${sugerido ? (f.alcance >= sugerido
-                  ? `<p class="pc-alcance-ok">${icon('check', 13, 'var(--green)')} Acima do sugerido para o bairro (${esc(emReais(sugerido))}), que faz a academia aparecer em cerca de 1 a cada 4 buscas.</p>`
-                  : `<p>Sugerido para o bairro: <button type="button" class="inline-link" data-promo-alcance="${sugerido}">${esc(emReais(sugerido))}</button>, para aparecer em cerca de 1 a cada 4 buscas.</p>`) : ""}
-                <p class="pc-alcance-nota">O preço da aparição muda todo dia, com a procura e as outras academias do bairro.</p></div>` : ""}`;
+          ${outro ? `<div class="pc-ads-moeda pc-checkout-outro"><span>R$</span><input class="form-field" id="pc-promo-alcance" type="text" inputmode="numeric" maxlength="4" value="${esc(f.alcance || "")}" placeholder="Ex.: 40" aria-label="Orçamento, em reais" /></div>` : ""}
+          ${!f.alcance ? ""
+            : e === null ? `<div class="pc-alcance-est"><p>${bolaGirando(13)} Calculando as visualizações…</p></div>`
+            : e && e.sem_bairro ? `<div class="pc-alcance-est"><p>Informe o bairro da academia em Minha ficha para usar o destaque na busca.</p></div>`
+            : e ? `<div class="pc-alcance-est">
+                <p class="pc-alcance-rot">Visualizações estimadas</p>
+                <p class="pc-alcance-num">${dezena(e.exibicoes_min)} a ${dezena(e.exibicoes_max)}</p>
+                <p class="pc-alcance-sub">em ${periodo}, de jogadores perto de ${esc(e.bairro)}</p>
+              </div>` : ""}`;
 }
 // Encerrar devolve as semanas que ainda não começaram (apagar_promocao).
 function voltaDaPromocao(x) {
@@ -16305,14 +16313,14 @@ function precoNaPromocao(c, semanas, alcance = 0) {
         <ul class="pc-leilao-dados">
           ${p.cheio ? `<li><span>Por semana</span><strong>${desconto ? `<s class="pc-preco-de">${emReais(p.cheio)}</s> ` : ""}${emReais(p.semana)}${desconto ? ` <small class="pc-promo-desconto">${p.desconto}% de desconto do Premium</small>` : ""}</strong></li>` : ""}
           ${semanas ? `<li><span>${nSemanas(semanas)} na ficha</span><strong${p.semana ? "" : ' class="pc-gratis"'}>${p.semana ? emReais(p.semana * semanas) : "Grátis"}</strong></li>` : ""}
-          ${alcance ? `<li><span>Alcance</span><strong>${emReais(alcance)}</strong></li>` : ""}
+          ${alcance ? `<li><span>Destaque na busca</span><strong>${emReais(alcance)}</strong></li>` : ""}
           ${semanas || alcance ? `<li class="total"><span>Total</span><strong>${emReais(total)}</strong></li>` : ""}
           <li><span>Créditos disponíveis</span><strong>${emReais(saldo)}${posso("pagamentos") ? ` · <button type="button" class="inline-link" data-comprar-creditos>Comprar</button>` : ""}</strong></li>
         </ul>
         ${desconto && economia > 0 ? `<p class="pc-promo-eco">Com o Premium, você economiza ${emReais(economia)} nesta promoção.</p>` : ""}
-        ${alcance ? `<p class="pc-promo-garantia">${icon('check', 13, 'var(--green)')} O alcance que não for usado volta para os créditos.</p>` : ""}
-        ${total > saldo ? `<p class="form-error fica-na-tela" role="alert">${icon('warning', 14)} Faltam ${emReais(total - saldo)} em créditos. Compre créditos, escolha menos semanas ou um alcance menor.</p>` : ""}
-        ${!premium && p.premium < p.cheio ? `<p class="pc-promo-upsell">No Premium, a semana custa <s class="pc-preco-de">${emReais(p.cheio)}</s> <strong>${emReais(p.premium)}</strong> (${p.desconto}% a menos), e o alcance tem o mesmo desconto${economia > 0 ? `. Economize ${emReais(economia)} nesta promoção` : ""}. <a href="${esc(caminhoDosParceiros("plano"))}" data-pc="plano">Ver os planos ›</a></p>` : ""}
+        ${alcance ? `<p class="pc-promo-garantia">${icon('check', 13, 'var(--green)')} O valor do destaque que não for usado volta para os créditos.</p>` : ""}
+        ${total > saldo ? `<p class="form-error fica-na-tela" role="alert">${icon('warning', 14)} Faltam ${emReais(total - saldo)} em créditos. Compre créditos, escolha menos semanas ou um orçamento menor.</p>` : ""}
+        ${!premium && p.premium < p.cheio ? `<p class="pc-promo-upsell">No Premium, a semana custa <s class="pc-preco-de">${emReais(p.cheio)}</s> <strong>${emReais(p.premium)}</strong> (${p.desconto}% a menos), e o destaque na busca tem o mesmo desconto${economia > 0 ? `. Economize ${emReais(economia)} nesta promoção` : ""}. <a href="${esc(caminhoDosParceiros("plano"))}" data-pc="plano">Ver os planos ›</a></p>` : ""}
       </div>`;
 }
 
@@ -16352,7 +16360,7 @@ function pcPromocoes() {
   return `
     <section class="pc-pagina">
       ${topo}
-      <p class="pc-sec-sub">Uma promoção por vez: na ficha e na busca durante as semanas escolhidas${p.cheio ? ` (${emReais(p.semana)} por semana)` : ""} e, com o alcance, também na faixa patrocinada do início e da busca${premium ? " e no e-mail da semana do bairro" : ""}. Tudo num pagamento só, com os créditos. ${saibaMaisNaAjuda("promocoes")}</p>
+      <p class="pc-sec-sub">Uma promoção por vez: na ficha e na busca durante as semanas escolhidas${p.cheio ? ` (${emReais(p.semana)} por semana)` : ""} e, com o destaque na busca, também em destaque no início e na busca${premium ? " e no e-mail da semana do bairro" : ""}. Tudo num pagamento só, com os créditos. ${saibaMaisNaAjuda("promocoes")}</p>
       ${msg ? `<p class="${msg.tipo === "ok" ? "conta-aviso" : "form-error"}">${icon(msg.tipo === "ok" ? 'check' : 'warning', 14, msg.tipo === "ok" ? 'var(--green)' : undefined)} ${esc(msg.texto)}</p>` : ""}
       ${(editando || !valendo.length) && state.pcPromoPasso === "revisar" ? `
         <div class="pc-card pc-promo-form pc-passo-revisar" id="pc-promo-revisao">
@@ -16360,7 +16368,7 @@ function pcPromocoes() {
           ${previaDaPromocao({ ...f, ate })}
           <ul class="pc-leilao-dados pc-leilao-revisao">
             <li><span>Duração</span><strong>${editando ? (f.semanas ? `+ ${nSemanas(f.semanas)}` : "Sem mudar") : nSemanas(f.semanas)} · até ${esc(diaPorExtenso(ate))}</strong></li>
-            ${f.alcance ? `<li><span>Alcance</span><strong>${emReais(f.alcance)} · faixa patrocinada${premium ? " e e-mail do bairro" : ""}</strong></li>` : ""}
+            ${f.alcance ? `<li><span>Destaque na busca</span><strong>${emReais(f.alcance)}${premium ? " · com o e-mail do bairro" : ""}</strong></li>` : ""}
             <li><span>Custo</span><strong>${total ? `${emReais(total)} dos créditos, num pagamento só` : f.semanas && p.cheio ? emReais(0) : "Sem custo"}</strong></li>
           </ul>
           ${bloqueio ? `<div class="form-error pc-email-bloqueio" role="alert">${icon('warning', 14)} <span>${saldo ? `A academia tem ${emReais(saldo)} em créditos.` : "A academia está sem créditos."} Compre créditos ou escolha menos semanas. ${botaoDeComprarCreditos()}</span></div>` : ""}
@@ -16414,7 +16422,7 @@ function revisarPromocao() {
   const f = (state.pcPromoForm = formDaPromocao(ed));
   if (f.titulo.trim().length < 3) { state.pcPromoMsg = { tipo: "erro", texto: "Escreva a promoção (por exemplo, \"Primeira aula grátis\")." }; render(); return; }
   if (!ed && !f.semanas) { state.pcPromoMsg = { tipo: "erro", texto: "Escolha por quantas semanas a promoção vale." }; render(); return; }
-  if (f.alcance && (f.alcance < 10 || f.alcance > 5000)) { state.pcPromoMsg = { tipo: "erro", texto: "O alcance vai de R$ 10 a R$ 5.000 (ou nenhum)." }; render(); return; }
+  if (f.alcance && (f.alcance < 10 || f.alcance > 5000)) { state.pcPromoMsg = { tipo: "erro", texto: "O orçamento do destaque vai de R$ 10 a R$ 5.000 (ou escolha “Só na ficha”)." }; render(); return; }
   state.pcPromoMsg = null;
   state.pcPromoPasso = "revisar";
   render();
@@ -16451,7 +16459,7 @@ async function salvarPromocao() {
   const custo = pago ? ` ${emReais(pago)} ${pago === 1 ? "saiu" : "saíram"} dos créditos.` : "";
   state.pcPromoMsg = { tipo: "ok", texto: editando
     ? (f.semanas ? `Promoção atualizada: vale${ate}.${custo}` : "Promoção atualizada.")
-    : `Promoção publicada na ficha e na busca${ate}${f.alcance ? `, com ${emReais(f.alcance)} de alcance na faixa patrocinada${c.plano === "premium" ? " e no e-mail do bairro" : ""}` : ""}.${custo}` };
+    : `Promoção publicada na ficha e na busca${ate}${f.alcance ? `, com ${emReais(f.alcance)} de destaque na busca${c.plano === "premium" ? " e no e-mail do bairro" : ""}` : ""}.${custo}` };
   state.pcPromoForm = null; state.pcPromoEditando = null; state.pcPromoPasso = null;
   await Promise.all([carregarPromocoes(), carregarPromocoesDaAcademia()]);
   render();

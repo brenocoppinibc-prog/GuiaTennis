@@ -12,27 +12,27 @@ const texto = (page, sel) => page.evaluate((s) => (document.querySelector(s)?.in
   let { browser, page } = await abrir({ academia: 'a1', q: 'parceiros/promocoes', premium: ['a1'], envios: { a1: 200 }, precoPromocao: 10 });
   await page.waitForTimeout(400);
   let corpo = await texto(page, '#parceiros .pc-main');
-  ok(corpo.includes('Alcance (opcional)') && corpo.includes('Sem alcance') && corpo.includes('num pagamento só') && corpo.includes('e-mail da semana do bairro') && !(await page.$('.pc-promo-partes')),
+  ok(corpo.includes('Destaque na busca') && corpo.includes('Só na ficha') && corpo.includes('num pagamento só') && corpo.includes('e-mail da semana do bairro') && !(await page.$('.pc-promo-partes')),
     'uma tela só: a promoção, as semanas e o alcance (opcional), sem a aba do leilão');
   await page.fill('#pc-promo-titulo', 'Primeira aula grátis');
   await page.click('[data-promo-semanas="2"]');
   await page.click('[data-promo-alcance="50"]');
   await page.waitForTimeout(400);
   corpo = await texto(page, '#parceiros .pc-main');
-  ok(/Cerca de 1\.330 a 2\.000 aparições em 2 semanas/.test(corpo) && /(Sugerido para o bairro|Acima do sugerido para o bairro).*1 a cada 4 buscas/.test(corpo) && corpo.includes('O preço da aparição muda todo dia'),
-    'o alcance mostra a estimativa em números redondos e nas semanas escolhidas, o sugerido e que o preço muda todo dia — ' + (corpo.match(/Cerca de[^\n]*/) || [''])[0]);
-  ok(/2 semanas na ficha\s+R\$ 16\s+Alcance\s+R\$ 50\s+Total\s+R\$ 66/.test(await texto(page, '#pc-promo-preco')), 'o total soma as semanas (com os 15% do Premium) e o alcance — ' + await texto(page, '#pc-promo-preco'));
+  ok(/Visualizações estimadas 1\.330 a 2\.000 em 2 semanas, de jogadores perto de/.test(corpo) && !/a cada mil|preço da aparição|Sugerido para/.test(corpo) && !!(await page.$('.pc-chip-recomendado')),
+    'como o Turbinar do Instagram: as visualizações estimadas, sem explicar o preço, e o "Recomendado" no orçamento — ' + (corpo.match(/Visualizações estimadas.{0,80}/) || [''])[0]);
+  ok(/2 semanas na ficha\s+R\$ 16\s+Destaque na busca\s+R\$ 50\s+Total\s+R\$ 66/.test(await texto(page, '#pc-promo-preco')), 'o total soma as semanas (com os 15% do Premium) e o alcance — ' + await texto(page, '#pc-promo-preco'));
   // 26/11/2026 (print do Breno, "não está fazendo muito sentido"): com a semana na ficha sem custo, nada de "R$ 0".
   const gratis = await page.evaluate(() => { const L = state.pcLeilao; const antes = { ...L }; L.preco_promocao = 0; L.preco_promocao_semana = 0;
     const div = document.createElement('div'); div.innerHTML = precoNaPromocao(minhaAcademia(), 4, 20); Object.assign(L, antes); return div.innerText.replace(/\s+/g, ' '); });
-  ok(/4 semanas na ficha\s*Grátis\s*Alcance\s*R\$ 20\s*Total\s*R\$ 20/.test(gratis) && !gratis.includes('Por semana') && !gratis.includes('R$ 0'), 'semanas sem custo: "Grátis", sem "Por semana R$ 0" — ' + gratis);
+  ok(/4 semanas na ficha\s*Grátis\s*Destaque na busca\s*R\$ 20\s*Total\s*R\$ 20/.test(gratis) && !gratis.includes('Por semana') && !gratis.includes('R$ 0'), 'semanas sem custo: "Grátis", sem "Por semana R$ 0" — ' + gratis);
   await page.click('#pc-promo-revisar');
   await page.waitForTimeout(300);
-  ok((await texto(page, '#pc-promo-revisao')).includes('Alcance R$ 50 · faixa patrocinada e e-mail do bairro') && (await texto(page, '#pc-promo-revisao')).includes('num pagamento só'), 'a revisão mostra o alcance e o pagamento único');
+  ok((await texto(page, '#pc-promo-revisao')).includes('Destaque na busca R$ 50 · com o e-mail do bairro') && (await texto(page, '#pc-promo-revisao')).includes('num pagamento só'), 'a revisão mostra o alcance e o pagamento único');
   await page.click('#pc-promo-salvar');
   await page.waitForTimeout(600);
   const args = await page.evaluate(() => (window.__rpcs.filter(x => x.nome === 'promover').slice(-1)[0] || {}).args);
-  ok(args && args.p_alcance === 50 && args.p_semanas === 2 && (await texto(page, '#parceiros .conta-aviso')).includes('com R$ 50 de alcance na faixa patrocinada e no e-mail do bairro'),
+  ok(args && args.p_alcance === 50 && args.p_semanas === 2 && (await texto(page, '#parceiros .conta-aviso')).includes('com R$ 50 de destaque na busca e no e-mail do bairro'),
     'publica pelo promover, com o alcance, e diz onde aparece');
   await page.evaluate(() => { const x = Object.values(window.__alcances)[0]; Object.assign(x, { gasto: 12.5, exibicoes: 410, toques: 23, avisados: 85 }); carregarPromocoesDaAcademia(); });
   await page.waitForTimeout(400);

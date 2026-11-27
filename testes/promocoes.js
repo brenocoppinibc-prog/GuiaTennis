@@ -93,7 +93,7 @@ const PROMO = { id: 'p1', academia_id: 'a1', titulo: 'Primeira aula grátis', de
   await page.waitForTimeout(500);
   corpo = (await texto(page, '#pc-promo-preco')).replace(/\s+/g, ' ');
   ok(corpo.includes('Por semana R$ 10') && corpo.includes('4 semanas na ficha R$ 40') && corpo.includes('Total R$ 40') && corpo.includes('Créditos disponíveis R$ 25') && corpo.includes('Faltam R$ 15 em créditos')
-    && corpo.includes('No Premium, a semana custa R$ 10 R$ 8 (15% a menos), e o alcance tem o mesmo desconto. Economize R$ 8 nesta promoção. Ver os planos ›') && !corpo.includes('desconto do Premium') && !corpo.includes('economiza'), 'Completo: preço cheio por semana, o total, os créditos, o que falta e o Premium com o preço riscado e a economia (regra 315) — ' + corpo);
+    && corpo.includes('No Premium, a semana custa R$ 10 R$ 8 (15% a menos), e o destaque na busca tem o mesmo desconto. Economize R$ 8 nesta promoção. Ver os planos ›') && !corpo.includes('desconto do Premium') && !corpo.includes('economiza'), 'Completo: preço cheio por semana, o total, os créditos, o que falta e o Premium com o preço riscado e a economia (regra 315) — ' + corpo);
   ok(await page.evaluate(() => getComputedStyle(document.querySelector('.pc-promo-upsell .pc-preco-de')).textDecorationLine === 'line-through'), 'o preço regular aparece riscado');
   ok((await texto(page, '.pc-sec-sub')).includes('(R$ 10 por semana)') && (await texto(page, '.pc-sec-sub')).includes('num pagamento só'), 'no alto, o preço da semana');
   await page.fill('#pc-promo-titulo', 'Aula experimental');
@@ -148,7 +148,7 @@ const PROMO = { id: 'p1', academia_id: 'a1', titulo: 'Primeira aula grátis', de
   await page.click('[data-promo-alcance="50"]');
   await page.waitForTimeout(300);
   corpo = (await texto(page, '#pc-promo-preco')).replace(/\s+/g, ' ');
-  ok(corpo.includes('Alcance R$ 50') && corpo.includes('Total R$ 82') && corpo.includes('O alcance que não for usado volta para os créditos.'), 'com alcance: o total e a garantia de que a sobra volta — ' + corpo);
+  ok(corpo.includes('Destaque na busca R$ 50') && corpo.includes('Total R$ 82') && corpo.includes('O valor do destaque que não for usado volta para os créditos.'), 'com alcance: o total e a garantia de que a sobra volta — ' + corpo);
   await browser.close();
 
   // ---- o jogador vê: atalho no topo, bloco com os preços e o cartão da busca ----
@@ -199,7 +199,7 @@ const PROMO = { id: 'p1', academia_id: 'a1', titulo: 'Primeira aula grátis', de
     link: AVISOS_DO_LINK.promocoes || '',
   }));
   ok(r.premium.includes('Promoções na ficha e na busca') && !/em breve/i.test(r.premium), 'o Premium mostra as promoções, sem "Em breve"');
-  ok(r.faq.includes('uma promoção por vez') && r.faq.includes('de 1 a 12') && r.faq.includes('alcance') && r.faq.includes('Completo e Premium') && r.faq.includes('num pagamento só'), 'a Ajuda explica Promover: as semanas e o alcance num pagamento só (regra 317)');
+  ok(r.faq.includes('uma promoção por vez') && r.faq.includes('de 1 a 12') && r.faq.includes('destaque na busca') && r.faq.includes('Completo e Premium') && r.faq.includes('num pagamento só'), 'a Ajuda explica Promover: as semanas e o alcance num pagamento só (regra 317)');
   ok(r.termos.includes('uma promoção por vez') && r.termos.includes('responde pelo que anuncia') && r.termos.includes('remover a promoção enganosa'), 'os Termos dizem quem responde pela promoção');
   ok(r.termos.includes('Nos planos Completo e Premium, a academia também pode divulgar uma promoção por vez') && r.termos.includes('paga por semana com os créditos') && r.termos.includes('devolve aos créditos as semanas que ainda não começaram')
     && r.termos.includes('Ao promover, a academia paga num pagamento só') && r.termos.includes('No plano Premium, o alcance também concorre ao e-mail semanal') && !r.termos.includes('20% menos no Premium'), 'os Termos: as semanas e o alcance num pagamento só; o e-mail do Premium vem do alcance (regra 317)');
